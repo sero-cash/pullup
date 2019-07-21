@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Stake Detail- SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <nav class="navbar navbar-light navbar-expand fixed-top bg-primary shadow mb-4 topbar static-top">
+                <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
+                    <ul class="nav navbar-nav">
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="transfer.html">Send</a></li>
+                        <li class="nav-item" role="presentation"><a class="nav-link  text-light" href="stake.html">Stake</a></li>
+                    </ul>
+                    <span class="d-none d-lg-inline text-light mr-2 language">English</span>
+                </div>
+            </nav>
+            <nav aria-label="breadcrumb" style="margin-top: 80px;">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="stake.html">Stake</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Share Detail</li>
+                </ol>
+            </nav>
+            <div class="container-fluid" >
+
+                <!--<div class="d-sm-flex justify-content-between align-items-center mb-4">-->
+                    <!--<h3 class="text-dark mb-0">Share Detail</h3>-->
+                <!--</div>-->
+                <div class="row currency">
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <p class="text-primary m-0 font-weight-bold tx-his shareDetail">Share Detail</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+                                    <table class="table dataTable my-0" id="dataTable">
+                                        <thead>
+                                        <tr>
+                                            <td><strong>Share Id</strong></td>
+                                            <td><strong>Pool Id</strong></td>
+                                            <td><strong>Address</strong></td>
+                                            <td><strong>Price</strong></td>
+                                            <td><strong>Fee</strong></td>
+                                            <td><strong>Profit</strong></td>
+                                            <td><strong>Remaining</strong></td>
+                                            <td><strong>Voted</strong></td>
+                                            <td><strong>Expired</strong></td>
+                                            <td><strong>Missed</strong></td>
+                                            <td><strong>Total</strong></td>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+</div>
+
+<script src="assets/plugin/jquery.min.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/theme.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+<script src="assets/plugin/jquery.qrcode.min.js"></script>
+<script src="assets/plugin/clipboard.min.js"></script>
+<script src="assets/plugin/bignumber.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/stake.js"></script>
+
+<script>
+
+    Common.app = StakeDetail;
+
+    Common.init();
+
+    $(document).ready(function() {
+        $('#dataTable').DataTable();
+    } );
+
+</script>
+
+</body>
+
+</html>

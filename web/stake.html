@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Stake - SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <nav class="navbar navbar-light navbar-expand fixed-top bg-primary shadow mb-4 topbar static-top">
+                <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
+                    <ul class="nav navbar-nav">
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="transfer.html">Send</a></li>
+                        <li class="nav-item" role="presentation"><a class="nav-link text-light" href="stake.html">Stake</a></li>
+                    </ul>
+                    <span class="d-none d-lg-inline text-light mr-2 language">English</span>
+                </div>
+            </nav>
+            <div class="container-fluid" style="margin-top: 100px;">
+                <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-dark mb-0">My Share</h3>
+                    <button class="btn btn-primary"><i class="fas fa-search"></i> <a class="showShareDetail">Show Share Detail</a></button>
+                </div>
+                <div class="row">
+                    <div class="col-md-8 col-xl-8 mb-4">
+                        <div class="card shadow border-left-success py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2 totalProfit">
+                                        <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>总收益</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0"><span>0 SERO</span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col-md-4 col-xl-4 mb-4">
+                            <div class="card shadow border-left-primary py-2">
+                                <div class="card-body">
+                                    <div class="row align-items-center no-gutters">
+                                        <div class="col mr-2 totalShareNum">
+                                            <div class="text-uppercase text-primary font-weight-bold text-xs mb-1"><span>总票数</span></div>
+                                            <div class="text-dark font-weight-bold h5 mb-0"><span>0</span></div>
+                                        </div>
+                                        <div class="col-auto"><i class="fas fa-star fa-2x text-gray-300"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-xl-3 mb-4">
+                        <div class="card shadow border-left-info py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2 leftShareNum">
+                                        <div class="text-uppercase text-info font-weight-bold text-xs mb-1"><span>剩余票数</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0"><span>0</span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-glass-martini fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-xl-3 mb-4">
+                        <div class="card shadow border-left-warning py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2 hasShareNum">
+                                        <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>已投票</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0"><span>0</span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-tags fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-xl-3 mb-4">
+                        <div class="card shadow border-left-danger py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2 missShareNum">
+                                        <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>Missed</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0"><span>0</span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-minus-square fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-xl-3 mb-4">
+                        <div class="card shadow border-left-secondary py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2 expireShareNum">
+                                        <div class="text-uppercase text-secondary font-weight-bold text-xs mb-1"><span>已过期</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0"><span>0</span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-calendar-times fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p></p>
+
+            <div class="container-fluid">
+
+                <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-dark mb-0">Stake Pool</h3><button class="btn btn-primary"><i class="fa fa-plus"></i> <span class="register">Register Stake Pool</span></button>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <p class="text-primary m-0 font-weight-bold tx-his poolList">Pool List</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+                                    <table class="table dataTable my-0" id="dataTable">
+                                        <thead>
+                                        <tr>
+                                            <td><strong>ID</strong></td>
+                                            <td><strong>Owner</strong></td>
+                                            <td><strong>Launched</strong></td>
+                                            <td><strong>Voted</strong></td>
+                                            <td><strong>Missed</strong></td>
+                                            <td><strong>Fees</strong></td>
+                                            <td><strong>shareNum</strong></td>
+                                            <td><strong>LastPayTime</strong></td>
+                                            <td><strong>Operation</strong></td>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLongTitle">Address</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrcode"></div>
+                <div class="text-break"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="assets/plugin/jquery.min.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/theme.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+<script src="assets/plugin/jquery.qrcode.min.js"></script>
+<script src="assets/plugin/clipboard.min.js"></script>
+<script src="assets/plugin/bignumber.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/stake.js"></script>
+
+<script>
+
+    Common.app = StakeHome;
+
+    Common.init();
+
+    $(document).ready(function() {
+        $('#dataTable').DataTable();
+    } );
+
+</script>
+
+</body>
+
+</html>
