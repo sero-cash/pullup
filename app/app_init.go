@@ -23,11 +23,11 @@ var osType = ""
 //var host = "http://39.98.253.20:35555"
 //http://129.204.197.105:8545
 
-//var host = ""
-//var hostWeb = "http://129.211.98.114:3006"
+var host = ""
+var hostWeb = "http://129.211.98.114:3006"
 
-var host = "http://127.0.0.1:8545"
-var hostWeb = "http://127.0.0.1:2345"
+//var host = "http://127.0.0.1:8545"
+//var hostWeb = "http://127.0.0.1:2345"
 
 type App struct {
 }
