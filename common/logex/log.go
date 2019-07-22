@@ -29,7 +29,6 @@ func (log Log) Setup() (*os.File, error) {
 	logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 
 	if err != nil {
-		fmt.Printf("try create logfile[%s] error[%s]\n", logFileName, err.Error())
 		return nil, err
 	}
 	//log2.SetOutput(os.Stdout)

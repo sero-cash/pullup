@@ -23,11 +23,11 @@ var osType = ""
 //var host = "http://39.98.253.20:35555"
 //http://129.204.197.105:8545
 
-var host = ""
-var hostWeb = "http://129.211.98.114:3006"
+//var host = ""
+//var hostWeb = "http://129.211.98.114:3006"
 
-//var host = "http://127.0.0.1:8545"
-//var hostWeb = "http://127.0.0.1:2345"
+var host = "http://127.0.0.1:8545"
+var hostWeb = "http://127.0.0.1:2345"
 
 type App struct {
 }
@@ -70,7 +70,6 @@ func initDataPath() (err error) {
 	if app_home_path == "" {
 		return fmt.Errorf("Current operating system is not supported ")
 	}
-	fmt.Println("app_home_path: ", app_home_path)
 
 	app_keystore_path = app_home_path + "/keystore"
 	app_data_path = app_home_path + "/data"
@@ -79,7 +78,6 @@ func initDataPath() (err error) {
 
 	subdirectory := []string{app_keystore_path, app_data_path, app_log_path, app_config_path}
 
-	fmt.Println( "os.ModePerm:: ",os.ModePerm)
 	if _, err := os.Stat(app_home_path); os.IsNotExist(err) {
 		if err = os.MkdirAll(app_home_path, os.ModePerm); err != nil {
 			return fmt.Errorf("Application folder initialization failed，err=[%v] ", err)

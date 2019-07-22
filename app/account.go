@@ -2,14 +2,12 @@ package app
 
 import (
 	"crypto/ecdsa"
-	"fmt"
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/pborman/uuid"
 	"github.com/sero-cash/go-czero-import/keys"
 	"github.com/sero-cash/go-sero/accounts"
 	"github.com/sero-cash/go-sero/accounts/keystore"
 	"github.com/sero-cash/go-sero/crypto"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
 	"io/ioutil"
 	"math/big"
@@ -54,7 +52,6 @@ func (account *Account) Create(passphrase string) error {
 	// If not loaded, generate random.
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		logex.Fatalf("Failed to generate random private key: %v", err)
 		return err
 	}
 	// Create the keyfile object with a random UUID.
@@ -69,7 +66,6 @@ func (account *Account) Create(passphrase string) error {
 	// Encrypt key with passphrase.
 	keyjson, err := keystore.EncryptKey(key, passphrase, keystore.StandardScryptN, keystore.StandardScryptP)
 	if err != nil {
-		logex.Fatalf("Error encrypting key: %v", err)
 		return err
 	}
 	// Store the file to disk.
@@ -82,7 +78,7 @@ func (account *Account) Create(passphrase string) error {
 		return err
 	}
 	// Output some information.
-	logex.Infof("Create account successful. address =[%s]", key.Address)
+	//logex.Infof("Create account successful. address =[%s]", key.Address)
 	return nil
 
 }
@@ -104,35 +100,35 @@ func (account *Account) Import(passphrase, keyPath string) error {
 		logex.Errorf("Error writing new keyFile to disk: %v", err)
 		return err
 	}
-	logex.Infof("Import account successful. address=[%s]", key.Address)
+	//logex.Infof("Import account successful. address=[%s]", key.Address)
 	return nil
 }
 
 func (account *Account) UpdatePass(oldPas, newPass string) error {
 	keyJson, err := ioutil.ReadFile(account.keyPath)
 	if err != nil {
-		logex.Errorf("Failed to read the keyfile at '%s': %v", account.keyPath, err)
+		//logex.Errorf("Failed to read the keyfile at '%s': %v", account.keyPath, err)
 		return err
 	}
 	// Decrypt key with passphrase.
 	key, err := keystore.DecryptKey(keyJson, oldPas)
 	if err != nil {
-		logex.Errorf("Error decrypting key: %v", err)
+		//logex.Errorf("Error decrypting key: %v", err)
 		return err
 	}
 
 	// Encrypt the key with the new passphrase.
 	newJson, err := keystore.EncryptKey(key, newPass, keystore.StandardScryptN, keystore.StandardScryptP)
 	if err != nil {
-		logex.Errorf("Error encrypting with new passphrase: %v", err)
+		//logex.Errorf("Error encrypting with new passphrase: %v", err)
 	}
 
 	// Then write the new keyfile in place of the old one.
 	if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.Address.String(), newJson, 0600); err != nil {
-		logex.Errorf("Error writing new keyFile to disk: %v", err)
+		//logex.Errorf("Error writing new keyFile to disk: %v", err)
 		return err
 	}
-	logex.Infof("Update account pass successful. address=[%s]", key.Address)
+	//logex.Infof("Update account pass successful. address=[%s]", key.Address)
 	return nil
 }
 
@@ -181,8 +177,6 @@ func (self *SEROLight) initWallet(w accounts.Wallet) {
 		account.pk = w.Accounts()[0].Address.ToUint512()
 		account.tk = w.Accounts()[0].Tk.ToUint512()
 		account.at= w.Accounts()[0].At
-
-		fmt.Println("tk",base58.Encode(account.tk[:]))
 
 		copy(account.skr[:], account.tk[:])
 		account.mainPkr = self.createPkr(account.pk, 1)

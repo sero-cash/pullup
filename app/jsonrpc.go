@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"net/http"
 	"time"
 )
@@ -33,7 +33,6 @@ func (sync Sync) Do() (*JSONRpcResp, error) {
 		logex.Error(err.Error())
 		return nil, err
 	}
-	logex.Info(string(data))
 
 	req, err := http.NewRequest("POST", sync.RpcHost, bytes.NewBuffer(data))
 	if err != nil {

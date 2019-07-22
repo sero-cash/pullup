@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"time"
-	"github.com/sero-cash/go-sero/light-wallet/common/config"
+	"github.com/sero-cash/go-sero/pullup/common/config"
 )
 
 func GetTimestamp() (timestamp int64) {
@@ -25,7 +25,6 @@ func SignStr(args ... string) (string, error) {
 	sort.Sort(sortData)
 	var orgStr string
 	for _, arg := range sortData {
-		fmt.Println(arg)
 		orgStr += arg
 	}
 	return ComputeHmac256(orgStr, config.SignKey)

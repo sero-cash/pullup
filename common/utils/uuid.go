@@ -2,7 +2,7 @@ package utils
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
 )
 
 func UUID() string {

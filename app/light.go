@@ -12,7 +12,7 @@ import (
 	"github.com/sero-cash/go-sero/common/hexutil"
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/event"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
 	"github.com/sero-cash/go-sero/serodb"
 	"github.com/sero-cash/go-sero/zero/txs/assets"
@@ -107,7 +107,6 @@ func (self *SEROLight) SyncOut() {
 		pk := key.(keys.Uint512)
 		otreq := value.(outReq)
 		for {
-			fmt.Printf("otreq.Pkr:%s,[%d],Num:[%d] \n ", base58.Encode(pk[:]), otreq.PkrIndex, otreq.Num)
 			pkrs := self.getBeforePKrs(pk, otreq.PkrIndex)
 			if len(pkrs) == 0 {
 				return false
@@ -378,7 +377,6 @@ func (self *SEROLight) CheckNil() {
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 
 					self.usedFlag.Delete(root)
-					logex.Info("delete :", hexutil.Encode(root[:]))
 				}
 				if account := self.getAccountByPk(pk); account != nil {
 					account.isChanged = true
@@ -753,6 +751,5 @@ func (self *SEROLight) createPkr(pk *keys.Uint512, index uint64) keys.PKr {
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
 	pkr := keys.Addr2PKr(pk, &r)
 	self.setPKrIndex(*pk, index, pkr)
-	logex.Infof("createPkr,at=[%d],Pkr=[%s]", index, base58.Encode(pkr[:]))
 	return pkr
 }

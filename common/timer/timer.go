@@ -1,7 +1,7 @@
 package timer
 
 import (
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"time"
 )
 

@@ -3,10 +3,10 @@ package main
 import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/sero-cash/go-czero-import/cpt"
-	"github.com/sero-cash/go-sero/light-wallet/app"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
-	"github.com/sero-cash/go-sero/light-wallet/common/transport"
-	"github.com/sero-cash/go-sero/light-wallet/lorca"
+	"github.com/sero-cash/go-sero/pullup/app"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/transport"
+	"github.com/sero-cash/go-sero/pullup/lorca"
 	"net/http"
 	"runtime"
 	"time"
@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// setup log
-	log := logex.Log{Name: "light-wallet", Path: app.GetLogPath()}
+	log := logex.Log{Name: "pullup", Path: app.GetLogPath()}
 	if logFile, err := log.Setup(); err != nil {
 		panic(err)
 	} else {

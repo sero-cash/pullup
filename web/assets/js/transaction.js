@@ -108,7 +108,6 @@ var Transaction = {
                                     that.currencyDecimal[currency]= decimal;
                                 });
                             }
-                            console.log(data.PK,data.Balance);
                             _pkBalance[data.PK] = data.Balance;
                         }
                     }

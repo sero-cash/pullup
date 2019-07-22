@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strconv"
 	"time"
-	"github.com/sero-cash/go-sero/light-wallet/common/transport"
-	"github.com/sero-cash/go-sero/light-wallet/common/utils"
-	"github.com/sero-cash/go-sero/light-wallet/common/config"
+	"github.com/sero-cash/go-sero/pullup/common/transport"
+	"github.com/sero-cash/go-sero/pullup/common/utils"
+	"github.com/sero-cash/go-sero/pullup/common/config"
 )
 
 func ValidateBaseRequestParam(base transport.BaseRequest) (bool bool, err error) {

@@ -3,13 +3,12 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/sero-cash/go-sero/light-wallet/common/errorcode"
-	"github.com/sero-cash/go-sero/light-wallet/common/logex"
-	"github.com/sero-cash/go-sero/light-wallet/common/transport"
-	"github.com/sero-cash/go-sero/light-wallet/common/utils"
-	"github.com/sero-cash/go-sero/light-wallet/common/validator"
+	"github.com/sero-cash/go-sero/pullup/common/errorcode"
+	"github.com/sero-cash/go-sero/pullup/common/logex"
+	"github.com/sero-cash/go-sero/pullup/common/transport"
+	"github.com/sero-cash/go-sero/pullup/common/utils"
+	"github.com/sero-cash/go-sero/pullup/common/validator"
 	"os/exec"
 	"strconv"
 )
@@ -38,7 +37,6 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 		}
 
 		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase)
-		logex.Info(resp, err)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
@@ -190,9 +188,8 @@ func MakeAccountBalanceEndpoint(service Service) endpoint.Endpoint {
 		pk := pk{}
 		utils.Convert(req.Biz, &pk)
 		balance := service.AccountBalance(pk.PK)
-		for key, v := range balance {
-			fmt.Println("balance == ", key, v.String())
-		}
+		//for key, v := range balance {
+		//}
 		response.SetBizResponse(balance)
 
 		return response, nil
@@ -433,7 +430,6 @@ func MakeGetShareEndpoint(service Service) endpoint.Endpoint {
 		sync := Sync{RpcHost: host, Method: "stake_getShare", Params: []interface{}{req.Biz}}
 		jsonResp, err := sync.Do()
 		if err != nil {
-			logex.Errorf("jsonRep err=[%s]", err.Error())
 			return response, nil
 		}
 		if jsonResp.Result != nil {
@@ -485,7 +481,7 @@ func MakeGetTransactionReceiptEndpoint(service Service) endpoint.Endpoint {
 		sync := Sync{RpcHost: host, Method: "sero_getTransactionReceipt", Params: []interface{}{req.Biz}}
 		jsonResp, err := sync.Do()
 		if err != nil {
-			logex.Errorf("jsonRep err=[%s]", err.Error())
+			//logex.Errorf("jsonRep err=[%s]", err.Error())
 			return response, nil
 		}
 		if jsonResp.Result != nil {
@@ -511,7 +507,7 @@ func MakeGetBlockNumberEndpoint(service Service) endpoint.Endpoint {
 		sync := Sync{RpcHost: host, Method: "sero_blockNumber", Params: []interface{}{}}
 		jsonResp, err := sync.Do()
 		if err != nil {
-			logex.Errorf("jsonRep err=[%s]", err.Error())
+			//logex.Errorf("jsonRep err=[%s]", err.Error())
 			return response, nil
 		}
 		if jsonResp.Result != nil {
@@ -558,21 +554,16 @@ func MakeOpenFileEndpoint(service Service) endpoint.Endpoint {
 		if GetOsType() == "mac" {
 			c := "open " + GetDataPath()
 			cmd := exec.Command("sh", "-c", c)
-			out, err := cmd.Output()
+			_, err := cmd.Output()
 			if err != nil {
 				logex.Errorf("err:", err.Error())
 			}
-			fmt.Println(out)
 		} else if GetOsType() == "win" {
-			c := "explorer " + GetDataPath()
-			logex.Info("open file command: ", c)
-			cmd := exec.Command("start", "", c)
-			//cmd := exec.Command("", "", c)
-			out, err := cmd.Output()
+			cmd := exec.Command("explorer.exe", GetDataPath())
+			err :=cmd.Run()
 			if err != nil {
-				logex.Errorf("err:", err.Error())
+				logex.Errorf("open file err:", err.Error())
 			}
-			fmt.Println(out)
 		}
 
 		return response, nil
