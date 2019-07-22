@@ -555,18 +555,25 @@ func MakeOpenFileEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		c := ""
-		if GetOsType() == "mac"{
-			c = "open " + GetDataPath()
-		}else if GetOsType() == "win"{
-			c = "explorer " + GetDataPath()
+		if GetOsType() == "mac" {
+			c := "open " + GetDataPath()
+			cmd := exec.Command("sh", "-c", c)
+			out, err := cmd.Output()
+			if err != nil {
+				logex.Errorf("err:", err.Error())
+			}
+			fmt.Println(out)
+		} else if GetOsType() == "win" {
+			c := "explorer " + GetDataPath()
+			logex.Info("open file command: ", c)
+			cmd := exec.Command("start", "", c)
+			//cmd := exec.Command("", "", c)
+			out, err := cmd.Output()
+			if err != nil {
+				logex.Errorf("err:", err.Error())
+			}
+			fmt.Println(out)
 		}
-		cmd := exec.Command("sh", "-c", c)
-		out, err := cmd.Output()
-		if err != nil {
-			logex.Errorf("err:", err.Error())
-		}
-		fmt.Println(out)
 
 		return response, nil
 	}

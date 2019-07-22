@@ -363,7 +363,7 @@ var Detail = {
                                         <td>${tx.Block==999999999999999?0:tx.Block}</td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
-                                        <td><span class="text-success">${tx.Block!=999999999999999 ? 'Completed' : 'Pedding'}</span></td>
+                                        <td><span class="text-success">${tx.Block!=999999999999999 ? 'Completed' : 'Pending'}</span></td>
                                         <td>${amount}</td>
                                         <td>${new BigNumber(tx.Fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                     </tr>
@@ -388,7 +388,7 @@ var Detail = {
                                 <td>${tx.Block==999999999999999?0:tx.Block}</td>
                                 <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                 <td>${tx.Currency}</td>
-                                <td><span class="text-success">${tx.Block !=999999999999999 ? 'Completed' : 'Pedding'}</span></td>
+                                <td><span class="text-success">${tx.Block !=999999999999999 ? 'Completed' : 'Pending'}</span></td>
                                 <td>${amount}</td>
                                 <td>${new BigNumber(tx.Fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                             </tr>
