@@ -28,7 +28,7 @@ type Utxo struct {
 	Pkr    keys.PKr
 	Root   keys.Uint256
 	TxHash keys.Uint256
-	Nil    keys.Uint256
+	Nils   []keys.Uint256
 	Num    uint64
 	Asset  assets.Asset
 	IsZ    bool

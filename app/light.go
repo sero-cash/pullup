@@ -195,9 +195,11 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentP
 					rtn.nextNum = blockOut.Num
 				}
 			}
-			dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
+			//dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
+			dout := flight.DecTraceOuts([]txtool.Out{out}, &account.skr)[0]
+
 			key := PkKey{PK: *account.pk, Num: blockOut.Num}
-			utxo := Utxo{Pkr: pkr, Root: out.Root, Nil: dout.Nil, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
+			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
 			//log.Info("DecOuts", "PK", base58.Encode(account.pk[:]), "root", common.Bytes2Hex(out.Root[:]), "currency", common.BytesToString(utxo.Asset.Tkn.Currency[:]), "value", utxo.Asset.Tkn.Value)
 			if list, ok := utxosMap[key]; ok {
 				utxosMap[key] = append(list, utxo)
@@ -280,7 +282,9 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			batch.Put(indexTxKey(key.PK, utxo.TxHash, utxo.Root, uint64(1)), data)
 
 			//nil => root
-			batch.Put(nilToRootKey(utxo.Nil), utxo.Root[:])
+			for _,Nil := range utxo.Nils {
+				batch.Put(nilToRootKey(Nil), utxo.Root[:])
+			}
 
 			var pkKey []byte
 			if utxo.Asset.Tkn != nil {
@@ -295,16 +299,19 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
 
 			// "NIL" + PK + tkt + root => "PK" + PK + currency + root
-			nilkey := nilKey(utxo.Nil)
+			for _,Nil := range utxo.Nils {
+				//nilIdkey := nilIdKey(utxo.Nils)
+				nilkey := nilKey(Nil)
+				// "NIL" +nil/root => pkKey
+				ops[common.Bytes2Hex(nilkey)] = common.Bytes2Hex(pkKey)
+			}
 			rootkey := nilKey(utxo.Root)
-			//nilIdkey := nilIdKey(utxo.Nil)
 
 			// "NIL" +nil/root => pkKey
-			ops[common.Bytes2Hex(nilkey)] = common.Bytes2Hex(pkKey)
 			ops[common.Bytes2Hex(rootkey)] = common.Bytes2Hex(pkKey)
 			//ops[common.Bytes2Hex(nilIdkey)] = common.Bytes2Hex(encodeNumber(key.Num))
 			roots = append(roots, utxo.Root)
-			//log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nil", common.Bytes2Hex(utxo.Nil[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
+			//log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nils", common.Bytes2Hex(utxo.Nils[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
 		}
 		data, err := rlp.EncodeToBytes(roots)
 		if err != nil {
@@ -378,7 +385,7 @@ func (self *SEROLight) CheckNil() {
 
 					//remove pending tx
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
-					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Fee: nilv.TxFee, Num: nilv.Num, Nil: nilv.Nil, Asset: utxo.Asset, Pkr: utxo.Pkr}
+					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Fee: nilv.TxFee, Num: nilv.Num, Nils: nilv.Nil, Asset: utxo.Asset, Pkr: utxo.Pkr}
 					data, _ := rlp.EncodeToBytes(utxoI)
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 
