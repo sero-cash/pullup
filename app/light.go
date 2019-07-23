@@ -385,7 +385,7 @@ func (self *SEROLight) CheckNil() {
 
 					//remove pending tx
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
-					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Fee: nilv.TxFee, Num: nilv.Num, Nils: nilv.Nil, Asset: utxo.Asset, Pkr: utxo.Pkr}
+					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Fee: nilv.TxFee, Num: nilv.Num, Nils: []keys.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
 					data, _ := rlp.EncodeToBytes(utxoI)
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 

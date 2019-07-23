@@ -133,7 +133,7 @@ var StakeHome = {
     stakeList: function () {
         var that = this;
         $('tbody').empty();
-        Common.postAsync('stake', {}, {}, function (res) {
+        Common.post('stake', {}, {}, function (res) {
             if (res.base.code === 'SUCCESS') {
 
                 var dataArray = res.biz;
@@ -302,6 +302,9 @@ var StakeRegister = {
 
                         $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                         $('#sub1').attr('disabled', false);
+                        setTimeout(function () {
+                            window.location.href = 'account-detail.html?pk='+from;
+                        }, 1500);
                     } else {
                         $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(res.base.desc);
                         $('.toast').toast('show');
