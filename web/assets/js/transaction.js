@@ -268,13 +268,13 @@ var Transaction = {
                 $('#sub1').attr('disabled', false);
                 $('.modal-footer button:eq(1)').attr('disabled', false);
             } else {
-                $('.modal-footer button:eq(1)').attr('disabled', true);
+                $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
                 var password = $("#password").val();
                 if (password === '') {
                     $('.toast:eq(1) div:eq(0)').text($.i18n.prop('send_tx_pwdtips'));
                     $('.toast:eq(1)').toast('show');
                     $('#sub1').attr('disabled', false);
-                    $('.modal-footer button:eq(1)').attr('disabled', false);
+                    $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                 } else {
                     var biz = {
                         From: from,
@@ -291,11 +291,11 @@ var Transaction = {
                             setTimeout(function () {
                                 window.location.href = "account-detail.html?pk=" + from;
                             }, 1500);
-                            $('.modal-footer button:eq(1)').attr('disabled', false);
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                         } else {
                             $('.toast:eq(1) div:eq(0)').text(res.base.desc);
                             $('.toast:eq(1)').toast('show')
-                            $('.modal-footer button:eq(1)').attr('disabled', false);
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                         }
                         $('#sub1').attr('disabled', false);
                     });

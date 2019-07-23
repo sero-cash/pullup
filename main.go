@@ -194,11 +194,17 @@ func main() {
 	)
 	http.Handle("/file/open", accessControl(openFileHandler))
 
-	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/web/v_0_1_2/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
 
 	http.HandleFunc("/rpc", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		if r.Method == "OPTIONS" {
+			return
+		}
 		rpcParams := rpcParams{}
 		if err := json.NewDecoder(r.Body).Decode(&rpcParams); err != nil {
 			json.NewEncoder(w).Encode(err.Error())
@@ -233,7 +239,7 @@ func main() {
 		}); err != nil {
 			logex.Fatal(err)
 		}
-		if err = ui.Load(app.GetWebHost()+"/web/"); err != nil {
+		if err = ui.Load(app.GetWebHost()+"/web/v_0_1_2/"); err != nil {
 			logex.Fatal(err)
 		}
 	}()

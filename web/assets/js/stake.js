@@ -486,7 +486,7 @@ var StakeBuyer = {
                 $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('share_buy_amount_fail'));
                 $('.toast').toast('show');
             }else{
-                $('.modal-footer button:eq(1)').attr('disabled', true);
+                $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
                 var biz = {
                     From: from,
                     Vote: vote,
@@ -495,11 +495,12 @@ var StakeBuyer = {
                     Password: password,
                     GasPrice: new BigNumber(1000000000).toString(10),
                 }
+
                 Common.postAsync('stake/buyShare', biz, {}, function (res) {
                     if (res.base.code === 'SUCCESS') {
                         $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
                         $('.toast').toast('show');
-                        $('.modal-footer button:eq(1)').attr('disabled', false);
+                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                         $('#sub1').attr('disabled', false);
                         setTimeout(function () {
                             window.location.href = 'account-detail.html?pk='+from;
@@ -507,7 +508,7 @@ var StakeBuyer = {
                     } else {
                         $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(res.base.desc);
                         $('.toast').toast('show');
-                        $('.modal-footer button:eq(1)').attr('disabled', false);
+                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
                     }
                 })
             }
