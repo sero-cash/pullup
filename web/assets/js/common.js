@@ -1,5 +1,8 @@
 var Common = {
     host: 'http://127.0.0.1:2345',
+
+    seroRpcHost:'',
+
     app: {},
 
     LANGUAGE_CODE: 'zh_CN',

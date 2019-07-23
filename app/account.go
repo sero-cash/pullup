@@ -2,6 +2,8 @@ package app
 
 import (
 	"crypto/ecdsa"
+	"fmt"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/pborman/uuid"
 	"github.com/sero-cash/go-czero-import/keys"
 	"github.com/sero-cash/go-sero/accounts"
@@ -13,6 +15,7 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Account struct {
@@ -29,6 +32,8 @@ type Account struct {
 
 	isChanged bool
 	keyPath   string
+
+	initTimestamp int64
 }
 
 func makeAccountManager() (*accounts.Manager, error) {
@@ -182,8 +187,11 @@ func (self *SEROLight) initWallet(w accounts.Wallet) {
 		account.mainPkr = self.createPkr(account.pk, 1)
 		self.accounts.Store(*account.pk, &account)
 		account.isChanged = true
-
+		account.initTimestamp = time.Now().UnixNano()
 		self.recoverPkrIndex(account, w.Accounts()[0].At)
+
+		fmt.Println("init wallet :",base58.Encode(account.pk[:]))
+
 	}
 }
 

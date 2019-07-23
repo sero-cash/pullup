@@ -100,15 +100,12 @@ var StakeHome = {
                                     var _hasShareNum = new BigNumber(data.total, 16).minus(new BigNumber(data.missed)).minus(new BigNumber(data.remaining));
                                     var _totalShareNum = new BigNumber(data.total, 16);
 
-
                                     totalProfit = totalProfit.plus(_totalProfit);
                                     expireShareNum = expireShareNum.plus(_expireShareNum);
                                     leftShareNum = leftShareNum.plus(_leftShareNum);
                                     missShareNum = missShareNum.plus(_missShareNum);
                                     hasShareNum = hasShareNum.plus(_hasShareNum);
                                     totalShareNum = totalShareNum.plus(_totalShareNum);
-
-
 
                                     $('.totalProfit span:eq(1)').text(totalProfit.toFixed(6) + ' SERO')
                                     $('.expireShareNum span:eq(1)').text(expireShareNum.toString(10))
@@ -134,8 +131,8 @@ var StakeHome = {
                 for (var data of dataArray) {
                     $('tbody').append(`
                     <tr>
-                        <td>${data.id.substring(0, 5) + ' ... ' + data.id.substring(data.id.length - 5)}</td>
-                        <td>${data.own.substring(0, 5) + ' ... ' + data.own.substring(data.own.length - 5)}</td>
+                        <td class="text-break">${data.id}</td>
+                        <td class="text-break">${data.own}</td>
                         <td>${data.closed ? "Closed" : "Opening"}</td>
                         <td>${new BigNumber(data.choicedNum, 16).minus(new BigNumber(data.missedNum, 16)).toString(10)}</td>
                         <td>${new BigNumber(data.missedNum, 16).toString(10)}</td>

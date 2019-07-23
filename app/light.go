@@ -100,7 +100,7 @@ type fetchReturn struct {
 }
 
 func (self *SEROLight) SyncOut() {
-	if host == ""{
+	if rpcHost == ""{
 		return
 	}
 	self.accountMap.Range(func(key, value interface{}) bool {
@@ -157,7 +157,7 @@ func (self *SEROLight) SyncOut() {
 
 func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentPkr keys.PKr, start, end uint64) (rtn fetchReturn, err error) {
 
-	sync := Sync{RpcHost: host, Method: "light_getOutsByPKr", Params: []interface{}{pkrs, start, end}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: []interface{}{pkrs, start, end}}
 	jsonResp, err := sync.Do()
 	if err != nil {
 		logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -228,6 +228,11 @@ func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (p
 	pkrNum := int(0)
 	if currentPkrIndex > 5 {
 		pkrNum = int(currentPkrIndex) - 5
+
+		mainPkr , err := self.getPKrIndex(pk, uint64(1))
+		if err !=nil{
+			pkrs = append(pkrs, base58.Encode(mainPkr[:]))
+		}
 	}
 	for i := int(currentPkrIndex); i > pkrNum; i-- {
 		pkr, err := self.getPKrIndex(pk, uint64(i))
@@ -238,6 +243,7 @@ func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (p
 			pkrs = append(pkrs, base58.Encode(pkr[:]))
 		}
 	}
+
 	return pkrs
 }
 
@@ -335,7 +341,7 @@ func (self *SEROLight) CheckNil() {
 
 	}
 
-	sync := Sync{RpcHost: host, Method: "light_checkNil", Params: []interface{}{Nils}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "light_checkNil", Params: []interface{}{Nils}}
 	jsonResp, err := sync.Do()
 	if err != nil {
 		logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -511,7 +517,7 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 		return hash, err
 	}
 	hash = gtx.Hash
-	sync := Sync{RpcHost: host, Method: "sero_commitTx", Params: []interface{}{gtx}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
 	if _, err := sync.Do(); err != nil {
 		return hash, err
 	}
@@ -558,7 +564,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string,feeRate uint3
 	}
 	//check pk register pool
 	poolId :=crypto.Keccak256(ac.mainPkr[:])
-	sync := Sync{RpcHost: host, Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
 	_, err = sync.Do()
 	if err != nil {
 		if err.Error() != "stake pool not exists"{
@@ -609,7 +615,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string,feeRate uint3
 
 	hash = gtx.Hash
 	logex.Info("commit txhash: ", hash)
-	sync = Sync{RpcHost: host, Method: "sero_commitTx", Params: []interface{}{gtx}}
+	sync = Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
 	if _, err := sync.Do(); err != nil {
 		return hash, err
 	}
@@ -666,7 +672,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	}
 	hash = gtx.Hash
 	logex.Info("commit txhash: ", hash)
-	sync := Sync{RpcHost: host, Method: "sero_commitTx", Params: []interface{}{gtx}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
 	if _, err := sync.Do(); err != nil {
 		return hash, err
 	}
@@ -681,7 +687,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 func (self *SEROLight) getDecimal(currency string) uint64 {
 	if decimalData, err := self.db.Get(append(decimalPrefix, []byte(currency)[:]...)); err != nil {
 		if decimalData == nil {
-			sync := Sync{RpcHost: host, Method: "sero_getDecimal", Params: []interface{}{currency}}
+			sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getDecimal", Params: []interface{}{currency}}
 			if jsonResp, err := sync.Do(); err != nil {
 				return 0
 			} else {

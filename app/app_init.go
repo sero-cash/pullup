@@ -20,23 +20,29 @@ var (
 )
 
 var osType = ""
-//var host = "http://39.98.253.20:35555"
-//http://129.204.197.105:8545
 
-var host = ""
-var hostWeb = "http://129.211.98.114:3006"
+var rpcHost = ""
+var webHost = ""
 
-//var host = "http://127.0.0.1:8545"
-//var hostWeb = "http://127.0.0.1:2345"
+func setRpcHost(s string)  {
+	rpcHost = s
+}
+func GetRpcHost() string{
+	return rpcHost
+}
+
+func setWebHost(s string)  {
+	webHost = s
+}
+func GetWebHost() string{
+	return webHost
+}
 
 type App struct {
 }
 
 func GetOsType() string {
 	return osType
-}
-func GetWebHost() string {
-	return hostWeb
 }
 
 func (app *App) Init() error {
@@ -55,14 +61,26 @@ func initDataPath() (err error) {
 		switch runtime.GOOS {
 		case "darwin":
 			app_home_path = home + "/Library/pullup"
+			app_keystore_path = app_home_path + "/keystore"
+			app_data_path = app_home_path + "/data"
+			app_log_path = app_home_path + "/log"
+			app_config_path = app_home_path + "/config"
 			osType = "mac"
 			break
 		case "windows":
-			app_home_path = home + "\\AppData\\Roaming\\pullup"
+			app_home_path = home + `\AppData\Roaming\pullup`
+			app_keystore_path = app_home_path + "\\keystore"
+			app_data_path = app_home_path + "\\data"
+			app_log_path = app_home_path + "\\log"
+			app_config_path = app_home_path + "\\config"
 			osType = "win"
 			break
 		case "linux":
 			app_home_path = home + "/.config/pullup"
+			app_keystore_path = app_home_path + "/keystore"
+			app_data_path = app_home_path + "/data"
+			app_log_path = app_home_path + "/log"
+			app_config_path = app_home_path + "/config"
 			osType = "linux"
 			break
 		}
@@ -70,12 +88,6 @@ func initDataPath() (err error) {
 	if app_home_path == "" {
 		return fmt.Errorf("Current operating system is not supported ")
 	}
-
-	app_keystore_path = app_home_path + "/keystore"
-	app_data_path = app_home_path + "/data"
-	app_log_path = app_home_path + "/log"
-	app_config_path = app_home_path + "/config"
-
 	subdirectory := []string{app_keystore_path, app_data_path, app_log_path, app_config_path}
 
 	if _, err := os.Stat(app_home_path); os.IsNotExist(err) {

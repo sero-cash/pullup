@@ -41,9 +41,14 @@ var Index = {
 
         var networkRemote = [
             {
-                id: "main",
+                id: "china",
                 name: 'http://129.204.197.105:8545',
                 url: 'http://129.204.197.105:8545',
+            },
+            {
+                id: "japan",
+                name: 'http://52.199.145.159:8545',
+                url: 'http://52.199.145.159:8545',
             }
         ];
 

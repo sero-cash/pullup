@@ -44,7 +44,7 @@ type Service interface {
 
 	getSetNetwork(host string) string
 
-	InitHost()
+	InitHost(rpcHostCustomer, webHostCustomer string)
 }
 
 func NewServiceAPI() Service {
@@ -132,6 +132,8 @@ type accountResp struct {
 	UtxoNums  map[string]uint64
 	PkrBase58 string
 	at        uint64
+
+	initTimestamp int64
 }
 
 type accountResps []accountResp
@@ -140,7 +142,7 @@ func (acrs accountResps) Len() int {
 	return len(acrs)
 }
 func (acrs accountResps) Less(i, j int) bool {
-	return acrs[i].at < acrs[j].at
+	return acrs[i].initTimestamp < acrs[j].initTimestamp
 }
 func (acrs accountResps) Swap(i, j int) {
 	acrs[i], acrs[j] = acrs[j], acrs[i]
@@ -156,7 +158,7 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at}
+		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -390,21 +392,36 @@ func (self *ServiceApi) getSetNetwork(hostReq string) string {
 	if hostReq == "" {
 		hostByte, err := self.db.Get(hostKey)
 		if err != nil {
-			return host
+			return GetRpcHost()
 		}
 		return string(hostByte[:])
 	} else {
 		self.db.Put(hostKey, []byte(hostReq))
+		setRpcHost(hostReq)
 		return hostReq
 	}
 }
 
-func (self *ServiceApi) InitHost()  {
-	var defaultHost = "http://129.204.197.105:8545"
-	hostByte, err := self.db.Get(hostKey)
-	if err != nil {
-		host = defaultHost
-	}else{
-		host = string(hostByte[:])
+func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
+	var defaultRpcHost = "http://129.204.197.105:8545"
+	var defaultWebHost = "http://129.211.98.114:3006"
+
+	if rpcHostCustomer != "" {
+		setRpcHost(rpcHostCustomer)
+		self.db.Put(hostKey, []byte(rpcHostCustomer))
+	} else {
+		hostByte, err := self.db.Get(hostKey)
+		if err != nil {
+			setRpcHost(defaultRpcHost)
+		} else {
+			setRpcHost(string(hostByte[:]))
+		}
 	}
+
+	if webHostCustomer != "" {
+		setWebHost(webHostCustomer)
+	} else {
+		setWebHost(defaultWebHost)
+	}
+
 }

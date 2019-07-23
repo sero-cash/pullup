@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/sero-cash/go-czero-import/cpt"
 	"github.com/sero-cash/go-sero/pullup/app"
@@ -15,6 +16,10 @@ import (
 func main() {
 
 	cpt.ZeroInit_OnlyInOuts()
+
+	rpcHostCustomer := flag.String("rpcHost","","--rpcHost set rpc host")
+	webHostCustomer := flag.String("webHost","","--webHost set web host")
+	flag.Parse()
 
 	// Setting global env
 	lightApp := app.App{}
@@ -36,7 +41,7 @@ func main() {
 	//banding http handle
 	privateAccountApi := app.NewServiceAPI()
 
-	privateAccountApi.InitHost()
+	privateAccountApi.InitHost(*rpcHostCustomer,*webHostCustomer)
 
 	createAccountHandler := httptransport.NewServer(
 		app.MakeAccountCreateEndpoint(privateAccountApi),
@@ -187,8 +192,6 @@ func main() {
 		transport.EncodeResponse,
 	)
 	http.Handle("/file/open", accessControl(openFileHandler))
-
-
 
 	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])

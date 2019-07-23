@@ -112,7 +112,7 @@ func (self *SEROLight) GetAnchor(roots []keys.Uint256) ([]txtool.Witness, error)
 	for _, each := range roots {
 		params = append(params, hexutil.Encode(each[:]))
 	}
-	sync := Sync{RpcHost: host, Method: "sero_getAnchor", Params: []interface{}{params}}
+	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getAnchor", Params: []interface{}{params}}
 	rpcResp, err := sync.Do()
 	if err != nil {
 		return nil, err

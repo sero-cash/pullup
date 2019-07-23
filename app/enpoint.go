@@ -326,7 +326,7 @@ func MakeStakePoolEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		sync := Sync{RpcHost: host, Method: "stake_stakePools", Params: []interface{}{}}
+		sync := Sync{RpcHost: GetRpcHost(), Method: "stake_stakePools", Params: []interface{}{}}
 		jsonResp, err := sync.Do()
 		if err != nil {
 			logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -427,7 +427,7 @@ func MakeGetShareEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		sync := Sync{RpcHost: host, Method: "stake_getShare", Params: []interface{}{req.Biz}}
+		sync := Sync{RpcHost: GetRpcHost(), Method: "stake_getShare", Params: []interface{}{req.Biz}}
 		jsonResp, err := sync.Do()
 		if err != nil {
 			return response, nil
@@ -452,7 +452,7 @@ func MakeGetMySharesEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		sync := Sync{RpcHost: host, Method: "stake_getShareByPkr", Params: []interface{}{req.Biz}}
+		sync := Sync{RpcHost: GetRpcHost(), Method: "stake_getShareByPkr", Params: []interface{}{req.Biz}}
 		jsonResp, err := sync.Do()
 		if err != nil {
 			logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -478,7 +478,7 @@ func MakeGetTransactionReceiptEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		sync := Sync{RpcHost: host, Method: "sero_getTransactionReceipt", Params: []interface{}{req.Biz}}
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getTransactionReceipt", Params: []interface{}{req.Biz}}
 		jsonResp, err := sync.Do()
 		if err != nil {
 			//logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -504,7 +504,7 @@ func MakeGetBlockNumberEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		sync := Sync{RpcHost: host, Method: "sero_blockNumber", Params: []interface{}{}}
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_blockNumber", Params: []interface{}{}}
 		jsonResp, err := sync.Do()
 		if err != nil {
 			//logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -532,8 +532,7 @@ func MakeChangeNetworkEndpoint(service Service) endpoint.Endpoint {
 		if req.Biz != nil {
 			hostReq = req.Biz.(string)
 		}
-		host = service.getSetNetwork(hostReq)
-		response.SetBizResponse(host)
+		response.SetBizResponse(service.getSetNetwork(hostReq))
 
 		return response, nil
 	}
@@ -552,14 +551,14 @@ func MakeOpenFileEndpoint(service Service) endpoint.Endpoint {
 		}
 
 		if GetOsType() == "mac" {
-			c := "open " + GetDataPath()
+			c := "open " + app_home_path
 			cmd := exec.Command("sh", "-c", c)
 			_, err := cmd.Output()
 			if err != nil {
 				logex.Errorf("err:", err.Error())
 			}
 		} else if GetOsType() == "win" {
-			cmd := exec.Command("explorer.exe", GetDataPath())
+			cmd := exec.Command("explorer.exe", app_home_path)
 			err :=cmd.Run()
 			if err != nil {
 				logex.Errorf("open file err:", err.Error())
