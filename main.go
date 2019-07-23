@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/sero-cash/go-czero-import/cpt"
@@ -197,6 +198,22 @@ func main() {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
 
+	http.HandleFunc("/rpc", func(w http.ResponseWriter, r *http.Request) {
+		rpcParams := rpcParams{}
+		if err := json.NewDecoder(r.Body).Decode(&rpcParams); err != nil {
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+		sync := app.Sync{RpcHost: app.GetRpcHost(), Method: rpcParams.Method, Params: rpcParams.Params}
+		jsonResp, err := sync.Do()
+		if err != nil {
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+		json.NewEncoder(w).Encode(jsonResp)
+		return
+	})
+
 	// init ui
 	args := []string{}
 	if runtime.GOOS == "linux" {
@@ -237,4 +254,9 @@ func accessControl(h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+type rpcParams struct {
+	Method string `json:"method"`
+	Params interface{} `json:"params"`
 }

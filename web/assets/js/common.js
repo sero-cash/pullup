@@ -1,7 +1,7 @@
 var Common = {
     host: 'http://127.0.0.1:2345',
 
-    seroRpcHost:'',
+    seroRpcHost: '',
 
     app: {},
 
@@ -14,13 +14,13 @@ var Common = {
         that.app.init();
         that.getLang();
 
-        $('.language').bind('click',function () {
+        $('.language').bind('click', function () {
             var lang_code = $.cookie('language');
 
-            if ('zh_CN'===lang_code) {
+            if ('zh_CN' === lang_code) {
                 $.cookie('language', 'en_US');
                 $('.language').text('简体中文');
-            }else{
+            } else {
                 $.cookie('language', 'zh_CN');
                 $('.language').text('English');
             }
@@ -32,7 +32,7 @@ var Common = {
 
     getLang: function () {
         var _LANGUAGE_CODE
-        if (!jQuery.i18n.normaliseLanguageCode({})){
+        if (!jQuery.i18n.normaliseLanguageCode({})) {
             _LANGUAGE_CODE = jQuery.i18n.normaliseLanguageCode({}); //获取浏览器的语言
         }
         var lang_code = $.cookie('language');
@@ -106,6 +106,32 @@ var Common = {
         })
 
         return result;
+    },
+
+    //_params is an array
+    postRpc: function (_method, _params, callback) {
+        var that = this;
+        var postData = {
+            id: 0,
+            jsonrpc: "2.0",
+            method: _method,
+            params: _params,
+        };
+
+        $.ajax({
+            url:  that.host + '/rpc',
+            type: 'post',
+            dataType: 'json',
+            async: true,
+            data: JSON.stringify(postData),
+            beforeSend: function () {
+            },
+            success: function (res) {
+                if (callback) {
+                    callback(res)
+                }
+            }
+        })
     },
 
 

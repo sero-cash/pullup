@@ -65,7 +65,7 @@ var Account = {
                     });
                     $('.modal-body p:eq(0)').text(res.biz.address);
                     $('.modal-body p:eq(1)').text(res.biz.mnemonic);
-                    $('#myModal').modal('show');
+                    $('#myModal').modal({backdrop: 'static', keyboard: false});
                     $("#sub1").attr('disabled', false);
                 } else {
                     $("#sub1").text("NEXT").attr('disabled', false);
@@ -218,7 +218,7 @@ var Detail = {
                         $('#myModal').modal('hide');
                         $('.modal-footer button:eq(1)').unbind('click');
                     })
-                    $('#myModal').modal('show');
+                    $('#myModal').modal({backdrop: 'static', keyboard: false});
                 });
 
                 $('.secondqrcode').bind('click', function () {
@@ -476,7 +476,7 @@ var Keystore = {
                     $('.modal-title').text("Error");
                     $('.modal-body').text("Import failed,Incorrect file type");
                 }
-                $('#myModal').modal('show');
+                $('#myModal').modal({backdrop: 'static', keyboard: false});
             },
             error: function (data) {
                 if (data.responseText === 'INVALID_FILE_TYPE') {
@@ -553,7 +553,7 @@ var Mnemnic = {
                 $('.modal-title').text("ERROR");
                 $('.modal-body p:eq(0)').text(res.base.desc);
             }
-            $('.modal').modal('show');
+            $('#myModal').modal({backdrop: 'static', keyboard: false});
             $("#sub1").attr('disabled', false);
         });
 

@@ -69,11 +69,11 @@ var Transaction = {
         });
 
 
-        $('#amount').bind('change', function () {
+        $('#amount').bind('input', function () {
             that.calculate();
         });
 
-        $('#gasprice').bind('change', function () {
+        $('#gasprice').bind('input', function () {
             that.calculate();
         });
 
@@ -150,32 +150,6 @@ var Transaction = {
 
 
         });
-        //
-        // var pkMap = Object.keys(that.pkBalance);
-        // console.log("pkMap:",pkMap);
-        // for (var pk of pkMap){
-        //     console.log("pk:",pk);
-        //     var balanceObj = pkMap[pk];
-        //     console.log(typeof balanceObj);
-        //     console.log("balanceObj:",$.isEmptyObject(balanceObj),balanceObj);
-        //     if(!$.isEmptyObject(balanceObj)){
-        //         var balanceMap = Object.keys(balanceObj);
-        //         var hasSet = false;
-        //         for (var currency of balanceMap) {
-        //             var decimal = that.currencyDecimal[currency];
-        //             var fix = that.currencyDecimalFix[currency];
-        //             var balance = new BigNumber(balanceObj[currency]).dividedBy(decimal).toFixed(fix);
-        //             if (!hasSet){
-        //                 $('.currency').append(`<option value="${balance}"}>${currency} ${balance}</option>`);
-        //                 $('.currencyp').text(balance);
-        //                 $('.currencys').text(currency);
-        //                 hasSet = true
-        //             }
-        //         }
-        //         $('.address').append(`<option value="${data.PK}" ${i === 0 ? 'selected' : ''}>${data.PK.substring(0, 20) + ' ... ' + data.PK.substring(data.PK.length - 20) }</option>`);
-        //         i++;
-        //     }
-        // }
 
 
     },
@@ -191,7 +165,6 @@ var Transaction = {
         Common.post("account/detail", biz, {}, function (res) {
             $('.currency').empty();
             if (res.base.code === 'SUCCESS') {
-
                 if (res.biz) {
                     var data = res.biz;
                     var balance = new BigNumber(0).toFixed(6);
@@ -239,7 +212,7 @@ var Transaction = {
                 total = fee.plus(amount)
             }
 
-            $("#amount").val(amount.dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]))
+            // $("#amount").val(amount.dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]))
 
             total = total.dividedBy(decimal);
             total = total.plus(fee);
@@ -260,7 +233,7 @@ var Transaction = {
         currency = currency.substring(currency,currency.indexOf(" "));
         var avliable = $('.currencyp').text();
         avliable = new BigNumber(avliable);
-        $('#myModal').modal('show');
+        $('#myModal').modal({backdrop: 'static', keyboard: false});
         var amountStr = $("#amount").val();
         var to = $("#address").val();
         var gasprice = $("#gasprice").val();

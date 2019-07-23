@@ -67,16 +67,16 @@
                                         <div class="form-group">
                                             <label>Amount</label>
                                             <div class="row">
-                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <div class="col-sm-4 mb-3 mb-sm-0">
                                                     <input type="text" class="form-control" value="" id="amount" autocomplete="off" required/>
                                                     <div class="invalid-feedback">Please Enter Amount.</div>
                                                 </div>
-                                                <div class="col-sm-6 mb-3 mb-sm-0">
-
+                                                <div class="col-sm-8 mb-3 mb-sm-0 estimateShares">
+                                                    <span>Average Price</span>: <strong class="text-primary">0</strong> SERO<br/>
+                                                   <span> Maximum buyable share</span>: <strong class="text-primary">0</strong>
                                                 </div>
                                             </div>
                                         </div>
-
                                         <button class="btn btn-primary btn-block text-white btn-user" id="sub1" type="submit">
                                             Next
                                         </button>
@@ -126,6 +126,9 @@
                     <li class="list-group-item">
                         <div class="row">
                             <div class="col-lg-3">Amount</div><div class="col-lg-9 text-break"></div>
+                        </div>
+                        <div class="row">
+                            <small class="text-warning amount_warning">* This amount is not the final transaction amount and the excess amount will be refunded to the account.</small>
                         </div>
                     </li>
                     <li class="list-group-item">

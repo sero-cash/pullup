@@ -25,6 +25,7 @@ var Index = {
 
         Common.post('network/change', "", {}, function (res) {
             if (res.base.code === 'SUCCESS') {
+                $.cookie('seroRpcHost',res.biz);
                 $.cookie('networkUrl', res.biz);
                 $('.select-net span').text(res.biz);
             }
@@ -80,6 +81,7 @@ var Index = {
                     $('#myModal').modal('hide');
                     // $.cookie('networkName', netName);
                     $.cookie('networkUrl', network);
+                    $.cookie('seroRpcHost',res.biz);
                 }
             });
         });
@@ -99,7 +101,7 @@ var Index = {
                     if (res.base.code === 'SUCCESS') {
                         // $.cookie('networkName', network);
                         $.cookie('networkUrl', network);
-
+                        $.cookie('seroRpcHost',res.biz);
                         $('.select-net span').text(network);
                         $('.netcheck').unbind('click')
                         $('.addNetwork').unbind('click');
@@ -112,8 +114,7 @@ var Index = {
                 });
             }
         });
-
-        $('#myModal').modal('show');
+        $('#myModal').modal({backdrop: 'static', keyboard: false});
 
     },
 

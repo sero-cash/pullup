@@ -1,9 +1,11 @@
 var StakeHome = {
 
+    account:{},
+
+
     init: function () {
         var that = this;
 
-        that.stakeList();
         that.getAccountlist();
 
         $('.close').bind('click', function () {
@@ -20,9 +22,13 @@ var StakeHome = {
             window.location.href = 'stake-detail.html';
         });
 
-        setTimeout(function () {
+        setInterval(function () {
             that.getAccountlist();
         },10000);
+
+        setTimeout(function () {
+            that.stakeList();
+        },50)
 
         setTimeout(function () {
             $('.buyShare').bind('click', function () {
@@ -30,7 +36,6 @@ var StakeHome = {
                 window.location.href = 'stake-buy.html?id=' + poolId;
             });
         },100)
-
     },
 
     loadProperties: function (lang) {
@@ -88,6 +93,9 @@ var StakeHome = {
                     var totalShareNum = new BigNumber(0);
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
+
+                        that.account[data.MainPKr]= "Account"+(i+1) +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
+
                         Common.post('share/my', data.MainPKr, {}, function (res2) {
                             if (res2.base.code === 'SUCCESS') {
                                 if (res2.biz.length > 0) {
@@ -107,12 +115,12 @@ var StakeHome = {
                                     hasShareNum = hasShareNum.plus(_hasShareNum);
                                     totalShareNum = totalShareNum.plus(_totalShareNum);
 
-                                    $('.totalProfit span:eq(1)').text(totalProfit.toFixed(6) + ' SERO')
-                                    $('.expireShareNum span:eq(1)').text(expireShareNum.toString(10))
-                                    $('.leftShareNum span:eq(1)').text(leftShareNum.toString(10))
-                                    $('.missShareNum span:eq(1)').text(missShareNum.toString(10))
-                                    $('.hasShareNum span:eq(1)').text(totalShareNum.minus(expireShareNum).minus(missShareNum).minus(leftShareNum).toString(10))
-                                    $('.totalShareNum span:eq(1)').text(totalShareNum.toString(10))
+                                    $('.totalProfit span:eq(1)').text(totalProfit.toFixed(6) + ' SERO');
+                                    $('.expireShareNum span:eq(1)').text(expireShareNum.toString(10));
+                                    $('.leftShareNum span:eq(1)').text(leftShareNum.toString(10));
+                                    $('.missShareNum span:eq(1)').text(missShareNum.toString(10));
+                                    $('.hasShareNum span:eq(1)').text(totalShareNum.minus(expireShareNum).minus(missShareNum).minus(leftShareNum).toString(10));
+                                    $('.totalShareNum span:eq(1)').text(totalShareNum.toString(10));
                                 }
                             }
                         });
@@ -123,22 +131,40 @@ var StakeHome = {
     },
 
     stakeList: function () {
+        var that = this;
         $('tbody').empty();
         Common.postAsync('stake', {}, {}, function (res) {
             if (res.base.code === 'SUCCESS') {
 
                 var dataArray = res.biz;
                 for (var data of dataArray) {
+
+                    var isMy = `<span class="text-primary">${that.account[data.own]?"Created by: "+that.account[data.own]:""}</span>`;
+
+                    var state = `<span class="text-success">OPENING</span>`;
+                    if (data.closed){
+                        state = `<span class="text-success">CLOSED</span>`;
+                    }
+                    var choiceNum = new BigNumber(data.choicedNum?data.choicedNum:"0x0", 16);
+                    var missed = new BigNumber(data.missedNum?data.missedNum:"0x0", 16);
+                    var voted = choiceNum.minus(missed);
+                    var missRate = "0.00%";
+                    if (choiceNum.comparedTo(0)>0){
+                        missRate = missed.dividedBy(choiceNum).multipliedBy(100).toFixed(2)+"%";
+                    }
                     $('tbody').append(`
                     <tr>
                         <td class="text-break">${data.id}</td>
-                        <td class="text-break">${data.own}</td>
-                        <td>${data.closed ? "Closed" : "Opening"}</td>
-                        <td>${new BigNumber(data.choicedNum, 16).minus(new BigNumber(data.missedNum, 16)).toString(10)}</td>
-                        <td>${new BigNumber(data.missedNum, 16).toString(10)}</td>
-                        <td>${new BigNumber(data.fee, 16).div(100).toString(10)}%</td>
-                        <td>${new BigNumber(data.shareNum, 16).toString()}</td>
-                        <td>${new BigNumber(data.lastPayTime, 16).toString(10)}</td>
+                        <td class="text-break">
+                            ${data.own.substring(0,8) + " ... " + data.own.substring(data.own.length-8) }<br/>
+                            ${isMy}
+                        </td>
+                        <td>${state}</td>
+                        <td>${voted.toString(10)}</td>
+                        <td>${missed.toString(10)}<br><span class="text-danger">Miss Rate: ${missRate}</span> </td>
+                        <td>${new BigNumber(data.fee?data.fee:"0x0", 16).div(100).toFixed(2)}%</td>
+                        <td>${new BigNumber(data.shareNum?data.shareNum:"0x0", 16).toString()}</td>
+                        <td>${new BigNumber(data.lastPayTime?data.lastPayTime:"0x0", 16).toString(10)}</td>
                         <td><button class="btn btn-outline-primary btn-block small buyShare" attpoolid="${data.id}">${$.i18n.prop('stake_pool_buyShare')}</button></td>
                     </tr>
                `);
@@ -253,7 +279,7 @@ var StakeRegister = {
         $('ul:eq(1) li:eq(1) div div:eq(1)').text(vote);
         $('ul:eq(1) li:eq(2) div div:eq(1)').text(feeRate + '%');
         $('ul:eq(1) li:eq(3) div div:eq(1)').text("200,000 SERO");
-        $('.modal').modal('show');
+        $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
             var password = $("#password").val();
@@ -293,6 +319,7 @@ var StakeRegister = {
 var StakeBuyer = {
 
     poolId: '',
+    mainPKr:{},
 
     init: function () {
         var that = this;
@@ -312,7 +339,11 @@ var StakeBuyer = {
         $('.register').bind('click', function () {
             window.location.href = 'stake-register.html';
         });
-        $('.toast').toast({animation: true, autohide: true, delay: 2000})
+        $('.toast').toast({animation: true, autohide: true, delay: 2000});
+
+        $('#amount').bind('input',function () {
+            that.estimateShares();
+        })
     },
 
     loadProperties: function (lang) {
@@ -351,20 +382,61 @@ var StakeBuyer = {
 
                 $('.modal-footer button:eq(0)').text($.i18n.prop('stake_register_cancel'));
                 $('.modal-footer button:eq(1)').text($.i18n.prop('stake_register_confirm'));
+
+                $('.estimateShares span:eq(0)').text($.i18n.prop('share_buy_estimate_price'));
+                $('.estimateShares span:eq(1)').text($.i18n.prop('share_buy_estimate_total'));
+
+                $('.amount_warning').text($.i18n.prop('share_buy_amount_waring'));
+
+
             }
         });
     },
 
+    estimateShares:function () {
+
+        var that = this;
+        var from = $(".address").val();
+        var vote = $("#address").val();
+        var amount = $("#amount").val();
+        if (vote === ''){
+            vote = that.mainPKr[from];
+        }
+
+        var params = {
+            from:from,
+            vote:vote,
+            value:"0x"+new BigNumber(amount).multipliedBy(Common.baseDecimal).toString(16),
+        }
+
+        if (from !== "" && vote !== ""){
+            Common.postRpc("stake_estimateShares",[params],function (res) {
+                if(res.result){
+                    var result = res.result;
+                    var avPrice = result.avPrice;
+                    // var basePrice = result.basePrice;
+                    // "Average Price: "+new BigNumber(avPrice,16).dividedBy(Common.baseDecimal).toFixed(6) + " SERO"
+                    var total = result.total;
+
+                    $('.estimateShares strong:eq(0)').text(new BigNumber(avPrice,16).dividedBy(Common.baseDecimal).toFixed(6));
+                    $('.estimateShares strong:eq(1)').text(new BigNumber(total,16).toString(10));
+                }
+            });
+        }
+
+    },
+
     getAccountlist: function () {
 
+        var that = this;
         var biz = {}
         Common.postAsync("account/list", biz, {}, function (res) {
-
             if (res.base.code === 'SUCCESS') {
                 if (res.biz) {
                     var dataArray = res.biz;
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
+                        that.mainPKr[data.PK] = data.MainPKr;
                         var balance = new BigNumber(0).toFixed(6);
                         if (data.Balance) {
                             var balanceObj = data.Balance;
@@ -401,12 +473,17 @@ var StakeBuyer = {
         $('ul:eq(1) li:eq(1) div div:eq(1)').text(from);
         $('ul:eq(1) li:eq(2) div div:eq(1)').text(vote);
         $('ul:eq(1) li:eq(3) div div:eq(1)').text(amount);
-        $('.modal').modal('show');
+        $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
             var password = $("#password").val();
+            var estimateShares = parseInt($('.estimateShares strong:eq(1)').text());
+
             if(password === ''){
                 $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('send_tx_success'));
+                $('.toast').toast('show');
+            }else if(estimateShares === 0){
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('share_buy_amount_fail'));
                 $('.toast').toast('show');
             }else{
                 $('.modal-footer button:eq(1)').attr('disabled', true);
@@ -425,8 +502,8 @@ var StakeBuyer = {
                         $('.modal-footer button:eq(1)').attr('disabled', false);
                         $('#sub1').attr('disabled', false);
                         setTimeout(function () {
-                            window.location.href = 'stake.html';
-                        }, 2000);
+                            window.location.href = 'account-detail.html?pk='+from;
+                        }, 1500);
                     } else {
                         $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(res.base.desc);
                         $('.toast').toast('show');
