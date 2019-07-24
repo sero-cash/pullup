@@ -395,8 +395,7 @@ func (self *ServiceApi) getSetNetwork(hostReq string) string {
 }
 
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
-	var defaultRpcHost = "http://39.98.253.20:8546"
-	var defaultWebHost = "http://129.211.98.114:3006"
+
 
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)

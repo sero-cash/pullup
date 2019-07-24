@@ -28,14 +28,15 @@ var StakeHome = {
 
         setTimeout(function () {
             that.stakeList();
+            $('#dataTable').DataTable();
         },50)
 
-        setTimeout(function () {
-            $('.buyShare').bind('click', function () {
-                var poolId = $(this).attr('attpoolid');
-                window.location.href = 'stake-buy.html?id=' + poolId;
-            });
-        },1000)
+        // setTimeout(function () {
+        //     $('.buyShare').bind('click', function () {
+        //         var poolId = $(this).attr('attpoolid');
+        //         window.location.href = 'stake-buy.html?id=' + poolId;
+        //     });
+        // },1000)
     },
 
     loadProperties: function (lang) {
@@ -64,12 +65,14 @@ var StakeHome = {
                 $('thead tr td:eq(0)').text($.i18n.prop('stake_pool_id'));
                 $('thead tr td:eq(1)').text($.i18n.prop('stake_pool_owner'));
                 $('thead tr td:eq(2)').text($.i18n.prop('stake_pool_launched'));
-                $('thead tr td:eq(3)').text($.i18n.prop('stake_pool_voted'));
-                $('thead tr td:eq(4)').text($.i18n.prop('stake_pool_missed'));
-                $('thead tr td:eq(5)').text($.i18n.prop('stake_pool_fee'));
-                $('thead tr td:eq(6)').text($.i18n.prop('stake_pool_shareNum'));
-                $('thead tr td:eq(7)').text($.i18n.prop('stake_pool_lastpaytime'));
-                $('thead tr td:eq(8)').text($.i18n.prop('stake_pool_operation'));
+                $('thead tr td:eq(3)').text($.i18n.prop('stake_pool_voted_node'));
+                $('thead tr td:eq(4)').text($.i18n.prop('stake_pool_voted_solo'));
+                $('thead tr td:eq(5)').text($.i18n.prop('stake_pool_missed'));
+                $('thead tr td:eq(6)').text($.i18n.prop('stake_pool_missed_rate'));
+                $('thead tr td:eq(7)').text($.i18n.prop('stake_pool_fee'));
+                $('thead tr td:eq(8)').text($.i18n.prop('stake_pool_shareNum'));
+                $('thead tr td:eq(9)').text($.i18n.prop('stake_pool_lastpaytime'));
+                $('thead tr td:eq(10)').text($.i18n.prop('stake_pool_operation'));
                 $('.buyShare').text($.i18n.prop('stake_pool_buyShare'));
             }
         });
@@ -147,7 +150,10 @@ var StakeHome = {
                     }
                     var choiceNum = new BigNumber(data.choicedNum?data.choicedNum:"0x0", 16);
                     var missed = new BigNumber(data.missedNum?data.missedNum:"0x0", 16);
-                    var voted = choiceNum.minus(missed);
+                    var wishVoteNum = new BigNumber(data.wishVoteNum?data.wishVoteNum:"0x0", 16);
+                    var nodeVoted = choiceNum.minus(missed);
+
+                    var soloVoted = missed.minus(wishVoteNum);
                     var missRate = "0.00%";
                     if (choiceNum.comparedTo(0)>0){
                         missRate = missed.dividedBy(choiceNum).multipliedBy(100).toFixed(2)+"%";
@@ -160,8 +166,10 @@ var StakeHome = {
                             ${isMy}
                         </td>
                         <td>${state}</td>
-                        <td>${voted.toString(10)}</td>
-                        <td>${missed.toString(10)}<br><span class="text-danger">Miss Rate: ${missRate}</span> </td>
+                        <td>${nodeVoted.toString(10)}</td>
+                        <td>${soloVoted.toString(10)}</td>
+                        <td>${missed.toString(10)}</td>
+                        <td><span class="text-danger">${missRate}</span> </td>
                         <td>${new BigNumber(data.fee?data.fee:"0x0", 16).div(100).toFixed(2)}%</td>
                         <td>${new BigNumber(data.shareNum?data.shareNum:"0x0", 16).toString()}</td>
                         <td>${new BigNumber(data.lastPayTime?data.lastPayTime:"0x0", 16).toString(10)}</td>
@@ -212,17 +220,17 @@ var StakeRegister = {
                 $('.form-group:eq(0) label').text($.i18n.prop('stake_register_from'));
                 $('.form-group:eq(1) label').text($.i18n.prop('stake_register_address'));
                 $('.form-group:eq(1) .invalid-feedback').text($.i18n.prop('stake_register_address_tips'));
-                $('.form-group:eq(2) label').text($.i18n.prop('stake_register_fee'));
-                $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
-                $('.form-group:eq(3) label').text($.i18n.prop('stake_register_amount'));
-                $('.form-group:eq(3) small').text($.i18n.prop('stake_register_amount_desc'));
-                $('.form-group:eq(2) div div:eq(2)').text($.i18n.prop('stake_register_fee_desc'));
+                // $('.form-group:eq(2) label').text($.i18n.prop('stake_register_fee'));
+                // $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
+                $('.form-group:eq(2) label').text($.i18n.prop('stake_register_amount'));
+                $('.form-group:eq(2) small').text($.i18n.prop('stake_register_amount_desc'));
+                // $('.form-group:eq(2) div div:eq(2)').text($.i18n.prop('stake_register_fee_desc'));
                 $('.modal-title').text($.i18n.prop('stake_register_confirm_title'));
                 $('.modal-body ul li:eq(0) div div:eq(0)').text($.i18n.prop('stake_register_from'));
-                $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_address'));
-                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('stake_register_fee'));
-                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_amount'));
-                $('.modal-body ul li:eq(4) div div:eq(0)').text($.i18n.prop('stake_register_password'));
+                // $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_address'));
+                $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_fee'));
+                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('stake_register_amount'));
+                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_password'));
                 $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
                 $('#sub1').text($.i18n.prop('stake_register_next'));
                 $('#address').attr('placeholder', $.i18n.prop('stake_register_address_tips'));
@@ -266,7 +274,7 @@ var StakeRegister = {
     confirm: function () {
 
         var from = $(".address").val();
-        var vote = $("#address").val();
+        // var vote = $("#address").val();
         var feeRate = $("#feeRate").val();
 
 
@@ -276,9 +284,9 @@ var StakeRegister = {
         });
 
         $('ul:eq(1) li:eq(0) div div:eq(1)').text(from);
-        $('ul:eq(1) li:eq(1) div div:eq(1)').text(vote);
-        $('ul:eq(1) li:eq(2) div div:eq(1)').text(feeRate + '%');
-        $('ul:eq(1) li:eq(3) div div:eq(1)').text("200,000 SERO");
+        // $('ul:eq(1) li:eq(1) div div:eq(1)').text(vote);
+        $('ul:eq(1) li:eq(1) div div:eq(1)').text(feeRate + '%');
+        $('ul:eq(1) li:eq(2) div div:eq(1)').text("200,000 SERO");
         $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
@@ -290,7 +298,7 @@ var StakeRegister = {
                 $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
                 var biz = {
                     From: from,
-                    Vote: vote,
+                    Vote: '',
                     FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
                     Password: password,
                 }
@@ -367,19 +375,19 @@ var StakeBuyer = {
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('stake_pool_buyShare'));
                 $('.form-group:eq(0) label').text($.i18n.prop('share_buy_poolId'));
                 $('.form-group:eq(1) label').text($.i18n.prop('share_buy_from'));
-                $('.form-group:eq(2) label').text($.i18n.prop('share_buy_address'));
-                $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('share_buy_address_tips'));
-                $('.form-group:eq(3) label').text($.i18n.prop('share_buy_amount'));
-                $('.form-group:eq(3) .invalid-feedback').text($.i18n.prop('share_buy_amount_tips'));
+                // $('.form-group:eq(2) label').text($.i18n.prop('share_buy_address'));
+                // $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('share_buy_address_tips'));
+                $('.form-group:eq(2) label').text($.i18n.prop('share_buy_amount'));
+                $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('share_buy_amount_tips'));
                 $('#address').attr('placeholder', $.i18n.prop('share_buy_address_tips'));
                 $('#amount').attr('placeholder', $.i18n.prop('share_buy_amount_tips'));
                 $('h4').text($.i18n.prop('stake_pool_buyShare'));
                 $('.modal-title').text($.i18n.prop('stake_register_confirm_title'));
                 $('.modal-body ul li:eq(0) div div:eq(0)').text($.i18n.prop('share_buy_poolId'));
                 $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('share_buy_from'));
-                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('share_buy_address'));
-                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('share_buy_amount'));
-                $('.modal-body ul li:eq(4) div div:eq(0)').text($.i18n.prop('stake_register_password'));
+                // $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('share_buy_address'));
+                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('share_buy_amount'));
+                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_password'));
                 $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
                 $('#sub1').text($.i18n.prop('stake_register_next'));
 
@@ -400,19 +408,16 @@ var StakeBuyer = {
 
         var that = this;
         var from = $(".address").val();
-        var vote = $("#address").val();
+        // var vote = $("#address").val();
         var amount = $("#amount").val();
-        if (vote === ''){
-            vote = that.mainPKr[from];
-        }
 
         var params = {
             from:from,
-            vote:vote,
+            vote:that.mainPKr[from],
             value:"0x"+new BigNumber(amount).multipliedBy(Common.baseDecimal).toString(16),
         }
 
-        if (from !== "" && vote !== ""){
+        if (from !== "" ){
             Common.postRpc("stake_estimateShares",[params],function (res) {
                 if(res.result){
                     var result = res.result;
@@ -474,8 +479,8 @@ var StakeBuyer = {
 
         $('ul:eq(1) li:eq(0) div div:eq(1)').text(poolId);
         $('ul:eq(1) li:eq(1) div div:eq(1)').text(from);
-        $('ul:eq(1) li:eq(2) div div:eq(1)').text(vote);
-        $('ul:eq(1) li:eq(3) div div:eq(1)').text(amount);
+        // $('ul:eq(1) li:eq(2) div div:eq(1)').text(vote);
+        $('ul:eq(1) li:eq(2) div div:eq(1)').text(amount);
         $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
@@ -483,7 +488,7 @@ var StakeBuyer = {
             var estimateShares = parseInt($('.estimateShares strong:eq(1)').text());
 
             if(password === ''){
-                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('send_tx_success'));
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('send_tx_pwdtips'));
                 $('.toast').toast('show');
             }else if(estimateShares === 0){
                 $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('share_buy_amount_fail'));

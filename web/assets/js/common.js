@@ -28,21 +28,15 @@ var Common = {
             that.getLang();
         });
 
-        Common.post('network/change', "http://39.98.253.20:8546", {}, function (res) {
-            if (res.base.code === 'SUCCESS') {
-                $.cookie('seroRpcHost',res.biz);
-                $.cookie('networkUrl', res.biz);
-            }
-        });
     },
 
     getLang: function () {
-        var _LANGUAGE_CODE
-        if (!jQuery.i18n.normaliseLanguageCode({})) {
-            _LANGUAGE_CODE = jQuery.i18n.normaliseLanguageCode({}); //获取浏览器的语言
-        }
+        var _LANGUAGE_CODE = "en_US";
+        // if (!jQuery.i18n.normaliseLanguageCode({})) {
+        //     _LANGUAGE_CODE = jQuery.i18n.normaliseLanguageCode({}); //获取浏览器的语言
+        // }
         var lang_code = $.cookie('language');
-        if (typeof lang_code === 'undefined') {
+        if (!lang_code) {
             lang_code = _LANGUAGE_CODE;
         }
         Common.app.loadProperties(lang_code);

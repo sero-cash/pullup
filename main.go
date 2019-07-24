@@ -193,7 +193,7 @@ func main() {
 	)
 	http.Handle("/file/open", accessControl(openFileHandler))
 
-	http.HandleFunc("/web/v_0_1_2/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
 
@@ -238,7 +238,7 @@ func main() {
 		}); err != nil {
 			logex.Fatal(err)
 		}
-		if err = ui.Load(app.GetWebHost()+"/web/v_0_1_2/"); err != nil {
+		if err = ui.Load(app.GetWebHost()+"/web/"); err != nil {
 			logex.Fatal(err)
 		}
 	}()
