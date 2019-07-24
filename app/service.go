@@ -13,7 +13,6 @@ import (
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
-	"github.com/sero-cash/go-sero/serodb"
 	"github.com/tyler-smith/go-bip39"
 	"io/ioutil"
 	"math/big"
@@ -48,20 +47,13 @@ type Service interface {
 }
 
 func NewServiceAPI() Service {
-	configdb, err := serodb.NewLDBDatabase(GetConfigPath(), 1024, 1024)
-	if err != nil {
-		logex.Fatalf("NewLDBDatabase, err=[%v]", err)
-	}
 	return &ServiceApi{
 		SL: currentLight,
-		db: configdb,
 	}
 }
 
 type ServiceApi struct {
 	SL *SEROLight
-
-	db *serodb.LDBDatabase
 }
 
 func (s *ServiceApi) ExportMnemonic(addressStr, password string) (string, error) {
@@ -390,27 +382,27 @@ func (s *ServiceApi) buyStake(from, vote, passwd, pool, amountStr, gaspriceStr s
 
 func (self *ServiceApi) getSetNetwork(hostReq string) string {
 	if hostReq == "" {
-		hostByte, err := self.db.Get(hostKey)
+		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
 			return GetRpcHost()
 		}
 		return string(hostByte[:])
 	} else {
-		self.db.Put(hostKey, []byte(hostReq))
+		self.SL.dbConfig.Put(hostKey, []byte(hostReq))
 		setRpcHost(hostReq)
 		return hostReq
 	}
 }
 
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
-	var defaultRpcHost = "http://129.204.197.105:8545"
+	var defaultRpcHost = "http://39.98.253.20:8546"
 	var defaultWebHost = "http://129.211.98.114:3006"
 
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)
-		self.db.Put(hostKey, []byte(rpcHostCustomer))
+		self.SL.dbConfig.Put(hostKey, []byte(rpcHostCustomer))
 	} else {
-		hostByte, err := self.db.Get(hostKey)
+		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
 			setRpcHost(defaultRpcHost)
 		} else {

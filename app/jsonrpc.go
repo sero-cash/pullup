@@ -26,8 +26,9 @@ func (sync Sync) Do() (*JSONRpcResp, error) {
 	client := &http.Client{
 		Timeout: 900 * time.Second,
 	}
-	//logex.Info("sync.Params=", sync.Params)
+
 	jsonReq := map[string]interface{}{"jsonrpc": "2.0", "method": sync.Method, "params": sync.Params, "id": 0}
+	logex.Info("sync.Params=", jsonReq)
 	data, err := json.Marshal(jsonReq)
 	if err != nil {
 		logex.Error(err.Error())

@@ -28,6 +28,12 @@ var Common = {
             that.getLang();
         });
 
+        Common.post('network/change', "http://39.98.253.20:8546", {}, function (res) {
+            if (res.base.code === 'SUCCESS') {
+                $.cookie('seroRpcHost',res.biz);
+                $.cookie('networkUrl', res.biz);
+            }
+        });
     },
 
     getLang: function () {

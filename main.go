@@ -41,7 +41,6 @@ func main() {
 
 	//banding http handle
 	privateAccountApi := app.NewServiceAPI()
-
 	privateAccountApi.InitHost(*rpcHostCustomer,*webHostCustomer)
 
 	createAccountHandler := httptransport.NewServer(

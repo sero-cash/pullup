@@ -23,7 +23,7 @@ var Index = {
             that.backup();
         });
 
-        Common.post('network/change', "", {}, function (res) {
+        Common.post('network/change', "http://39.98.253.20:8546", {}, function (res) {
             if (res.base.code === 'SUCCESS') {
                 $.cookie('seroRpcHost',res.biz);
                 $.cookie('networkUrl', res.biz);
@@ -43,8 +43,8 @@ var Index = {
         var networkRemote = [
             {
                 id: "china",
-                name: 'http://129.204.197.105:8545',
-                url: 'http://129.204.197.105:8545',
+                name: 'http://39.98.253.20:8546',
+                url: 'http://39.98.253.20:8546',
             }
         ];
 

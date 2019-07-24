@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -19,10 +20,16 @@ var (
 	app_data_path     string
 )
 
+var version = "v0.1.3"
+
 var osType = ""
 
 var rpcHost = ""
 var webHost = ""
+
+func GetVersion() string{
+	return version
+}
 
 func setRpcHost(s string)  {
 	rpcHost = s
@@ -51,9 +58,35 @@ func (app *App) Init() error {
 		return err
 	}
 
+	cleanFolder(GetLogPath())
 	return nil
 }
 
+func removeFile(file string)  {
+	err := os.Remove(file)
+	if err != nil {
+		fmt.Println("file remove Error!")
+		fmt.Printf("%s", err)
+	} else {
+		fmt.Print("file remove OK!")
+	}
+}
+
+func CleanData()  {
+	cleanFolder(GetDataPath())
+}
+
+func cleanFolder(folder string){
+	files, _ := ioutil.ReadDir(folder)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		} else {
+			fmt.Println("remove file :",file.Name())
+			removeFile(folder+file.Name())
+		}
+	}
+}
 func initDataPath() (err error) {
 	if home, err := Home(); err != nil {
 		return fmt.Errorf("Current operating system is not supported，err=[%v] ", err)
@@ -62,24 +95,24 @@ func initDataPath() (err error) {
 		case "darwin":
 			app_home_path = home + "/Library/pullup"
 			app_keystore_path = app_home_path + "/keystore"
-			app_data_path = app_home_path + "/data"
-			app_log_path = app_home_path + "/log"
+			app_data_path = app_home_path + "/data/"
+			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"
 			osType = "mac"
 			break
 		case "windows":
 			app_home_path = home + `\AppData\Roaming\pullup`
 			app_keystore_path = app_home_path + "\\keystore"
-			app_data_path = app_home_path + "\\data"
-			app_log_path = app_home_path + "\\log"
+			app_data_path = app_home_path + "\\data\\"
+			app_log_path = app_home_path + "\\log\\"
 			app_config_path = app_home_path + "\\config"
 			osType = "win"
 			break
 		case "linux":
 			app_home_path = home + "/.config/pullup"
 			app_keystore_path = app_home_path + "/keystore"
-			app_data_path = app_home_path + "/data"
-			app_log_path = app_home_path + "/log"
+			app_data_path = app_home_path + "/data/"
+			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"
 			osType = "linux"
 			break

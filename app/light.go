@@ -34,6 +34,8 @@ var (
 type SEROLight struct {
 	db *serodb.LDBDatabase
 
+	dbConfig *serodb.LDBDatabase
+
 	accountManager *accounts.Manager
 	accounts       sync.Map
 	usedFlag       sync.Map
@@ -47,7 +49,6 @@ type SEROLight struct {
 	update  chan accounts.WalletEvent // Subscription sink for backend wallet changes
 	quit    chan chan error
 	lock    sync.RWMutex
-
 }
 
 var currentLight *SEROLight
@@ -58,10 +59,36 @@ func NewSeroLight() {
 	if err != nil {
 		logex.Fatalf("makeAccountManager, err=[%v]", err)
 	}
+
+
+	configdb, err := serodb.NewLDBDatabase(GetConfigPath(), 1024, 1024)
+	if err != nil {
+		logex.Fatalf("NewLDBDatabase, err=[%v]", err)
+	}
+
+	var VersonKey = []byte("VERSION")
+
+	versionByte,err :=configdb.Get(VersonKey[:])
+	if err != nil {
+		configdb.Put(VersonKey[:],[]byte(GetVersion()))
+		//clean data
+		CleanData()
+	}else{
+		if string(versionByte[:]) == GetVersion(){
+			fmt.Println("latest version:",string(versionByte[:]))
+		}else{
+			configdb.Put(VersonKey[:],[]byte(GetVersion()))
+			//clean data
+			CleanData()
+		}
+	}
+
+
 	db, err := serodb.NewLDBDatabase(GetDataPath(), 1024, 1024)
 	if err != nil {
 		logex.Fatalf("NewLDBDatabase, err=[%v]", err)
 	}
+
 	update := make(chan accounts.WalletEvent, 1)
 	updater := accountManager.Subscribe(update)
 
@@ -70,6 +97,7 @@ func NewSeroLight() {
 	light.update = update
 	light.updater = updater
 	light.db = db
+	light.dbConfig = configdb
 	light.accountMap = sync.Map{}
 	light.accounts = sync.Map{}
 	light.usedFlag = sync.Map{}
@@ -81,7 +109,7 @@ func NewSeroLight() {
 		light.initWallet(w)
 	}
 
-	AddJob("0/10 * * * * ?", light.SyncOut)
+	AddJob("0/20 * * * * ?", light.SyncOut)
 	go light.keystoreListener()
 }
 
@@ -100,7 +128,7 @@ type fetchReturn struct {
 }
 
 func (self *SEROLight) SyncOut() {
-	if rpcHost == ""{
+	if rpcHost == "" {
 		return
 	}
 	self.accountMap.Range(func(key, value interface{}) bool {
@@ -231,8 +259,8 @@ func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (p
 	if currentPkrIndex > 5 {
 		pkrNum = int(currentPkrIndex) - 5
 
-		mainPkr , err := self.getPKrIndex(pk, uint64(1))
-		if err !=nil{
+		mainPkr, err := self.getPKrIndex(pk, uint64(1))
+		if err == nil {
 			pkrs = append(pkrs, base58.Encode(mainPkr[:]))
 		}
 	}
@@ -282,7 +310,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			batch.Put(indexTxKey(key.PK, utxo.TxHash, utxo.Root, uint64(1)), data)
 
 			//nil => root
-			for _,Nil := range utxo.Nils {
+			for _, Nil := range utxo.Nils {
 				batch.Put(nilToRootKey(Nil), utxo.Root[:])
 			}
 
@@ -299,7 +327,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
 
 			// "NIL" + PK + tkt + root => "PK" + PK + currency + root
-			for _,Nil := range utxo.Nils {
+			for _, Nil := range utxo.Nils {
 				//nilIdkey := nilIdKey(utxo.Nils)
 				nilkey := nilKey(Nil)
 				// "NIL" +nil/root => pkKey
@@ -559,7 +587,7 @@ func (self *SEROLight) genReceiption(currency string, amount *big.Int, toPkr key
 	return reception
 }
 
-func (self *SEROLight) registerStakePool(from, vote, passwd string,feeRate uint32, amount, gasprice *big.Int) (hash keys.Uint256, err error) {
+func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint32, amount, gasprice *big.Int) (hash keys.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
 	fromPk := address.Base58ToAccount(from).ToUint512()
@@ -570,15 +598,15 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string,feeRate uint3
 		RefundTo = &ac.mainPkr
 	}
 	//check pk register pool
-	poolId :=crypto.Keccak256(ac.mainPkr[:])
+	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
 	_, err = sync.Do()
 	if err != nil {
-		if err.Error() != "stake pool not exists"{
+		if err.Error() != "stake pool not exists" {
 			logex.Errorf("jsonRep err=[%s]", err.Error())
 			return
 		}
-	}else{
+	} else {
 		err = fmt.Errorf("stake pool exists")
 		logex.Errorf("jsonRep err=[%s]", err.Error())
 		return
@@ -595,17 +623,17 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string,feeRate uint3
 	var votePkr keys.PKr
 	if vote == "" {
 		votePkr = ac.mainPkr
-	}else{
+	} else {
 		copy(votePkr[:], base58.Decode(vote)[:])
 	}
-	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate:feeRate}
+	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate: feeRate}
 	preTxParam := prepare.PreTxParam{}
 	preTxParam.From = *fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
 
-	preTxParam.Cmds = prepare.Cmds{RegistPool:&registerPool}
+	preTxParam.Cmds = prepare.Cmds{RegistPool: &registerPool}
 
 	param, err := self.GenTx(preTxParam)
 
@@ -656,7 +684,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	var votePkr keys.PKr
 	if len(vote) == 0 {
 		votePkr = ac.mainPkr
-	}else{
+	} else {
 		copy(votePkr[:], base58.Decode(vote)[:])
 	}
 	poolId := common.HexToHash(pool)
@@ -666,7 +694,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
-	preTxParam.Cmds = prepare.Cmds{BuyShare:&buyShareCmd}
+	preTxParam.Cmds = prepare.Cmds{BuyShare: &buyShareCmd}
 	param, err := self.GenTx(preTxParam)
 
 	if err != nil {
@@ -687,7 +715,6 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
 	self.storePeddingUtxo(param, "SERO", amount, utxoIn, fromPk)
 
-
 	return hash, nil
 }
 
@@ -703,7 +730,7 @@ func (self *SEROLight) getDecimal(currency string) uint64 {
 					logex.Error("json.Unmarshal err=[%s]", err.Error())
 					return 0
 				}
-				decimalStr=decimalStr[2:]
+				decimalStr = decimalStr[2:]
 				decimal, _ := strconv.ParseUint(decimalStr, 16, 64)
 				self.db.Put(append(decimalPrefix, []byte(currency)[:]...), encodeNumber(decimal))
 				return decimal

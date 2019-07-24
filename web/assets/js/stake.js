@@ -35,7 +35,7 @@ var StakeHome = {
                 var poolId = $(this).attr('attpoolid');
                 window.location.href = 'stake-buy.html?id=' + poolId;
             });
-        },100)
+        },1000)
     },
 
     loadProperties: function (lang) {
@@ -165,7 +165,7 @@ var StakeHome = {
                         <td>${new BigNumber(data.fee?data.fee:"0x0", 16).div(100).toFixed(2)}%</td>
                         <td>${new BigNumber(data.shareNum?data.shareNum:"0x0", 16).toString()}</td>
                         <td>${new BigNumber(data.lastPayTime?data.lastPayTime:"0x0", 16).toString(10)}</td>
-                        <td><button class="btn btn-outline-primary btn-block small buyShare" attpoolid="${data.id}">${$.i18n.prop('stake_pool_buyShare')}</button></td>
+                        <td><button class="btn btn-outline-primary btn-block small buyShare" attpoolid="${data.id}" onclick="goBuy(${"'"+data.id+"'"})">${$.i18n.prop('stake_pool_buyShare')}</button></td>
                     </tr>
                `);
                 }
@@ -620,4 +620,8 @@ function GetQueryString(name) {
     var r = window.location.search.substr(1).match(reg);
     if (r != null) return unescape(r[2]);
     return null;
+}
+
+function goBuy (poolId) {
+    window.location.href = 'stake-buy.html?id=' + poolId;
 }
