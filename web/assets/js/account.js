@@ -522,14 +522,8 @@ var Mnemnic = {
             cache: false,
             encoding: 'UTF-8',
             callback: function () {
-                $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
-                $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
-                $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
-                $('h3:eq(0)').text($.i18n.prop('home_account'));
-                $('.total').text($.i18n.prop('home_account_total'));
-                $('.blockHeight').text($.i18n.prop('home_account_height'));
-                $('.network').text($.i18n.prop('home_account_network'));
-                $('.addAcount').text($.i18n.prop('home_account_add'));
+                $('p:eq(0)').text($.i18n.prop('navbar_home'));
+
             }
         });
     },

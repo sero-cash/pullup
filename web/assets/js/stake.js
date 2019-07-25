@@ -154,9 +154,9 @@ var StakeHome = {
                     var nodeVoted = choiceNum.minus(missed);
 
                     var soloVoted = missed.minus(wishVoteNum);
-                    var missRate = "0.00%";
-                    if (choiceNum.comparedTo(0)>0){
-                        missRate = missed.dividedBy(choiceNum).multipliedBy(100).toFixed(2)+"%";
+                    var missRate = "--";
+                    if (nodeVoted.comparedTo(0)>0){
+                        missRate = wishVoteNum.dividedBy(nodeVoted).multipliedBy(100).toFixed(2)+"%";
                     }
                     $('tbody').append(`
                     <tr>
@@ -168,7 +168,7 @@ var StakeHome = {
                         <td>${state}</td>
                         <td>${nodeVoted.toString(10)}</td>
                         <td>${soloVoted.toString(10)}</td>
-                        <td>${missed.toString(10)}</td>
+                        <td>${wishVoteNum.toString(10)}</td>
                         <td><span class="text-danger">${missRate}</span> </td>
                         <td>${new BigNumber(data.fee?data.fee:"0x0", 16).div(100).toFixed(2)}%</td>
                         <td>${new BigNumber(data.shareNum?data.shareNum:"0x0", 16).toString()}</td>
