@@ -142,7 +142,7 @@ var StakeHome = {
                 var dataArray = res.biz;
                 for (var data of dataArray) {
 
-                    var isMy = `<span class="text-primary">${that.account[data.own]?"Created by: "+that.account[data.own]:""}</span>`;
+                    var isMy = `<span class="text-primary">${that.account[data.own]?"Created by: "+that.account[data.own]:""}</span><br/>`;
 
                     var state = `<span class="text-success">OPENING</span>`;
                     if (data.closed){
@@ -158,12 +158,16 @@ var StakeHome = {
                     if (nodeVoted.comparedTo(0)>0){
                         missRate = wishVoteNum.dividedBy(nodeVoted).multipliedBy(100).toFixed(2)+"%";
                     }
+
+                    var profit =  `<span class="text-success">${new BigNumber(data.profit?data.profit:"0x0", 16).dividedBy(Common.baseDecimal).toFixed(6)}</span>`;
+
                     $('tbody').append(`
                     <tr>
                         <td class="text-break">${data.id}</td>
                         <td class="text-break">
                             ${data.own.substring(0,8) + " ... " + data.own.substring(data.own.length-8) }<br/>
                             ${isMy}
+                            ${that.account[data.own]?"Profit: "+profit:""}
                         </td>
                         <td>${state}</td>
                         <td>${nodeVoted.toString(10)}</td>
@@ -566,7 +570,6 @@ var StakeDetail = {
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('stake_pool_title'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('share_detail_title'));
 
-
             }
         });
     },
@@ -581,28 +584,50 @@ var StakeDetail = {
                     var dataArray = res.biz;
 
                     $('tbody').empty();
+
+                    var avgPrice  = new BigNumber(0);
+                    var totalProfit = new BigNumber(0);
+                    var totalRemaining = new BigNumber(0);
+                    var totalVoted = new BigNumber(0);
+                    var totalExpired = new BigNumber(0);
+                    var totalMissed = new BigNumber(0);
+                    var totalShares = new BigNumber(0);
+                    var count = 1 ;
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
                         Common.post('share/my', data.MainPKr, {}, function (res) {
                             if (res.base.code === 'SUCCESS') {
                                 if (res.biz.length > 0) {
-                                    var data = res.biz[0];
-                                    var shareIds = data.shareIds;
+                                    var dataShare = res.biz[0];
+                                    var shareIds = dataShare.shareIds;
+                                    count ++;
                                     for (let shareId of shareIds) {
                                         Common.post('stake/getShare', shareId, {}, function (res) {
                                             var share = res.biz;
                                             if (res.base.code === 'SUCCESS') {
+
+                                                var voted = new BigNumber(share.total, 16).minus(new BigNumber(share.remaining?share.remaining:"0x0", 16)).minus(new BigNumber(share.missed?share.missed:"0x0", 16)).minus(new BigNumber(share.expired?share.expired:"0x0", 16));
+
+                                                avgPrice = avgPrice.plus(new BigNumber(share.price, 16));
+                                                totalProfit = totalProfit.plus(new BigNumber(share.profit, 16));
+                                                totalRemaining = totalRemaining.plus(new BigNumber(share.remaining?share.remaining:"0x0", 16));
+                                                totalVoted = totalVoted.plus(voted);
+                                                totalExpired = totalExpired.plus(new BigNumber(share.expired?share.expired:"0x0", 16));
+                                                totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
+                                                totalShares = totalShares.plus(new BigNumber(share.total,16));
+
                                                 $('tbody').append(`
                                                 <tr>
                                                 <td>${share.id.substring(0, 5) + " ... " + share.id.substring(share.id.length - 5)}</td>
-                                                <td>${share.pool.substring(0, 5) + " ... " + share.pool.substring(share.pool.length - 5)}</td>
-                                                <td>${share.addr.substring(0, 5) + " ... " + share.addr.substring(share.addr.length - 5)}</td>
+                                                <td class="text-break">${share.pool}</td>
+                                                <!--<td>${share.addr.substring(0, 8) + " ... " + share.addr.substring(share.addr.length - 8)}</td>-->
+                                                <td class="text-primary">Account${i+1}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
-                                                <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 10000).toFixed(2)}</td>
+                                                <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</td>
-                                                <td>${new BigNumber(share.total, 16).minus(new BigNumber(share.remaining?share.remaining:"0x0", 16)).minus(new BigNumber(share.missed?share.missed:"0x0", 16)).minus(new BigNumber(share.expired?share.expired:"0x0", 16))}</td>
-                                                <td>${share.expired ? new BigNumber(share.expired, 16).toString(10) : "0"}</td>
+                                                <td>${voted.toString(10)}</td>
+                                                <td>${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</td>
                                                 <td>${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</td>
                                                 <td>${new BigNumber(share.total,16).toString(10)}</td>
                                                 </tr>
@@ -614,6 +639,13 @@ var StakeDetail = {
                             }
                         });
                     }
+                    $('tfoot tr td:eq(3) strong').text("Average "+avgPrice.dividedBy(Common.baseDecimal).dividedBy(count).toFixed(6));
+                    $('tfoot tr td:eq(5) strong').text(totalProfit.dividedBy(Common.baseDecimal).toFixed(6));
+                    $('tfoot tr td:eq(6) strong').text(totalRemaining.toString(10));
+                    $('tfoot tr td:eq(7) strong').text(totalVoted.toString(10));
+                    $('tfoot tr td:eq(8) strong').text(totalExpired.toString(10));
+                    $('tfoot tr td:eq(9) strong').text(totalMissed.toString(10));
+                    $('tfoot tr td:eq(10) strong').text(totalShares.toString(10));
                 }
             }
         })

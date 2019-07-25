@@ -28,7 +28,7 @@ import (
 
 var (
 	maxUint64  = ^uint64(0)
-	fetchCount = uint64(5000)
+	fetchCount = uint64(50000)
 )
 
 type SEROLight struct {

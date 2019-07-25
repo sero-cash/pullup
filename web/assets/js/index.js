@@ -43,19 +43,13 @@ var Index = {
         var networkRemote = [
             {
                 id: "main",
-                name: 'http://39.98.253.20:8546',
+                name: '华北(北京)',
                 url: 'http://39.98.253.20:8546',
             },
             {
                 id: "main",
-                name: 'http://129.204.197.105:8545',
+                name: '华南(广州)',
                 url: 'http://129.204.197.105:8545',
-            },
-            {
-                id: "main",
-                name: 'http://52.199.145.159:8545',
-                url: 'http://52.199.145.159:8545',
-
             }
         ];
 
@@ -63,7 +57,7 @@ var Index = {
         $('.list-group').empty();
         for (let net of networkRemote) {
             $('.list-group').append(`<li class="list-group-item ${localNet === net.url ? 'active' : ''} netcheck" network="${net.url}" netname="${net.name}">
-                <i class="fas fa-circle ${net.id === 'main' ? 'text-success' : 'text-warning'}"></i> ${net.name}
+                <i class="fas fa-circle ${net.id === 'main' ? 'text-success' : 'text-warning'}"></i> ${net.url} ${net.name}
             </li>`);
         }
 
