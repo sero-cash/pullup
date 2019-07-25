@@ -50,7 +50,13 @@ var Index = {
                 id: "main",
                 name: '华南(广州)',
                 url: 'http://129.204.197.105:8545',
-            }
+            },
+            {
+                id: "main",
+                name: 'JAPAN',
+                url: 'http://52.199.145.159:8545',
+            },
+
         ];
 
         var localNet = $.cookie('networkUrl');

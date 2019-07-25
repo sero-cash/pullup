@@ -16,9 +16,17 @@ var (
 	nilRootPrefix   = []byte("NOILTOROOT")
 	peddingTxPrefix = []byte("PEDDINGTX")
 	decimalPrefix   = []byte("DECIMAL")
-	pkrIndexPrefix =  []byte("PKRINDEX")
+	pkrIndexPrefix  = []byte("PKRINDEX")
 
-	hostKey =  []byte("HOST")
+	hostKey   = []byte("HOST")
+	VersonKey = []byte("VERSION")
+
+	onlyUseHashPkrKey = []byte("USEHASHPKR")
+)
+
+const (
+	PRK_TYPE_HASH int8 = 2
+	PKR_TYPE_NUM  int8 = 1
 )
 
 // PKR + PK + r
@@ -49,7 +57,6 @@ type pkrAndIndex struct {
 	pkr   keys.PKr
 	index uint64
 }
-
 
 func nilToRootKey(nil keys.Uint256) []byte {
 	return append(nilRootPrefix, nil[:]...)

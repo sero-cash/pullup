@@ -12,45 +12,8 @@ import (
 	"strings"
 )
 
-var (
-	app_home_path     string
-	app_keystore_path string
-	app_log_path      string
-	app_config_path   string
-	app_data_path     string
-)
-
-var version = "v0.1.3"
-var defaultRpcHost = "http://39.98.253.20:8546"
-var defaultWebHost = "http://129.211.98.114:3006"
-
-var osType = ""
-var rpcHost = ""
-var webHost = ""
-
-func GetVersion() string{
-	return version
-}
-
-func setRpcHost(s string)  {
-	rpcHost = s
-}
-func GetRpcHost() string{
-	return rpcHost
-}
-
-func setWebHost(s string)  {
-	webHost = s
-}
-func GetWebHost() string{
-	return webHost
-}
 
 type App struct {
-}
-
-func GetOsType() string {
-	return osType
 }
 
 func (app *App) Init() error {

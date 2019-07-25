@@ -118,12 +118,13 @@ func (s *ServiceApi) ImportAccountFromRawKey(privkey, password string) (map[stri
 }
 
 type accountResp struct {
-	PK        string
-	MainPKr   string
-	Balance   map[string]*big.Int
-	UtxoNums  map[string]uint64
-	PkrBase58 string
-	at        uint64
+	PK         string
+	MainPKr    string
+	MainOldPKr string
+	Balance    map[string]*big.Int
+	UtxoNums   map[string]uint64
+	PkrBase58  string
+	at         uint64
 
 	initTimestamp int64
 }
@@ -145,12 +146,12 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 		pk := key.(keys.Uint512)
 		account := value.(*Account)
 		latestPKr := keys.PKr{}
-		if v, ok := s.SL.accountMap.Load(pk); ok {
+		if v, ok := s.SL.pkrIndexMap.Load(pk); ok {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp}
+		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]),MainOldPKr:base58.Encode(account.mainOldPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -164,12 +165,12 @@ func (s *ServiceApi) AccountDetail(pkStr string) (account accountResp) {
 	pk := *address.Base58ToAccount(pkStr).ToUint512()
 	if ac := s.SL.getAccountByPk(pk); ac != nil {
 		latestPKr := keys.PKr{}
-		if v, ok := s.SL.accountMap.Load(pk); ok {
+		if v, ok := s.SL.pkrIndexMap.Load(pk); ok {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(ac.mainPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:])}
+		account := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(ac.mainPkr[:]),MainOldPKr:base58.Encode(ac.mainOldPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:])}
 
 		return account
 	}
@@ -395,7 +396,6 @@ func (self *ServiceApi) getSetNetwork(hostReq string) string {
 }
 
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
-
 
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)

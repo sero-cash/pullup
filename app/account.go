@@ -8,6 +8,7 @@ import (
 	"github.com/sero-cash/go-czero-import/keys"
 	"github.com/sero-cash/go-sero/accounts"
 	"github.com/sero-cash/go-sero/accounts/keystore"
+	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
@@ -19,13 +20,14 @@ import (
 )
 
 type Account struct {
-	wallet   accounts.Wallet
-	pk       *keys.Uint512
-	tk       *keys.Uint512
-	skr      keys.PKr
-	mainPkr  keys.PKr
-	balances map[string]*big.Int
-	utxoNums map[string]uint64
+	wallet     accounts.Wallet
+	pk         *keys.Uint512
+	tk         *keys.Uint512
+	skr        keys.PKr
+	mainPkr    keys.PKr
+	mainOldPkr keys.PKr
+	balances   map[string]*big.Int
+	utxoNums   map[string]uint64
 
 	//use for map sort
 	at uint64
@@ -141,7 +143,6 @@ func (account *Account) Export() {
 
 }
 
-
 func (self *SEROLight) keystoreListener() {
 	// Close all subscriptions when the manager terminates
 	defer func() {
@@ -162,7 +163,7 @@ func (self *SEROLight) keystoreListener() {
 				self.initWallet(event.Wallet)
 			case accounts.WalletDropped:
 				//pk := *event.Wallet.Accounts()[0].Address.ToUint512()
-				//self.accountMap.Delete(pk)
+				//self.pkrIndexMap.Delete(pk)
 			}
 			self.lock.Unlock()
 
@@ -174,23 +175,23 @@ func (self *SEROLight) keystoreListener() {
 	}
 }
 
-
 func (self *SEROLight) initWallet(w accounts.Wallet) {
 	if _, ok := self.accounts.Load(*w.Accounts()[0].Address.ToUint512()); !ok {
 		account := Account{}
 		account.wallet = w
 		account.pk = w.Accounts()[0].Address.ToUint512()
 		account.tk = w.Accounts()[0].Tk.ToUint512()
-		account.at= w.Accounts()[0].At
-
+		account.at = w.Accounts()[0].At
 		copy(account.skr[:], account.tk[:])
-		account.mainPkr = self.createPkr(account.pk, 1)
+		account.mainPkr = self.createPkrHash(account.pk, account.tk, 1)
+		account.mainOldPkr = self.createPkr(account.pk, 1)
+
 		self.accounts.Store(*account.pk, &account)
 		account.isChanged = true
 		account.initTimestamp = time.Now().UnixNano()
 		self.recoverPkrIndex(account, w.Accounts()[0].At)
 
-		fmt.Println("init wallet :",base58.Encode(account.pk[:]))
+		fmt.Println("init wallet :", base58.Encode(account.pk[:]))
 
 	}
 }
@@ -199,19 +200,41 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 	pk := *account.pk
 	value, _ := self.db.Get(append(pkrIndexPrefix, pk[:]...))
 	if value == nil {
-		self.accountMap.Store(pk, outReq{Num: at, Pkr: account.mainPkr, PkrIndex: 1})
-		self.createPkr(account.pk, uint64(1))
+		self.pkrIndexMap.Store(pk, outReq{Num: at, Pkr: account.mainPkr, PkrIndex: 1})
 	} else {
 		var otq outReq
-		err :=rlp.DecodeBytes(value, &otq)
-		if err!=nil{
+		err := rlp.DecodeBytes(value, &otq)
+		if err != nil {
 			return
 		}
-		self.accountMap.Store(pk, otq)
-		pkrNum := int(0)
-		currentPkrIndex := otq.PkrIndex
-		for i := int(currentPkrIndex); i > pkrNum; i-- {
-			self.createPkr(account.pk, uint64(i))
+		self.pkrIndexMap.Store(pk, otq)
+	}
+
+	if data, err := self.db.Get(append(onlyUseHashPkrKey,account.pk[:]...)); err == nil {
+		value := decodeNumber(data)
+		if value == 1 {
+			self.useHasPkr.Store(account.pk,1)
 		}
 	}
+
+
+}
+
+
+func (self *SEROLight) createPkr(pk *keys.Uint512, index uint64) keys.PKr {
+	r := keys.Uint256{}
+	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
+	pkr := keys.Addr2PKr(pk, &r)
+	fmt.Println("oldPkr: ",base58.Encode(pkr[:]))
+	//self.setPKrIndex(*pk, index, pkr)
+	return pkr
+}
+
+func (self *SEROLight) createPkrHash(pk *keys.Uint512,tk *keys.Uint512, index uint64) keys.PKr {
+	random := append(tk[:],encodeNumber(index)[:]...)
+	r := crypto.Keccak256Hash(random).HashToUint256()
+	pkr := keys.Addr2PKr(pk, r)
+	fmt.Println("hashPkr: ",base58.Encode(pkr[:]))
+
+	return pkr
 }

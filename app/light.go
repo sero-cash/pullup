@@ -26,63 +26,58 @@ import (
 	"sync"
 )
 
-var (
-	maxUint64  = ^uint64(0)
-	fetchCount = uint64(50000)
-)
-
 type SEROLight struct {
-	db *serodb.LDBDatabase
-
-	dbConfig *serodb.LDBDatabase
-
+	db             *serodb.LDBDatabase
+	dbConfig       *serodb.LDBDatabase
 	accountManager *accounts.Manager
 	accounts       sync.Map
 	usedFlag       sync.Map
-	accountMap     sync.Map
 	pkrIndexMap    sync.Map
 	sli            flight.SLI
-
 	// SERO wallet subscription
 	feed    event.Feed
 	updater event.Subscription        // Wallet update subscriptions for all backends
 	update  chan accounts.WalletEvent // Subscription sink for backend wallet changes
 	quit    chan chan error
 	lock    sync.RWMutex
+
+	useHasPkr sync.Map
 }
 
 var currentLight *SEROLight
 
 func NewSeroLight() {
 
+	logex.Info("App start ,version:", version)
+	//new AccountManage
 	accountManager, err := makeAccountManager()
 	if err != nil {
 		logex.Fatalf("makeAccountManager, err=[%v]", err)
 	}
 
-
+	//new config db
 	configdb, err := serodb.NewLDBDatabase(GetConfigPath(), 1024, 1024)
 	if err != nil {
 		logex.Fatalf("NewLDBDatabase, err=[%v]", err)
 	}
 
-	var VersonKey = []byte("VERSION")
-
-	versionByte,err :=configdb.Get(VersonKey[:])
-	if err != nil {
-		configdb.Put(VersonKey[:],[]byte(GetVersion()))
-		//clean data
-		CleanData()
-	}else{
-		if string(versionByte[:]) == GetVersion(){
-			fmt.Println("latest version:",string(versionByte[:]))
-		}else{
-			configdb.Put(VersonKey[:],[]byte(GetVersion()))
+	//check this version clean data on start
+	if cleanData {
+		versionByte, err := configdb.Get(VersonKey[:])
+		if err != nil {
+			configdb.Put(VersonKey[:], []byte(GetVersion()))
 			//clean data
 			CleanData()
+		} else {
+			if string(versionByte[:]) == GetVersion() {
+				logex.Info("latest version:", string(versionByte[:]))
+			} else {
+				configdb.Put(VersonKey[:], []byte(GetVersion()))
+				//clean data
+				CleanData()
+			}
 		}
 	}
-
 
 	db, err := serodb.NewLDBDatabase(GetDataPath(), 1024, 1024)
 	if err != nil {
@@ -98,10 +93,10 @@ func NewSeroLight() {
 	light.updater = updater
 	light.db = db
 	light.dbConfig = configdb
-	light.accountMap = sync.Map{}
+	light.pkrIndexMap = sync.Map{}
 	light.accounts = sync.Map{}
 	light.usedFlag = sync.Map{}
-	light.pkrIndexMap = sync.Map{}
+	light.useHasPkr = sync.Map{}
 
 	currentLight = light
 
@@ -121,32 +116,28 @@ type outReq struct {
 }
 
 type fetchReturn struct {
-	utxoMap   map[PkKey][]Utxo
-	again     bool
-	remoteNum uint64
-	nextNum   uint64
+	utxoMap    map[PkKey][]Utxo
+	again      bool
+	remoteNum  uint64
+	nextNum    uint64
+	useHashPkr bool
 }
 
 func (self *SEROLight) SyncOut() {
 	if rpcHost == "" {
 		return
 	}
-	self.accountMap.Range(func(key, value interface{}) bool {
+	self.pkrIndexMap.Range(func(key, value interface{}) bool {
 		pk := key.(keys.Uint512)
 		otreq := value.(outReq)
 		for {
-			pkrs := self.getBeforePKrs(pk, otreq.PkrIndex)
-			if len(pkrs) == 0 {
-				return false
-			}
 			var start, end = otreq.Num, otreq.Num+fetchCount
 			account := self.getAccountByPk(pk)
-			rtn, err := self.fetchAndDecOuts(account, pkrs, otreq.Pkr, start, end)
+			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
-				logex.Errorf(err.Error())
+				logex.Errorf("fetchAndDecOuts,err=[%s]", err.Error())
 				return false
 			}
-			otreq.Num = rtn.nextNum
 			if len(rtn.utxoMap) > 0 {
 				batch := self.db.NewBatch()
 				err = self.indexOuts(rtn.utxoMap, batch)
@@ -161,21 +152,27 @@ func (self *SEROLight) SyncOut() {
 				account.isChanged = true
 			}
 
+			if rtn.useHashPkr {
+				self.useHasPkr.Store(account.pk, 1)
+				self.db.Put(append(onlyUseHashPkrKey, pk[:]...), encodeNumber(1))
+			}
+
 			if rtn.again {
+				otreq.Num = rtn.nextNum
 				otreq.PkrIndex = otreq.PkrIndex + 1
-				otreq.Pkr = self.createPkr(&pk, otreq.PkrIndex)
+				otreq.Pkr = self.createPkrHash(account.pk, account.tk, otreq.PkrIndex)
 				data, _ := rlp.EncodeToBytes(otreq)
-				var test outReq
-				rlp.DecodeBytes(data, &test)
-				self.accountMap.Store(pk, otreq)
+				self.pkrIndexMap.Store(pk, otreq)
 				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
 				continue
-			}
-			data, _ := rlp.EncodeToBytes(otreq)
-			self.accountMap.Store(pk, otreq)
-			self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
-			if end >= rtn.remoteNum {
-				break
+			} else {
+				otreq.Num = rtn.nextNum
+				data, _ := rlp.EncodeToBytes(otreq)
+				self.pkrIndexMap.Store(pk, otreq)
+				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
+				if end >= rtn.remoteNum {
+					break
+				}
 			}
 		}
 		return true
@@ -183,7 +180,9 @@ func (self *SEROLight) SyncOut() {
 	self.CheckNil()
 }
 
-func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentPkr keys.PKr, start, end uint64) (rtn fetchReturn, err error) {
+func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start, end uint64) (rtn fetchReturn, err error) {
+
+	pkrTypeMap, currentPkrsMap, pkrs := self.genPkrs(pkrIndex, account)
 
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: []interface{}{pkrs, start, end}}
 	jsonResp, err := sync.Do()
@@ -206,6 +205,8 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentP
 		rtn.nextNum = bor.CurrentNum + 1
 	}
 
+	var hasResWithHashPkr = false
+	var hasResWithOldPkr = false
 	for _, blockOut := range blockOuts {
 		outs := blockOut.Outs
 		for _, out := range outs {
@@ -216,13 +217,22 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentP
 			if out.State.OS.Out_O != nil {
 				pkr = out.State.OS.Out_O.Addr
 			}
-			if pkr == currentPkr {
+			if currentPkrsMap[pkr] == 1 {
 				rtn.again = true
 				//gen min block Num
 				if rtn.nextNum > blockOut.Num {
 					rtn.nextNum = blockOut.Num
 				}
 			}
+
+			if _, ok := self.useHasPkr.Load(account.pk); !ok {
+				if pkrTypeMap[pkr] == PRK_TYPE_HASH {
+					hasResWithHashPkr = true
+				} else if pkrTypeMap[pkr] == PKR_TYPE_NUM {
+					hasResWithOldPkr = true
+				}
+			}
+
 			//dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
 			dout := flight.DecTraceOuts([]txtool.Out{out}, &account.skr)[0]
 
@@ -236,8 +246,50 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrs []string, currentP
 			}
 		}
 	}
+	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
+	if _, ok := self.useHasPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
+		rtn.useHashPkr = true
+	}
+
 	rtn.utxoMap = utxosMap
 	return rtn, nil
+}
+
+func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[keys.PKr]int8, map[keys.PKr]int8, []string) {
+	pkrTypeMap := map[keys.PKr]int8{}
+	//check loop again
+	currentPkrsMap := map[keys.PKr]int8{}
+	var pkrs = []string{}
+	pkrNum := int(1)
+	// need append two main pkr
+	pkrs = append(pkrs, base58.Encode(account.mainPkr[:]))
+	pkrs = append(pkrs, base58.Encode(account.mainOldPkr[:]))
+	if pkrIndex == 1 {
+		currentPkrsMap[account.mainPkr] = 1
+		currentPkrsMap[account.mainOldPkr] = 1
+		pkrTypeMap[account.mainPkr] = PRK_TYPE_HASH
+		pkrTypeMap[account.mainOldPkr] = PKR_TYPE_NUM
+	}
+	if pkrIndex > 5 {
+		pkrNum = int(pkrIndex) - 5
+	}
+	for i := int(pkrIndex); i > pkrNum; i-- {
+		pkrHash := self.createPkrHash(account.pk, account.tk, uint64(i))
+		pkrs = append(pkrs, base58.Encode(pkrHash[:]))
+		if _, ok := self.useHasPkr.Load(account.pk); !ok {
+			pkrOld := self.createPkr(account.pk, uint64(i))
+			pkrs = append(pkrs, base58.Encode(pkrOld[:]))
+			pkrTypeMap[pkrHash] = PRK_TYPE_HASH
+			pkrTypeMap[pkrOld] = PKR_TYPE_NUM
+			if i == int(pkrIndex) {
+				currentPkrsMap[pkrOld] = 1
+			}
+		}
+		if i == int(pkrIndex) {
+			currentPkrsMap[pkrHash] = 1
+		}
+	}
+	return pkrTypeMap, currentPkrsMap, pkrs
 }
 
 //if the currentpkr in the outs, again = true, then loop continue next Pkr
@@ -254,44 +306,33 @@ func (self *SEROLight) indexOuts(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 	return err
 }
 
-func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (pkrs []string) {
-	pkrNum := int(0)
-	if currentPkrIndex > 5 {
-		pkrNum = int(currentPkrIndex) - 5
-
-		mainPkr, err := self.getPKrIndex(pk, uint64(1))
-		if err == nil {
-			pkrs = append(pkrs, base58.Encode(mainPkr[:]))
-		}
-	}
-	for i := int(currentPkrIndex); i > pkrNum; i-- {
-		pkr, err := self.getPKrIndex(pk, uint64(i))
-		if err != nil {
-			pkr = self.createPkr(&pk, uint64(i))
-			pkrs = append(pkrs, base58.Encode(pkr[:]))
-		} else {
-			pkrs = append(pkrs, base58.Encode(pkr[:]))
-		}
-	}
-
-	return pkrs
-}
+//func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (pkrs []string, err error) {
+//	pkrNum := int(0)
+//	if currentPkrIndex > 5 {
+//		pkrNum = int(currentPkrIndex) - 5
+//		mainPkr, err := self.getPKrIndex(pk, uint64(1))
+//		if err != nil {
+//			return nil, err
+//		} else {
+//			pkrs = append(pkrs, base58.Encode(mainPkr[:]))
+//		}
+//	}
+//	for i := int(currentPkrIndex); i > pkrNum; i-- {
+//		pkr, err := self.getPKrIndex(pk, uint64(i))
+//		if err != nil {
+//			return nil, err
+//		} else {
+//			pkrs = append(pkrs, base58.Encode(pkr[:]))
+//		}
+//	}
+//
+//
+//	return pkrs, nil
+//}
 
 type pkrIndexKey struct {
 	pk    keys.Uint512
 	index uint64
-}
-
-func (self *SEROLight) getPKrIndex(pk keys.Uint512, index uint64) (pkr keys.PKr, err error) {
-	if value, ok := self.pkrIndexMap.Load(pkrIndexKey{pk, index}); ok {
-		return value.(keys.PKr), nil
-	} else {
-		return pkr, fmt.Errorf("not fund")
-	}
-}
-
-func (self *SEROLight) setPKrIndex(pk keys.Uint512, index uint64, pkr keys.PKr) {
-	self.pkrIndexMap.Store(pkrIndexKey{pk, index}, pkr)
 }
 
 func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) (opsReturn map[string]string, err error) {
@@ -362,8 +403,8 @@ type NilValue struct {
 func (self *SEROLight) CheckNil() {
 
 	iterator := self.db.NewIteratorWithPrefix(nilPrefix)
-	Nils := []keys.Uint256{}
-
+	//Nils := []keys.Uint256{}
+	Nils := []string{}
 	for iterator.Next() {
 		key := iterator.Key()
 		var Nil keys.Uint256
@@ -371,9 +412,8 @@ func (self *SEROLight) CheckNil() {
 		nilkey := nilKey(Nil)
 		value, _ := self.db.Get(nilkey)
 		if value != nil {
-			Nils = append(Nils, Nil)
+			Nils = append(Nils, hexutil.Encode(Nil[:]))
 		}
-
 	}
 
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_checkNil", Params: []interface{}{Nils}}
@@ -388,6 +428,7 @@ func (self *SEROLight) CheckNil() {
 			logex.Errorf("json.Unmarshal err=[%s]", err.Error())
 			return
 		}
+		logex.Infof("light_checkNil result=[%d]", len(nilvs))
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
 			for _, nilv := range nilvs {
@@ -745,7 +786,7 @@ func (self *SEROLight) getDecimal(currency string) uint64 {
 
 func (self *SEROLight) getAccountBlock() uint64 {
 	number := uint64(0)
-	self.accountMap.Range(func(key, value interface{}) bool {
+	self.pkrIndexMap.Range(func(key, value interface{}) bool {
 		data := value.(outReq)
 		if number < data.Num {
 			number = data.Num
@@ -779,17 +820,9 @@ func (self *SEROLight) getLatestPKrs(pk keys.Uint512) (pais []pkrAndIndex) {
 }
 
 func (self *SEROLight) GetCurrencyNumber(pk keys.Uint512) uint64 {
-	value, ok := self.accountMap.Load(pk)
+	value, ok := self.pkrIndexMap.Load(pk)
 	if !ok {
 		return 0
 	}
 	return value.(outReq).Num
-}
-
-func (self *SEROLight) createPkr(pk *keys.Uint512, index uint64) keys.PKr {
-	r := keys.Uint256{}
-	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
-	pkr := keys.Addr2PKr(pk, &r)
-	self.setPKrIndex(*pk, index, pkr)
-	return pkr
 }
