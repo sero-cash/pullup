@@ -166,13 +166,17 @@ var Index = {
                             _balance = _balance.dividedBy(Common.baseDecimal);
                             balance = balance.plus(_balance)
                         }
+                        var acName = "Account"+(i + 1);
+                        if (data.Name){
+                            acName = data.Name;
+                        }
                         $('.pkrs').append(`
                             
                             <div class="col-lg-12 mb-4">
                                 <div class="card text-white bg-primary shadow">
                                     <div class="card-body">
                                          <a style="text-decoration: none;color: white;" href="account-detail.html?pk=${data.PK}">
-                                            <p class="m-0">Account${i + 1} (<small>${data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)}</small>)</p>
+                                            <p class="m-0">${acName}(<small>${data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)}</small>)</p>
                                             <p class="text-white-50 small m-0 pkr">
                                             ${data.PkrBase58}&nbsp;&nbsp &nbsp;</p>
                                             <p class="text-right text-warning m-0"><strong>${_balance.toFixed(6)}</strong> SERO</p>

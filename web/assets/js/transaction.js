@@ -108,7 +108,7 @@ var Transaction = {
                                     that.currencyDecimal[currency]= decimal;
                                 });
                             }
-                            _pkBalance[data.PK] = data.Balance;
+                            _pkBalance[data.PK] = data;
                         }
                     }
                     that.pkBalance = _pkBalance;
@@ -126,7 +126,14 @@ var Transaction = {
         var i=0;
         var hasSet = false;
         Object.keys(that.pkBalance).forEach(function(PK){
-            var balanceObj = that.pkBalance[PK];
+            var data = that.pkBalance[PK];
+            var balanceObj = data.Balance;
+
+            var acName = "Account"+(i + 1);
+            if (data.Name){
+                acName = data.Name;
+            }
+
             if(!$.isEmptyObject(balanceObj)){
                 var balanceMap = Object.keys(balanceObj);
                 if (!hasSet){
@@ -144,7 +151,7 @@ var Transaction = {
                     }
                     hasSet = true
                 }
-                $('.address').append(`<option value="${PK}" ${i === 0 ? 'selected' : ''}>${PK.substring(0, 20) + ' ... ' + PK.substring(PK.length - 20) }</option>`);
+                $('.address').append(`<option value="${PK}" ${i === 0 ? 'selected' : ''}>${ acName + ": " + PK.substring(0, 20) + ' ... ' + PK.substring(PK.length - 20) }</option>`);
                 i++;
             }
 

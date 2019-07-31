@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-
-	cpt.ZeroInit_OnlyInOuts()
-
-	rpcHostCustomer := flag.String("rpcHost","","--rpcHost set rpc host")
-	webHostCustomer := flag.String("webHost","","--webHost set web host")
+	//set start flag
+	rpcHostCustomer := flag.String("rpcHost", "", "--rpcHost set rpc host")
+	webHostCustomer := flag.String("webHost", "", "--webHost set web host")
+	isDev := flag.Bool("dev", false, "--dev")
 	flag.Parse()
+	app.IsDev = *isDev
 
 	// Setting global env
 	lightApp := app.App{}
@@ -36,12 +36,17 @@ func main() {
 		defer logFile.Close()
 	}
 
+	//init Zero import
+	cpt.ZeroInit_OnlyInOuts()
+	logex.Info("ZeroInit_OnlyInOuts successful! ")
+
 	// init sero light client
 	app.NewSeroLight()
+	logex.Info("NewSeroLight successful! ")
 
 	//banding http handle
 	privateAccountApi := app.NewServiceAPI()
-	privateAccountApi.InitHost(*rpcHostCustomer,*webHostCustomer)
+	privateAccountApi.InitHost(*rpcHostCustomer, *webHostCustomer)
 
 	createAccountHandler := httptransport.NewServer(
 		app.MakeAccountCreateEndpoint(privateAccountApi),
@@ -231,14 +236,14 @@ func main() {
 	defer ui.Close()
 
 	go func() {
-		time.Sleep(time.Second*1)
+		time.Sleep(time.Second * 1)
 		// A simple way to know when UI is ready (uses body.onload event in JS)
 		if err = ui.Bind("start", func() {
 			logex.Info("UI is ready")
 		}); err != nil {
 			logex.Fatal(err)
 		}
-		if err = ui.Load(app.GetWebHost()+"/web/"); err != nil {
+		if err = ui.Load(app.GetWebHost()); err != nil {
 			logex.Fatal(err)
 		}
 	}()
@@ -262,6 +267,6 @@ func accessControl(h http.Handler) http.Handler {
 }
 
 type rpcParams struct {
-	Method string `json:"method"`
+	Method string      `json:"method"`
 	Params interface{} `json:"params"`
 }

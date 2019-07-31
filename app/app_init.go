@@ -12,7 +12,6 @@ import (
 	"strings"
 )
 
-
 type App struct {
 }
 
@@ -26,7 +25,7 @@ func (app *App) Init() error {
 	return nil
 }
 
-func removeFile(file string)  {
+func removeFile(file string) {
 	err := os.Remove(file)
 	if err != nil {
 		fmt.Println("file remove Error!")
@@ -36,18 +35,18 @@ func removeFile(file string)  {
 	}
 }
 
-func CleanData()  {
+func CleanData() {
 	cleanFolder(GetDataPath())
 }
 
-func cleanFolder(folder string){
+func cleanFolder(folder string) {
 	files, _ := ioutil.ReadDir(folder)
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		} else {
-			fmt.Println("remove file :",file.Name())
-			removeFile(folder+file.Name())
+			fmt.Println("remove file :", file.Name())
+			removeFile(folder + file.Name())
 		}
 	}
 }
@@ -58,7 +57,7 @@ func initDataPath() (err error) {
 		switch runtime.GOOS {
 		case "darwin":
 			app_home_path = home + "/Library/pullup"
-			app_keystore_path = app_home_path + "/keystore"
+			app_keystore_path = app_home_path + "/keystore/"
 			app_data_path = app_home_path + "/data/"
 			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"
@@ -66,7 +65,7 @@ func initDataPath() (err error) {
 			break
 		case "windows":
 			app_home_path = home + `\AppData\Roaming\pullup`
-			app_keystore_path = app_home_path + "\\keystore"
+			app_keystore_path = app_home_path + "\\keystore\\"
 			app_data_path = app_home_path + "\\data\\"
 			app_log_path = app_home_path + "\\log\\"
 			app_config_path = app_home_path + "\\config"
@@ -74,7 +73,7 @@ func initDataPath() (err error) {
 			break
 		case "linux":
 			app_home_path = home + "/.config/pullup"
-			app_keystore_path = app_home_path + "/keystore"
+			app_keystore_path = app_home_path + "/keystore/"
 			app_data_path = app_home_path + "/data/"
 			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"

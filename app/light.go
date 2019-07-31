@@ -131,7 +131,7 @@ func (self *SEROLight) SyncOut() {
 		pk := key.(keys.Uint512)
 		otreq := value.(outReq)
 		for {
-			var start, end = otreq.Num, otreq.Num+fetchCount
+			var start, end = otreq.Num, otreq.Num + fetchCount
 			account := self.getAccountByPk(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
@@ -530,8 +530,17 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 
 	var RefundTo *keys.PKr
 	ac := self.getAccountByPk(*fromPk)
-	if ac != nil {
-		RefundTo = &ac.mainPkr
+	if ac == nil {
+		logex.Errorf("account not found")
+		return hash, fmt.Errorf("account not found")
+	}
+
+	if value, ok := self.pkrIndexMap.Load(*fromPk); !ok {
+		logex.Errorf("pkrIndexMap not store from pk")
+		return hash, fmt.Errorf("account not found")
+	} else {
+		outReq := value.(outReq)
+		RefundTo = &outReq.Pkr
 	}
 
 	account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}

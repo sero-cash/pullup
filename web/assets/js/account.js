@@ -199,6 +199,10 @@ var Detail = {
                 that.address = res.biz.PK;
                 var pkr = res.biz.PkrBase58;
 
+                if (res.biz.Name){
+                    $('.a_span').text(res.biz.Name);
+                }
+
                 $('.mainCopy').attr('data-clipboard-text', res.biz.MainPKr);
                 $('.secondeCopy').attr('data-clipboard-text', pkr);
                 $('.address').text(pkr);

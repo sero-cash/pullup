@@ -115,9 +115,12 @@ var StakeHome = {
                     var totalShareNum = new BigNumber(0);
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
-
-                        that.account[data.MainPKr]= "Account"+(i+1) +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
-                        that.account[data.MainOldPKr]= "Account"+(i+1) +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
+                        var acName = "Account"+(i + 1);
+                        if (data.Name){
+                            acName = data.Name;
+                        }
+                        that.account[data.MainPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
+                        that.account[data.MainOldPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
 
                         Common.post('share/my', data.MainPKr, {}, function (res2) {
                             if (res2.base.code === 'SUCCESS') {
@@ -274,8 +277,8 @@ var StakeRegister = {
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('stake_pool_register'));
                 $('h4').text($.i18n.prop('stake_pool_register'));
                 $('.form-group:eq(0) label').text($.i18n.prop('stake_register_from'));
-                $('.form-group:eq(1) label').text($.i18n.prop('stake_register_address'));
-                $('.form-group:eq(1) .invalid-feedback').text($.i18n.prop('stake_register_address_tips'));
+                $('.form-group:eq(1) label').text($.i18n.prop('stake_register_fee'));
+                $('.form-group:eq(1) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
                 // $('.form-group:eq(2) label').text($.i18n.prop('stake_register_fee'));
                 // $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
                 $('.form-group:eq(2) label').text($.i18n.prop('stake_register_amount'));
@@ -309,12 +312,16 @@ var StakeRegister = {
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
                         var balance = new BigNumber(0).toFixed(6);
+                        var acName = "Account"+(i + 1);
+                        if (data.Name){
+                            acName = data.Name;
+                        }
                         if (data.Balance) {
                             var balanceObj = data.Balance;
                             for (var currency of Object.keys(balanceObj)) {
                                 if (currency === 'SERO') {
                                     balance = new BigNumber(balanceObj[currency]).dividedBy(Common.baseDecimal).toFixed(6);
-                                    $('.address').append(`<option value="${data.PK}" ${i === 0 ? 'selected' : ''}>${data.PK.substring(0, 8) + ' ... ' + data.PK.substring(data.PK.length - 8) }   ${ balance + ' ' + currency}</option>`);
+                                    $('.address').append(`<option value="${data.PK}" ${i === 0 ? 'selected' : ''}>${acName +": "+data.PK.substring(0, 8) + ' ... ' + data.PK.substring(data.PK.length - 8) }  ${ balance + ' ' + currency}</option>`);
                                 }
                             }
                         } else {
@@ -332,7 +339,6 @@ var StakeRegister = {
         var from = $(".address").val();
         // var vote = $("#address").val();
         var feeRate = $("#feeRate").val();
-
 
         $('.modal-footer button:eq(0)').bind('click', function () {
             $('#sub1').attr('disabled', false);
@@ -502,12 +508,16 @@ var StakeBuyer = {
                         var data = dataArray[i];
                         that.mainPKr[data.PK] = data.MainPKr;
                         var balance = new BigNumber(0).toFixed(6);
+                        var acName = "Account"+(i + 1);
+                        if (data.Name){
+                            acName = data.Name;
+                        }
                         if (data.Balance) {
                             var balanceObj = data.Balance;
                             for (var currency of Object.keys(balanceObj)) {
                                 if (currency === 'SERO') {
                                     balance = new BigNumber(balanceObj[currency]).dividedBy(Common.baseDecimal).toFixed(6);
-                                    $('.address').append(`<option value="${data.PK}" ${i === 0 ? 'selected' : ''}>${data.PK.substring(0, 8) + ' ... ' + data.PK.substring(data.PK.length - 8) }   ${ balance + ' ' + currency}</option>`);
+                                    $('.address').append(`<option value="${data.PK}" ${i === 0 ? 'selected' : ''}>${acName + ": "+data.PK.substring(0, 8) + ' ... ' + data.PK.substring(data.PK.length - 8) }  ${ balance + ' ' + currency}</option>`);
                                 }
                             }
                         } else {
@@ -582,7 +592,6 @@ var StakeBuyer = {
 
 };
 
-
 var StakeDetail = {
 
 
@@ -642,7 +651,7 @@ var StakeDetail = {
                     var totalExpired = new BigNumber(0);
                     var totalMissed = new BigNumber(0);
                     var totalShares = new BigNumber(0);
-                    var count = 1 ;
+                    var count = 0 ;
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
                         Common.post('share/my', data.MainPKr, {}, function (res) {
@@ -650,15 +659,15 @@ var StakeDetail = {
                                 if (res.biz.length > 0) {
                                     var dataShare = res.biz[0];
                                     var shareIds = dataShare.shareIds;
-                                    count = count+1;
                                     for (let shareId of shareIds) {
                                         Common.post('stake/getShare', shareId, {}, function (res) {
                                             var share = res.biz;
                                             if (res.base.code === 'SUCCESS') {
-
+                                                count++;
                                                 var voted = new BigNumber(share.total, 16).minus(new BigNumber(share.remaining?share.remaining:"0x0", 16)).minus(new BigNumber(share.missed?share.missed:"0x0", 16)).minus(new BigNumber(share.expired?share.expired:"0x0", 16));
 
                                                 avgPrice = avgPrice.plus(new BigNumber(share.price, 16));
+
                                                 totalProfit = totalProfit.plus(new BigNumber(share.profit, 16));
                                                 totalRemaining = totalRemaining.plus(new BigNumber(share.remaining?share.remaining:"0x0", 16));
                                                 totalVoted = totalVoted.plus(voted);
@@ -666,12 +675,17 @@ var StakeDetail = {
                                                 totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
                                                 totalShares = totalShares.plus(new BigNumber(share.total,16));
 
+                                                var acName = "Account"+(i+1);
+                                                if (data.Name){
+                                                    acName = data.Name;
+                                                }
+
                                                 $('tbody').append(`
                                                 <tr>
                                                 <td>${share.id.substring(0, 5) + " ... " + share.id.substring(share.id.length - 5)}</td>
                                                 <td class="text-break">${share.pool}</td>
                                                 <!--<td>${share.addr.substring(0, 8) + " ... " + share.addr.substring(share.addr.length - 8)}</td>-->
-                                                <td class="text-primary">Account${i+1}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
+                                                <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
@@ -693,12 +707,11 @@ var StakeDetail = {
                                 if (res.biz.length > 0) {
                                     var dataShare = res.biz[0];
                                     var shareIds = dataShare.shareIds;
-                                    count = count+1;
                                     for (let shareId of shareIds) {
                                         Common.post('stake/getShare', shareId, {}, function (res) {
                                             var share = res.biz;
                                             if (res.base.code === 'SUCCESS') {
-
+                                                count++;
                                                 var voted = new BigNumber(share.total, 16).minus(new BigNumber(share.remaining?share.remaining:"0x0", 16)).minus(new BigNumber(share.missed?share.missed:"0x0", 16)).minus(new BigNumber(share.expired?share.expired:"0x0", 16));
 
                                                 avgPrice = avgPrice.plus(new BigNumber(share.price, 16));
@@ -709,12 +722,16 @@ var StakeDetail = {
                                                 totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
                                                 totalShares = totalShares.plus(new BigNumber(share.total,16));
 
+                                                var acName = "Account"+(i+1);
+                                                if (data.Name){
+                                                    acName = data.Name;
+                                                }
                                                 $('tbody').append(`
                                                 <tr>
                                                 <td>${share.id.substring(0, 5) + " ... " + share.id.substring(share.id.length - 5)}</td>
                                                 <td class="text-break">${share.pool}</td>
                                                 <!--<td>${share.addr.substring(0, 8) + " ... " + share.addr.substring(share.addr.length - 8)}</td>-->
-                                                <td class="text-primary">Account${i+1}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
+                                                <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
@@ -732,7 +749,8 @@ var StakeDetail = {
                             }
                         });
                     }
-                    $('tfoot tr td:eq(3) strong').text("Average "+avgPrice.dividedBy(Common.baseDecimal).dividedBy(count).toFixed(6));
+
+                    $('tfoot tr td:eq(3) strong').text("Average "+avgPrice.dividedBy(Common.baseDecimal).dividedBy(count===0?1:count).toFixed(6));
                     $('tfoot tr td:eq(5) strong').text(totalProfit.dividedBy(Common.baseDecimal).toFixed(6));
                     $('tfoot tr td:eq(6) strong').text(totalRemaining.toString(10));
                     $('tfoot tr td:eq(7) strong').text(totalVoted.toString(10));

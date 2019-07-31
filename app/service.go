@@ -29,7 +29,7 @@ type Service interface {
 	ImportAccountFromMnemonic(mnemonic, password string) (map[string]string, error)
 	ImportAccountFromRawKey(privkey, password string) (map[string]string, error)
 	ExportMnemonic(addressStr, password string) (string, error)
-	AccountList() (accountResps)
+	AccountList() accountResps
 	AccountDetail(pkStr string) accountResp
 	AccountBalance(pkStr string) map[string]*big.Int
 	TXNum(pkStr string) map[string]uint64
@@ -125,6 +125,7 @@ type accountResp struct {
 	UtxoNums   map[string]uint64
 	PkrBase58  string
 	at         uint64
+	Name       string
 
 	initTimestamp int64
 }
@@ -151,7 +152,7 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]),MainOldPKr:base58.Encode(account.mainOldPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp}
+		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]), MainOldPKr: base58.Encode(account.mainOldPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -170,7 +171,7 @@ func (s *ServiceApi) AccountDetail(pkStr string) (account accountResp) {
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(ac.mainPkr[:]),MainOldPKr:base58.Encode(ac.mainOldPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:])}
+		account := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(ac.mainPkr[:]), MainOldPKr: base58.Encode(ac.mainOldPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), Name: ac.name}
 
 		return account
 	}
@@ -340,7 +341,9 @@ func (s *ServiceApi) registerStakePool(from, vote, passwd string, feeRate uint32
 
 	decimal := big.NewInt(0).Exp(big.NewInt(10), big.NewInt(18), nil)
 	amount := big.NewInt(0).Mul(big.NewInt(200000), decimal)
-	//amount := big.NewInt(0).Mul(big.NewInt(1), decimal)
+	if IsDev {
+		amount = big.NewInt(0).Mul(big.NewInt(1), decimal)
+	}
 	gasprice := big.NewInt(0).Exp(big.NewInt(10), big.NewInt(9), nil)
 	hash, err := s.SL.registerStakePool(from, vote, passwd, feeRate, amount, gasprice)
 	if err != nil {

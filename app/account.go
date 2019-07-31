@@ -28,14 +28,12 @@ type Account struct {
 	mainOldPkr keys.PKr
 	balances   map[string]*big.Int
 	utxoNums   map[string]uint64
-
 	//use for map sort
-	at uint64
-
-	isChanged bool
-	keyPath   string
-
+	at            uint64
+	isChanged     bool
+	keyPath       string
 	initTimestamp int64
+	name          string
 }
 
 func makeAccountManager() (*accounts.Manager, error) {
@@ -191,8 +189,14 @@ func (self *SEROLight) initWallet(w accounts.Wallet) {
 		account.initTimestamp = time.Now().UnixNano()
 		self.recoverPkrIndex(account, w.Accounts()[0].At)
 
-		fmt.Println("init wallet :", base58.Encode(account.pk[:]))
+		var keystoreName = w.URL().Path[len(GetKeystorePath()):]
+		var split = "ac_"
+		if keystoreName[:len(split)] == split {
+			fmt.Println("customer account name : ", keystoreName[len(split):])
+			account.name = keystoreName[len(split):]
+		}
 
+		fmt.Println("init wallet :", base58.Encode(account.pk[:]))
 	}
 }
 
@@ -210,31 +214,28 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 		self.pkrIndexMap.Store(pk, otq)
 	}
 
-	if data, err := self.db.Get(append(onlyUseHashPkrKey,account.pk[:]...)); err == nil {
+	if data, err := self.db.Get(append(onlyUseHashPkrKey, account.pk[:]...)); err == nil {
 		value := decodeNumber(data)
 		if value == 1 {
-			self.useHasPkr.Store(account.pk,1)
+			self.useHasPkr.Store(account.pk, 1)
 		}
 	}
-
-
 }
-
 
 func (self *SEROLight) createPkr(pk *keys.Uint512, index uint64) keys.PKr {
 	r := keys.Uint256{}
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
 	pkr := keys.Addr2PKr(pk, &r)
-	fmt.Println("oldPkr: ",base58.Encode(pkr[:]))
+	fmt.Println("oldPkr: ", base58.Encode(pkr[:]))
 	//self.setPKrIndex(*pk, index, pkr)
 	return pkr
 }
 
-func (self *SEROLight) createPkrHash(pk *keys.Uint512,tk *keys.Uint512, index uint64) keys.PKr {
-	random := append(tk[:],encodeNumber(index)[:]...)
+func (self *SEROLight) createPkrHash(pk *keys.Uint512, tk *keys.Uint512, index uint64) keys.PKr {
+	random := append(tk[:], encodeNumber(index)[:]...)
 	r := crypto.Keccak256Hash(random).HashToUint256()
 	pkr := keys.Addr2PKr(pk, r)
-	fmt.Println("hashPkr: ",base58.Encode(pkr[:]))
+	fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
 
 	return pkr
 }
