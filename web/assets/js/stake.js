@@ -7,7 +7,7 @@ var StakeHome = {
         "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC",
         "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"盖世",
         "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"币龙驴池",
-        "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"Newbit",
+        "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"牛池",
         "0xc8db791edb4d2063f625de473a5061f9323114cb9d6de6bdfc82bbbba82642f0":"盘古",
         "0xc248ba3e8f98ec6714a9c3b59c4422cbc473b90c0d4fb01e589f5b8ae20a24d7":"马努",
         "0x16759fd13a7143207b3ebb088711b242267303dcdad53562d45fb4cfaf5dbdac":"山水",
@@ -17,6 +17,9 @@ var StakeHome = {
         "0xf1df2afb326a544a928a229a94f5eb8433d39688b590acd41c73d08200480b86":"雪庄Rose",
         "0xbdb9555b61613f8b13fd16918c9a09e407c3e96afdf8fe5dc887317eb0253cd7":"蚂蚁",
         "0x98d84dc25b65cf32a8488f04e728396fa96a15db682d79cde213a2368abb84d8":"HyperPay",
+        "0x86fea8e64ee24e515846642822ab7c0fabaf3f2879fb3064f267047d300b76f3":"9池节点",
+        "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T网矿池",
+        "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
     },
 
     init: function () {
@@ -615,10 +618,8 @@ var StakeDetail = {
                 $('thead tr td:eq(8) strong').text($.i18n.prop('share_detail_expired'));
                 $('thead tr td:eq(9) strong').text($.i18n.prop('share_detail_missed'));
                 $('thead tr td:eq(10) strong').text($.i18n.prop('share_detail_total'));
-
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('stake_pool_title'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('share_detail_title'));
-
             }
         });
     },
@@ -649,7 +650,7 @@ var StakeDetail = {
                                 if (res.biz.length > 0) {
                                     var dataShare = res.biz[0];
                                     var shareIds = dataShare.shareIds;
-                                    count ++;
+                                    count = count+1;
                                     for (let shareId of shareIds) {
                                         Common.post('stake/getShare', shareId, {}, function (res) {
                                             var share = res.biz;
@@ -692,7 +693,7 @@ var StakeDetail = {
                                 if (res.biz.length > 0) {
                                     var dataShare = res.biz[0];
                                     var shareIds = dataShare.shareIds;
-                                    count ++;
+                                    count = count+1;
                                     for (let shareId of shareIds) {
                                         Common.post('stake/getShare', shareId, {}, function (res) {
                                             var share = res.biz;

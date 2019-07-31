@@ -9,7 +9,8 @@ var (
 	fetchCount = uint64(50000)
 
 	defaultRpcHost = "http://39.98.253.20:8546"
-	defaultWebHost = "http://129.211.98.114:3006"
+	//defaultWebHost = "http://129.211.98.114:3006"
+	defaultWebHost = "http://127.0.0.1:2345"
 	osType         = ""
 	rpcHost        = ""
 	webHost        = ""

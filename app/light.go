@@ -306,35 +306,6 @@ func (self *SEROLight) indexOuts(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 	return err
 }
 
-//func (self *SEROLight) getBeforePKrs(pk keys.Uint512, currentPkrIndex uint64) (pkrs []string, err error) {
-//	pkrNum := int(0)
-//	if currentPkrIndex > 5 {
-//		pkrNum = int(currentPkrIndex) - 5
-//		mainPkr, err := self.getPKrIndex(pk, uint64(1))
-//		if err != nil {
-//			return nil, err
-//		} else {
-//			pkrs = append(pkrs, base58.Encode(mainPkr[:]))
-//		}
-//	}
-//	for i := int(currentPkrIndex); i > pkrNum; i-- {
-//		pkr, err := self.getPKrIndex(pk, uint64(i))
-//		if err != nil {
-//			return nil, err
-//		} else {
-//			pkrs = append(pkrs, base58.Encode(pkr[:]))
-//		}
-//	}
-//
-//
-//	return pkrs, nil
-//}
-
-type pkrIndexKey struct {
-	pk    keys.Uint512
-	index uint64
-}
-
 func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) (opsReturn map[string]string, err error) {
 	ops := map[string]string{}
 	for key, list := range utxosMap {

@@ -63,7 +63,7 @@ var Account = {
                     $('.modal-footer button:eq(1)').bind('click', function () {
                         window.location.href = "index.html";
                     });
-                    $('.modal-body p:eq(0)').text(res.biz.address);
+                    $('.modal-body p:eq(0)').text(res.biz.address.substring(0,20) + " ... " + res.biz.address.substring(res.biz.address.length-20));
                     $('.modal-body p:eq(1)').text(res.biz.mnemonic);
                     $('#myModal').modal({backdrop: 'static', keyboard: false});
                     $("#sub1").attr('disabled', false);
@@ -522,7 +522,7 @@ var Mnemnic = {
             cache: false,
             encoding: 'UTF-8',
             callback: function () {
-                $('p:eq(0)').text($.i18n.prop('navbar_home'));
+                //$('p:eq(0)').text($.i18n.prop('navbar_home'));
 
             }
         });
@@ -542,7 +542,7 @@ var Mnemnic = {
             if (res.base.code === 'SUCCESS') {
                 var address = res.biz.address
                 $('.modal-title').text("Import Successful");
-                $('.modal-body p:eq(0)').text(address);
+                $('.modal-body p:eq(0)').text(address.substring(0,20) + " ... " + address.substring(address.length-20));
             } else {
                 $('.modal-title').text("ERROR");
                 $('.modal-body p:eq(0)').text(res.base.desc);
