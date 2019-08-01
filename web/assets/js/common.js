@@ -39,6 +39,11 @@ var Common = {
         if (!lang_code) {
             lang_code = _LANGUAGE_CODE;
         }
+        if ('zh_CN' === lang_code) {
+            $('.language').text('English');
+        } else {
+            $('.language').text('简体中文');
+        }
         Common.app.loadProperties(lang_code);
     },
 

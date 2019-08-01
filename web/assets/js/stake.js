@@ -3,23 +3,44 @@ var StakeHome = {
     account:{},
 
     stakeName:{
-        "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"赛罗",
-        "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC",
-        "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"盖世",
-        "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"币龙驴池",
-        "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"牛池",
-        "0xc8db791edb4d2063f625de473a5061f9323114cb9d6de6bdfc82bbbba82642f0":"盘古",
-        "0xc248ba3e8f98ec6714a9c3b59c4422cbc473b90c0d4fb01e589f5b8ae20a24d7":"马努",
-        "0x16759fd13a7143207b3ebb088711b242267303dcdad53562d45fb4cfaf5dbdac":"山水",
-        "0xda06d65e49808f31dec7b44339d856ff47ad2040a503ccd28a43a681195b23e1":"Hotbit ",
-        "0x4fb40805a34c590cc78ca3d5e4f938a64424db4d4326e87d314a82e1d676bd60":"第一POS",
-        "0xcec0343b0b29eecb24ec54dafcb97adfedc2acc367348b851e71973aa4e54659":"菠菜",
-        "0xf1df2afb326a544a928a229a94f5eb8433d39688b590acd41c73d08200480b86":"雪庄Rose",
-        "0xbdb9555b61613f8b13fd16918c9a09e407c3e96afdf8fe5dc887317eb0253cd7":"蚂蚁",
-        "0x98d84dc25b65cf32a8488f04e728396fa96a15db682d79cde213a2368abb84d8":"HyperPay",
-        "0x86fea8e64ee24e515846642822ab7c0fabaf3f2879fb3064f267047d300b76f3":"9池节点",
-        "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T网矿池",
-        "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
+        zh_CN:{
+            "0x8831a057913daf09df0a6088d1f46ecf7ff8fb4254e3dddb28442d45b3fd187f":"赛罗",
+            "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC",
+            "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"盖世",
+            "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"币龙驴池",
+            "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"牛池",
+            "0xc8db791edb4d2063f625de473a5061f9323114cb9d6de6bdfc82bbbba82642f0":"盘古",
+            "0xc248ba3e8f98ec6714a9c3b59c4422cbc473b90c0d4fb01e589f5b8ae20a24d7":"马努",
+            "0x16759fd13a7143207b3ebb088711b242267303dcdad53562d45fb4cfaf5dbdac":"山水",
+            "0xda06d65e49808f31dec7b44339d856ff47ad2040a503ccd28a43a681195b23e1":"Hotbit ",
+            "0x4fb40805a34c590cc78ca3d5e4f938a64424db4d4326e87d314a82e1d676bd60":"第一POS",
+            "0xcec0343b0b29eecb24ec54dafcb97adfedc2acc367348b851e71973aa4e54659":"菠菜",
+            "0xf1df2afb326a544a928a229a94f5eb8433d39688b590acd41c73d08200480b86":"雪庄Rose",
+            "0xbdb9555b61613f8b13fd16918c9a09e407c3e96afdf8fe5dc887317eb0253cd7":"蚂蚁",
+            "0x98d84dc25b65cf32a8488f04e728396fa96a15db682d79cde213a2368abb84d8":"HyperPay",
+            "0x86fea8e64ee24e515846642822ab7c0fabaf3f2879fb3064f267047d300b76f3":"9池节点",
+            "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T网矿池",
+            "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
+        },
+        en_US:{
+            "0x8831a057913daf09df0a6088d1f46ecf7ff8fb4254e3dddb28442d45b3fd187f":"SERO Node (sero.im)",
+            "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC Node",
+            "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"The Geshi Node",
+            "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"Coin Dragon Pool Node",
+            "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"Newbit Node",
+            "0xc8db791edb4d2063f625de473a5061f9323114cb9d6de6bdfc82bbbba82642f0":"Pangu Node",
+            "0xc248ba3e8f98ec6714a9c3b59c4422cbc473b90c0d4fb01e589f5b8ae20a24d7":"Manu Node",
+            "0x16759fd13a7143207b3ebb088711b242267303dcdad53562d45fb4cfaf5dbdac":"Landscape Node",
+            "0xda06d65e49808f31dec7b44339d856ff47ad2040a503ccd28a43a681195b23e1":"Hotbit Node ",
+            "0x4fb40805a34c590cc78ca3d5e4f938a64424db4d4326e87d314a82e1d676bd60":"The First PoS Node",
+            "0xcec0343b0b29eecb24ec54dafcb97adfedc2acc367348b851e71973aa4e54659":"Spinach Node",
+            "0xf1df2afb326a544a928a229a94f5eb8433d39688b590acd41c73d08200480b86":"Snow Rose Node",
+            "0xbdb9555b61613f8b13fd16918c9a09e407c3e96afdf8fe5dc887317eb0253cd7":"Ant Node",
+            "0x98d84dc25b65cf32a8488f04e728396fa96a15db682d79cde213a2368abb84d8":"HyperPay Node",
+            "0x86fea8e64ee24e515846642822ab7c0fabaf3f2879fb3064f267047d300b76f3":"Nine Node",
+            "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T Network Node",
+            "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"Magic Node",
+        }
     },
 
     init: function () {
@@ -193,6 +214,10 @@ var StakeHome = {
         Common.post('stake', {}, {}, function (res) {
             if (res.base.code === 'SUCCESS') {
 
+                var lan = $.cookie('language')?$.cookie('language'):"en_US";
+
+                var _stakeName = that.stakeName[lan];
+                console.log(lan,_stakeName);
                 var dataArray = res.biz;
                 for (var data of dataArray) {
 
@@ -219,7 +244,7 @@ var StakeHome = {
                     <tr>
                         <td class="text-break">${data.id}</td>
                         <td class="text-break">
-                            <span class="text-primary">${that.stakeName[data.id]?that.stakeName[data.id]:""}</span><br/>
+                            <span class="text-info">${_stakeName[data.id]?_stakeName[data.id]:""}</span><br/>
                             ${data.own.substring(0,8) + " ... " + data.own.substring(data.own.length-8)}<br/>
                             ${isMy}
                             ${that.account[data.own]?"Profit: "+profit:""}
@@ -598,7 +623,10 @@ var StakeDetail = {
     init: function () {
         var that = this;
 
-        that.getAccountlist();
+        setTimeout(function () {
+            that.getAccountlist();
+        },10)
+
 
     },
 
@@ -622,11 +650,10 @@ var StakeDetail = {
                 $('thead tr td:eq(3) strong').text($.i18n.prop('share_detail_price'));
                 $('thead tr td:eq(4) strong').text($.i18n.prop('share_detail_fee'));
                 $('thead tr td:eq(5) strong').text($.i18n.prop('share_detail_profit'));
-                $('thead tr td:eq(6) strong').text($.i18n.prop('share_detail_remaining'));
-                $('thead tr td:eq(7) strong').text($.i18n.prop('share_detail_voted'));
-                $('thead tr td:eq(8) strong').text($.i18n.prop('share_detail_expired'));
-                $('thead tr td:eq(9) strong').text($.i18n.prop('share_detail_missed'));
-                $('thead tr td:eq(10) strong').text($.i18n.prop('share_detail_total'));
+                $('thead tr td:eq(6) strong').text($.i18n.prop('share_detail_returned'));
+                $('thead tr td:eq(7) strong').text($.i18n.prop('share_detail_shared'));
+                $('thead tr td:eq(8) strong').text($.i18n.prop('share_detail_time'));
+
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('stake_pool_title'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('share_detail_title'));
             }
@@ -651,6 +678,8 @@ var StakeDetail = {
                     var totalExpired = new BigNumber(0);
                     var totalMissed = new BigNumber(0);
                     var totalShares = new BigNumber(0);
+                    var totalReturnedProfit = new BigNumber(0);
+                    var totalReturnedNumber = new BigNumber(0);
                     var count = 0 ;
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
@@ -674,26 +703,33 @@ var StakeDetail = {
                                                 totalExpired = totalExpired.plus(new BigNumber(share.expired?share.expired:"0x0", 16));
                                                 totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
                                                 totalShares = totalShares.plus(new BigNumber(share.total,16));
+                                                totalReturnedProfit = totalReturnedProfit.plus(new BigNumber(share.returnProfit,16));
+                                                totalReturnedNumber = totalReturnedNumber.plus(new BigNumber(share.returnNum,16));
 
                                                 var acName = "Account"+(i+1);
                                                 if (data.Name){
                                                     acName = data.Name;
                                                 }
-
                                                 $('tbody').append(`
                                                 <tr>
-                                                <td>${share.id.substring(0, 5) + " ... " + share.id.substring(share.id.length - 5)}</td>
+                                                <td class="text-break">${share.id}</td>
                                                 <td class="text-break">${share.pool}</td>
-                                                <!--<td>${share.addr.substring(0, 8) + " ... " + share.addr.substring(share.addr.length - 8)}</td>-->
                                                 <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
-                                                <td>${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</td>
-                                                <td>${voted.toString(10)}</td>
-                                                <td>${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</td>
-                                                <td>${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</td>
-                                                <td>${new BigNumber(share.total,16).toString(10)}</td>
+                                                <td>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum, 16).toString(10)}</strong><br/>
+                                                </td>
+                                                <td>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><strong class="text-info">${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><strong class="text-info">${voted.toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><strong class="text-info">${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><strong class="text-info">${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/>
+                                                </td>
+                                                <td>${toTime(share.timestamp)}</td>
                                                 </tr>
                                             `);
                                             }
@@ -721,6 +757,8 @@ var StakeDetail = {
                                                 totalExpired = totalExpired.plus(new BigNumber(share.expired?share.expired:"0x0", 16));
                                                 totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
                                                 totalShares = totalShares.plus(new BigNumber(share.total,16));
+                                                totalReturnedProfit = totalReturnedProfit.plus(new BigNumber(share.returnProfit,16));
+                                                totalReturnedNumber = totalReturnedNumber.plus(new BigNumber(share.returnNum,16));
 
                                                 var acName = "Account"+(i+1);
                                                 if (data.Name){
@@ -728,18 +766,24 @@ var StakeDetail = {
                                                 }
                                                 $('tbody').append(`
                                                 <tr>
-                                                <td>${share.id.substring(0, 5) + " ... " + share.id.substring(share.id.length - 5)}</td>
+                                                <td class="text-break">${share.id}</td>
                                                 <td class="text-break">${share.pool}</td>
-                                                <!--<td>${share.addr.substring(0, 8) + " ... " + share.addr.substring(share.addr.length - 8)}</td>-->
                                                 <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
-                                                <td>${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</td>
-                                                <td>${voted.toString(10)}</td>
-                                                <td>${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</td>
-                                                <td>${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</td>
-                                                <td>${new BigNumber(share.total,16).toString(10)}</td>
+                                                <td>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum, 16).toString(10)}</strong><br/>
+                                                </td>
+                                                <td>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><strong class="text-info">${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><strong class="text-info">${voted.toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><strong class="text-info">${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><strong class="text-info">${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/>
+                                                </td>
+                                                <td>${toTime(share.timestamp)}</td>
                                                 </tr>
                                             `);
                                             }
@@ -752,11 +796,22 @@ var StakeDetail = {
 
                     $('tfoot tr td:eq(3) strong').text("Average "+avgPrice.dividedBy(Common.baseDecimal).dividedBy(count===0?1:count).toFixed(6));
                     $('tfoot tr td:eq(5) strong').text(totalProfit.dividedBy(Common.baseDecimal).toFixed(6));
-                    $('tfoot tr td:eq(6) strong').text(totalRemaining.toString(10));
-                    $('tfoot tr td:eq(7) strong').text(totalVoted.toString(10));
-                    $('tfoot tr td:eq(8) strong').text(totalExpired.toString(10));
-                    $('tfoot tr td:eq(9) strong').text(totalMissed.toString(10));
-                    $('tfoot tr td:eq(10) strong').text(totalShares.toString(10));
+
+                    $('tfoot tr td:eq(6) strong').append(
+                        `
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><span class="text-info">${totalReturnedProfit.dividedBy(Common.baseDecimal).toFixed(6)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><span class="text-info">${totalReturnedNumber.toString(10)}</span><br/>
+                        `
+                    );
+
+
+                    $('tfoot tr td:eq(7) strong').append(`
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><span class="text-info">${totalRemaining.toString(10)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><span class="text-info">${totalVoted.toString(10)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><span class="text-info">${totalExpired.toString(10)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><span class="text-info">${totalMissed.toString(10)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><span class="text-info">${totalShares.toString(10)}</span><br/>
+                    `);
                 }
             }
         })
@@ -772,4 +827,15 @@ function GetQueryString(name) {
 
 function goBuy (poolId) {
     window.location.href = 'stake-buy.html?id=' + poolId;
+}
+
+function toTime(timstamp) {
+
+    if(timstamp){
+        var tt = parseFloat(new BigNumber(timstamp,16).toString(10));
+        var dt = new Date(tt*1000);
+        return dt.toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '.');;
+    }else{
+        return "";
+    }
 }

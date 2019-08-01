@@ -48,7 +48,7 @@ var currentLight *SEROLight
 
 func NewSeroLight() {
 
-	logex.Info("App start ,version:", version)
+	logex.Info("App start ,version: ", version)
 	//new AccountManage
 	accountManager, err := makeAccountManager()
 	if err != nil {
