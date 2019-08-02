@@ -718,15 +718,15 @@ var StakeDetail = {
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit?share.returnProfit:"0x0", 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum?share.returnNum:"0x0", 16).toString(10)}</strong><br/>
+                                                    <strong class="text-info">${new BigNumber(share.returnProfit?share.returnProfit:"0x0", 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong>
                                                 </td>
                                                 <td>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><strong class="text-info">${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><strong class="text-info">${voted.toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><strong class="text-info">${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><strong class="text-info">${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</strong><br/>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-danger">${new BigNumber(share.returnNum?share.returnNum:"0x0", 16).toString(10)}</strong><br/>
                                                 </td>
                                                 <td>${toTime(share.timestamp)}</td>
                                                 </tr>
@@ -772,15 +772,15 @@ var StakeDetail = {
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum, 16).toString(10)}</strong><br/>
+                                                    <strong class="text-info">${new BigNumber(share.returnProfit?share.returnProfit:"0x0", 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong>
                                                 </td>
                                                 <td>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><strong class="text-info">${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><strong class="text-info">${voted.toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><strong class="text-info">${new BigNumber(share.expired?share.expired:"0x0", 16).toString(10)}</strong><br/>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><strong class="text-info">${new BigNumber(share.missed?share.missed:"0x0", 16).toString(10)}</strong><br/>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><strong class="text-info">${new BigNumber(share.total,16).toString(10)}</strong><br/><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-danger">${new BigNumber(share.returnNum?share.returnNum:"0x0", 16).toString(10)}</strong><br/>
                                                 </td>
                                                 <td>${toTime(share.timestamp)}</td>
                                                 </tr>
@@ -795,21 +795,19 @@ var StakeDetail = {
 
                     $('tfoot tr td:eq(3) strong').text("Average "+avgPrice.dividedBy(Common.baseDecimal).dividedBy(count===0?1:count).toFixed(6));
                     $('tfoot tr td:eq(5) strong').text(totalProfit.dividedBy(Common.baseDecimal).toFixed(6));
-
                     $('tfoot tr td:eq(6) strong').append(
                         `
-                        <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><span class="text-info">${totalReturnedProfit.dividedBy(Common.baseDecimal).toFixed(6)}</span><br/>
-                        <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><span class="text-info">${totalReturnedNumber.toString(10)}</span><br/>
+                        <span class="text-info">${totalReturnedProfit.dividedBy(Common.baseDecimal).toFixed(6)}</span>                        
                         `
                     );
-
 
                     $('tfoot tr td:eq(7) strong').append(`
                         <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><span class="text-info">${totalRemaining.toString(10)}</span><br/>
                         <small class="text-gray-500">${$.i18n.prop('share_detail_voted')}: </small><span class="text-info">${totalVoted.toString(10)}</span><br/>
                         <small class="text-gray-500">${$.i18n.prop('share_detail_expired')}: </small><span class="text-info">${totalExpired.toString(10)}</span><br/>
                         <small class="text-gray-500">${$.i18n.prop('share_detail_missed')}: </small><span class="text-info">${totalMissed.toString(10)}</span><br/>
-                        <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><span class="text-info">${totalShares.toString(10)}</span><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_total')}: </small><span class="text-info">${totalShares.toString(10)}</span><br/><br/>
+                        <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><span class="text-danger">${totalReturnedNumber.toString(10)}</span><br/>
                     `);
                 }
             }
