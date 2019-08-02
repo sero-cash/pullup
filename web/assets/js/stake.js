@@ -4,7 +4,7 @@ var StakeHome = {
 
     stakeName:{
         zh_CN:{
-            "0x8831a057913daf09df0a6088d1f46ecf7ff8fb4254e3dddb28442d45b3fd187f":"赛罗",
+            "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"赛罗",
             "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC",
             "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"盖世",
             "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"币龙驴池",
@@ -23,9 +23,9 @@ var StakeHome = {
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
         },
         en_US:{
-            "0x8831a057913daf09df0a6088d1f46ecf7ff8fb4254e3dddb28442d45b3fd187f":"SERO Node (sero.im)",
+            "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"SERO Node (sero.im)",
             "0x82abc9d07aa976761cede08e53de8d5057efd81fc0c443c59b593231e69b4291":"SERDAC Node",
-            "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"The Geshi Node",
+            "0xbde17513156dbbd0730b7dde954ce5d66930d646ac60a2f118572f56960c9d59":"Galaxy Node",
             "0xfeb23ac54e8d93994689bd782140b5804cfeec9d51e5d5986b35d0d843d1c146":"Coin Dragon Pool Node",
             "0x98f53bdad932c3865eebb229d0f74c4d2ee40440cfc2d34bf2ddec0a836f6f8d":"Newbit Node",
             "0xc8db791edb4d2063f625de473a5061f9323114cb9d6de6bdfc82bbbba82642f0":"Pangu Node",
@@ -38,7 +38,7 @@ var StakeHome = {
             "0xbdb9555b61613f8b13fd16918c9a09e407c3e96afdf8fe5dc887317eb0253cd7":"Ant Node",
             "0x98d84dc25b65cf32a8488f04e728396fa96a15db682d79cde213a2368abb84d8":"HyperPay Node",
             "0x86fea8e64ee24e515846642822ab7c0fabaf3f2879fb3064f267047d300b76f3":"Nine Node",
-            "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T Network Node",
+            "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"Tokencan.net Node",
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"Magic Node",
         }
     },
@@ -217,7 +217,6 @@ var StakeHome = {
                 var lan = $.cookie('language')?$.cookie('language'):"en_US";
 
                 var _stakeName = that.stakeName[lan];
-                console.log(lan,_stakeName);
                 var dataArray = res.biz;
                 for (var data of dataArray) {
 
@@ -703,8 +702,8 @@ var StakeDetail = {
                                                 totalExpired = totalExpired.plus(new BigNumber(share.expired?share.expired:"0x0", 16));
                                                 totalMissed = totalMissed.plus(new BigNumber(share.missed?share.missed:"0x0", 16));
                                                 totalShares = totalShares.plus(new BigNumber(share.total,16));
-                                                totalReturnedProfit = totalReturnedProfit.plus(new BigNumber(share.returnProfit,16));
-                                                totalReturnedNumber = totalReturnedNumber.plus(new BigNumber(share.returnNum,16));
+                                                totalReturnedProfit = totalReturnedProfit.plus(new BigNumber(share.returnProfit?share.returnProfit:"0x0",16));
+                                                totalReturnedNumber = totalReturnedNumber.plus(new BigNumber(share.returnNum?share.returnNum:"0x0",16));
 
                                                 var acName = "Account"+(i+1);
                                                 if (data.Name){
@@ -719,8 +718,8 @@ var StakeDetail = {
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
-                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum, 16).toString(10)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_profit')}: </small><strong class="text-info">${new BigNumber(share.returnProfit?share.returnProfit:"0x0", 16).dividedBy(Common.baseDecimal).toFixed(6)}</strong><br/>
+                                                    <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><strong class="text-info">${new BigNumber(share.returnNum?share.returnNum:"0x0", 16).toString(10)}</strong><br/>
                                                 </td>
                                                 <td>
                                                     <small class="text-gray-500">${$.i18n.prop('share_detail_remaining')}: </small><strong class="text-info">${new BigNumber(share.remaining?share.remaining:"0x0", 16).toString(10)}</strong><br/>
@@ -834,8 +833,29 @@ function toTime(timstamp) {
     if(timstamp){
         var tt = parseFloat(new BigNumber(timstamp,16).toString(10));
         var dt = new Date(tt*1000);
-        return dt.toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '.');;
+        // return dt.toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '.');
+        return convertUTCTimeToLocalTime(dt);
     }else{
         return "";
     }
+}
+
+function convertUTCTimeToLocalTime (UTCDateString) {
+    if(!UTCDateString){
+        return '-';
+    }
+    function formatFunc(str) {    //格式化显示
+        return str > 9 ? str : '0' + str
+    }
+    var date2 = new Date(UTCDateString);     //这步是关键
+    var year = date2.getFullYear();
+    var mon = formatFunc(date2.getMonth() + 1);
+    var day = formatFunc(date2.getDate());
+    var hour = date2.getHours();
+    var noon = hour >= 12 ? 'PM' : 'AM';
+    hour = hour>=12?hour-12:hour;
+    hour = formatFunc(hour);
+    var min = formatFunc(date2.getMinutes());
+    var dateStr = year+'-'+mon+'-'+day+' '+noon +' '+hour+':'+min;
+    return dateStr;
 }
