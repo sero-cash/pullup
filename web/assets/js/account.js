@@ -64,11 +64,7 @@ var Account = {
                         window.location.href = "index.html";
                     });
                     $('.modal-body p:eq(0)').text(res.biz.address.substring(0,20) + " ... " + res.biz.address.substring(res.biz.address.length-20));
-                    $('.modal-body p:eq(1)').empty().append(`
-                    <canvas id="myCanvas" width="600" height="300">
-                     <p>${res.biz.mnemonic}</p>
-                    </canvas>
-                    `);
+                    $('.modal-body p:eq(1)').text(res.biz.mnemonic);
                     $('#myModal').modal({backdrop: 'static', keyboard: false});
                     $("#sub1").attr('disabled', false);
                 } else {
