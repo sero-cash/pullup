@@ -217,7 +217,7 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 	if data, err := self.db.Get(append(onlyUseHashPkrKey, account.pk[:]...)); err == nil {
 		value := decodeNumber(data)
 		if value == 1 {
-			self.useHasPkr.Store(account.pk, 1)
+			self.useHashPkr.Store(account.pk, 1)
 		}
 	}
 }

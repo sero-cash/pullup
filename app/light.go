@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/pborman/uuid"
 	"github.com/sero-cash/go-czero-import/keys"
 	"github.com/sero-cash/go-sero/accounts"
+	"github.com/sero-cash/go-sero/accounts/abi"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/address"
 	"github.com/sero-cash/go-sero/common/hexutil"
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/event"
+	"github.com/sero-cash/go-sero/internal/ethapi"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
 	"github.com/sero-cash/go-sero/serodb"
@@ -35,16 +38,21 @@ type SEROLight struct {
 	pkrIndexMap    sync.Map
 	sli            flight.SLI
 	// SERO wallet subscription
-	feed    event.Feed
-	updater event.Subscription        // Wallet update subscriptions for all backends
-	update  chan accounts.WalletEvent // Subscription sink for backend wallet changes
-	quit    chan chan error
-	lock    sync.RWMutex
+	feed       event.Feed
+	updater    event.Subscription        // Wallet update subscriptions for all backends
+	update     chan accounts.WalletEvent // Subscription sink for backend wallet changes
+	quit       chan chan error
+	lock       sync.RWMutex
+	useHashPkr sync.Map
 
-	useHasPkr sync.Map
+	sendTxMap sync.Map
 }
 
 var currentLight *SEROLight
+
+func CurrentLight() *SEROLight {
+	return currentLight
+}
 
 func NewSeroLight() {
 
@@ -96,7 +104,7 @@ func NewSeroLight() {
 	light.pkrIndexMap = sync.Map{}
 	light.accounts = sync.Map{}
 	light.usedFlag = sync.Map{}
-	light.useHasPkr = sync.Map{}
+	light.useHashPkr = sync.Map{}
 
 	currentLight = light
 
@@ -131,7 +139,7 @@ func (self *SEROLight) SyncOut() {
 		pk := key.(keys.Uint512)
 		otreq := value.(outReq)
 		for {
-			var start, end = otreq.Num, otreq.Num + fetchCount
+			var start, end = otreq.Num, otreq.Num+fetchCount
 			account := self.getAccountByPk(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
@@ -153,7 +161,7 @@ func (self *SEROLight) SyncOut() {
 			}
 
 			if rtn.useHashPkr {
-				self.useHasPkr.Store(account.pk, 1)
+				self.useHashPkr.Store(account.pk, 1)
 				self.db.Put(append(onlyUseHashPkrKey, pk[:]...), encodeNumber(1))
 			}
 
@@ -225,7 +233,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 				}
 			}
 
-			if _, ok := self.useHasPkr.Load(account.pk); !ok {
+			if _, ok := self.useHashPkr.Load(account.pk); !ok {
 				if pkrTypeMap[pkr] == PRK_TYPE_HASH {
 					hasResWithHashPkr = true
 				} else if pkrTypeMap[pkr] == PKR_TYPE_NUM {
@@ -247,7 +255,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 		}
 	}
 	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
-	if _, ok := self.useHasPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
+	if _, ok := self.useHashPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
 		rtn.useHashPkr = true
 	}
 
@@ -276,7 +284,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[keys.PKr]
 	for i := int(pkrIndex); i > pkrNum; i-- {
 		pkrHash := self.createPkrHash(account.pk, account.tk, uint64(i))
 		pkrs = append(pkrs, base58.Encode(pkrHash[:]))
-		if _, ok := self.useHasPkr.Load(account.pk); !ok {
+		if _, ok := self.useHashPkr.Load(account.pk); !ok {
 			pkrOld := self.createPkr(account.pk, uint64(i))
 			pkrs = append(pkrs, base58.Encode(pkrOld[:]))
 			pkrTypeMap[pkrHash] = PRK_TYPE_HASH
@@ -805,4 +813,120 @@ func (self *SEROLight) GetCurrencyNumber(pk keys.Uint512) uint64 {
 		return 0
 	}
 	return value.(outReq).Num
+}
+
+func (self *SEROLight) GenTxNo(ctq ContractTxReq) (txNo string, err error) {
+
+	txNo = uuid.NewUUID().String()
+	self.sendTxMap.Store(txNo, ctq)
+
+	return txNo, err
+}
+
+func (self *SEROLight) GetPreSendTx(txNo string) (ctq ContractTxReq, err error) {
+	if value, ok := self.sendTxMap.Load(txNo); ok {
+		ctq = value.(ContractTxReq)
+		return ctq, nil
+	} else {
+		return ctq, fmt.Errorf("tx_no not find")
+	}
+}
+
+func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err error) {
+
+	if value, ok := self.sendTxMap.Load(txNo); ok {
+		ctq := value.(ContractTxReq)
+
+		abi_c := abi.ABI{}
+		json.Unmarshal([]byte(ctq.Abi), &abi_c)
+		retunData, err := ethapi.PackConstruct(&abi_c, []byte(ctq.Data), ctq.Args)
+		if err != nil {
+			return "", err
+		}
+		gasPrice, err := NewBigIntFromString(ctq.GasPrice, 10)
+		if err != nil {
+			return "", err
+		} else {
+			if gasPrice.Sign() < 0 {
+				return "", fmt.Errorf("gasPrice < 0")
+			}
+		}
+
+		amount, err := NewBigIntFromString(ctq.Value, 10)
+		if err != nil {
+			return "", err
+		} else {
+			if amount.Sign() < 0 {
+				return "", fmt.Errorf("amount < 0")
+			}
+		}
+		fromPk := address.Base58ToAccount(ctq.From).ToUint512()
+		var RefundTo *keys.PKr
+		ac := self.getAccountByPk(*fromPk)
+		if ac == nil {
+			logex.Errorf("account not found")
+			return txHash, fmt.Errorf("account not found")
+		}
+
+		if value, ok := self.pkrIndexMap.Load(*fromPk); !ok {
+			logex.Errorf("pkrIndexMap not store from pk")
+			return txHash, fmt.Errorf("account not found")
+		} else {
+			outReq := value.(outReq)
+			RefundTo = &outReq.Pkr
+		}
+
+		account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
+		wallet, err := self.accountManager.Find(account)
+		if err != nil {
+			return txHash, err
+		}
+		seed, err := wallet.GetSeedWithPassphrase(password)
+		if err != nil {
+			return txHash, err
+		}
+
+		preTxParam := prepare.PreTxParam{}
+		preTxParam.From = *fromPk
+		preTxParam.RefundTo = RefundTo
+		preTxParam.GasPrice = big.NewInt(0).Exp(big.NewInt(10), big.NewInt(9), nil)
+		preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
+		preTxParam.Cmds.Contract.Data = retunData
+
+		param, err := self.GenTx(preTxParam)
+		if err != nil {
+			return txHash, err
+		}
+		sk := keys.Seed2Sk(seed.SeedToUint256())
+		gtx, err := flight.SignTx(&sk, param)
+		if err != nil {
+			return txHash, err
+		}
+
+		txHash = hexutil.Encode(gtx.Hash[:])
+
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
+		if _, err := sync.Do(); err != nil {
+			return txHash, err
+		}
+
+		utxoIn := Utxo{Pkr: *RefundTo, Root: gtx.Hash, TxHash: gtx.Hash, Fee: *fee}
+		self.storePeddingUtxo(param, "SERO", amount, utxoIn, fromPk)
+
+		return txHash, nil
+	} else {
+		return txHash, fmt.Errorf("tx_no not find")
+	}
+	return txHash, err
+}
+
+type ContractTxReq struct {
+	From     string   `json:"from"`
+	To       string   `json:"to"`
+	Value    string   `json:"value"`
+	GasPrice string   `json:"gas_price"`
+	Gas      string   `json:"gas"`
+	Data     string   `json:"data"`
+	Args     []string `json:"args"`
+	Abi      string   `json:"abi"`
 }

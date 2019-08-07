@@ -18,7 +18,7 @@ type Sync struct {
 }
 
 type ErrorMsg struct {
-	Code int `json:"code"`
+	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
@@ -69,3 +69,72 @@ type JSONRpcResp struct {
 	Result *json.RawMessage       `json:"result"`
 	Error  map[string]interface{} `json:"error"`
 }
+
+type JSONRpcReq struct {
+	Id     *json.RawMessage  `json:"id"`
+	Method PULLUP_RPC_METHOD `json:"method"`
+	Params json.RawMessage   `json:"params"`
+}
+
+// === pullup rpc handler
+func HandlePullupRpc(req JSONRpcReq) (resp JSONRpcResp) {
+	switch req.Method {
+	case RPC_METHOD_GenTxNo:
+		resp.Id = req.Id
+		ctq := ContractTxReq{}
+		err := json.Unmarshal(req.Params[:], &ctq)
+		if err != nil {
+			resp.Error["error"] = err
+			return resp
+		}
+		txNo, err := currentLight.GenTxNo(ctq)
+		if err != nil {
+			resp.Error["error"] = err
+			return resp
+		}
+		var result json.RawMessage
+		copy(result[:], []byte(txNo)[:])
+		resp.Result = &result
+		break
+	case RPC_METHOD_GET_TX:
+		ctq, err := currentLight.GetPreSendTx(string(req.Params[:]))
+		if err != nil {
+			resp.Error["error"] = err
+			return resp
+		}
+		ctqByte, err := json.Marshal(ctq)
+		var result json.RawMessage
+		copy(result[:], ctqByte[:])
+		resp.Result = &result
+		break
+	case RPC_METHOD_SEND_TX:
+		reqTx := sentTxReq{}
+		err := json.Unmarshal(req.Params[:], &reqTx)
+		if err != nil {
+			resp.Error["error"] = err
+		}
+		txHash, err := currentLight.SendContractTx(reqTx.TxNo, reqTx.Password)
+		if err != nil {
+			resp.Error["error"] = err
+			return resp
+		}
+		var result json.RawMessage
+		copy(result[:], []byte(txHash)[:])
+		resp.Result = &result
+		break
+	}
+	return resp
+}
+
+type sentTxReq struct {
+	Password string `json:"password"`
+	TxNo     string `json:"tx_no"`
+}
+
+type PULLUP_RPC_METHOD string
+
+var (
+	RPC_METHOD_GenTxNo PULLUP_RPC_METHOD = "gen_tx_no"
+	RPC_METHOD_GET_TX  PULLUP_RPC_METHOD = "get_tx"
+	RPC_METHOD_SEND_TX PULLUP_RPC_METHOD = "send_tx"
+)
