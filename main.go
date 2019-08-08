@@ -8,9 +8,10 @@ import (
 	"github.com/sero-cash/go-sero/pullup/app"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
-	"github.com/zserge/webview"
+	"github.com/sero-cash/go-sero/pullup/lorca"
 	"net"
 	"net/http"
+	"runtime"
 )
 
 func main() {
@@ -246,16 +247,40 @@ func main() {
 
 	logex.Info("http handler loaded successful.")
 
+
 	ln, err := net.Listen("tcp", "127.0.0.1:2345")
 	if err != nil {
 		logex.Fatal(err)
 	}
 	defer ln.Close()
 	go func() {
+		// Set up your http server here
 		logex.Fatal(http.Serve(ln, nil))
 	}()
 
-	webview.Open("SERO PULLUP WALLET", app.GetWebHost(), 1400, 900, true)
+	// init ui
+	args := []string{}
+	if runtime.GOOS == "linux" {
+		args = append(args, "--class=Lorca")
+	}
+	ui, err := lorca.New("", "", 1400, 768, args...)
+	if err != nil {
+		logex.Fatal(err)
+	}
+	defer ui.Close()
+	go func() {
+		// A simple way to know when UI is ready (uses body.onload event in JS)
+		if err = ui.Bind("start", func() {
+			logex.Info("UI is ready")
+		}); err != nil {
+			logex.Fatal(err)
+		}
+		if err = ui.Load(app.GetWebHost()); err != nil {
+			logex.Fatal(err)
+		}
+
+	}()
+	<-ui.Done()
 }
 
 func accessControl(h http.Handler) http.Handler {

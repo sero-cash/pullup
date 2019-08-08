@@ -98,6 +98,7 @@ var Detail = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('account_detail'));
                 $('h3:eq(0)').text($.i18n.prop('account_detail'));
@@ -359,28 +360,39 @@ var Detail = {
                                 }else{
                                     amount = amount.dividedBy(cDecimal).toFixed(res.biz);
                                 }
+                                var fee = 0 ;
+                                if(tx.Receipt){
+                                    var receipt = tx.Receipt;
+                                    fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
+                                }
                                 $('tbody').append(
                                     `
                                     <tr>
                                         <td>${i + 1}</td>
-                                        <td class="text-info"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash.substring(0, 5) + " ... " + tx.Hash.substring(tx.Hash.length - 5)}</a></td>
-                                        <td>${tx.Block==999999999999999?0:tx.Block}</td>
+                                        <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
+                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
                                         <td><span class="text-success">${tx.Block!=999999999999999 ? 'Completed' : 'Pending'}</span></td>
                                         <td>${amount}</td>
-                                        <td>${new BigNumber(tx.Fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
+                                        <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
+                                        <td>${convertUTCDate(tx.Timestamp)}</td>
                                     </tr>
                                     `
                                             );
                             });
                         }else{
+                            var fee = new BigNumber(tx.Fee) ;
+                            if(tx.Receipt){
+                                var receipt = tx.Receipt;
+                                fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
+                            }
+
                             if( amount.comparedTo(new BigNumber(0))<0 && tx.Block !=999999999999999){
-                                var fee = new BigNumber(tx.Fee)
                                 if(amount.plus(fee) < 0 ){
                                     amount = amount.plus(fee)
                                 }else{
-                                    tx.Fee = 0;
+                                    fee = 0;
                                 }
                             }
                             amount = amount.dividedBy(Common.baseDecimal).toFixed(6);
@@ -388,13 +400,14 @@ var Detail = {
                                 `
                             <tr>
                                 <td>${i + 1}</td>
-                                <td class="text-info"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash.substring(0, 5) + " ... " + tx.Hash.substring(tx.Hash.length - 5)}</a></td>
-                                <td>${tx.Block==999999999999999?0:tx.Block}</td>
+                                <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
+                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
                                 <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                 <td>${tx.Currency}</td>
                                 <td><span class="text-success">${tx.Block !=999999999999999 ? 'Completed' : 'Pending'}</span></td>
                                 <td>${amount}</td>
-                                <td>${new BigNumber(tx.Fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
+                                <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
+                                <td>${convertUTCDate(tx.Timestamp)}</td>
                             </tr>
                             `
                                 );
@@ -445,6 +458,8 @@ var Keystore = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
+
                 $('h3:eq(0)').text($.i18n.prop('home_account'));
                 $('.total').text($.i18n.prop('home_account_total'));
                 $('.blockHeight').text($.i18n.prop('home_account_height'));
@@ -566,4 +581,12 @@ function GetQueryString(name) {
     var r = window.location.search.substr(1).match(reg);
     if (r != null) return unescape(r[2]);
     return null;
+}
+
+function convertUTCDate(dateTimestamp){
+    if(dateTimestamp && dateTimestamp>0){
+        let cDate = new Date(dateTimestamp*1000);
+        return (cDate.getMonth() + 1) + "/" + cDate.getDate() + " " + cDate.getHours() + ":" + cDate.getMinutes();
+    }
+    return ""
 }

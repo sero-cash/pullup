@@ -51,7 +51,7 @@ var StakeHome = {
         that.getAccountlist();
 
         $('.close').bind('click', function () {
-            $('.modal').hide();
+            $('.modal-deploy').hide();
             $('.modal-footer button:eq(1)').unbind('click');
             $("#sub1").attr('disabled', false);
         });
@@ -94,6 +94,8 @@ var StakeHome = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
+
                 $('h3:eq(0)').text($.i18n.prop('stake_share_title'));
                 $('.showShareDetail').text($.i18n.prop('stake_share_button'));
                 $('.totalProfit div:eq(0)').text($.i18n.prop('stake_share_profit'));
@@ -299,6 +301,8 @@ var StakeRegister = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
+
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('stake_pool_title'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('stake_pool_register'));
                 $('h4').text($.i18n.prop('stake_pool_register'));
@@ -458,6 +462,7 @@ var StakeBuyer = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
 
                 $('.breadcrumb li:eq(0) a').text($.i18n.prop('stake_pool_title'));
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('stake_pool_buyShare'));
@@ -506,7 +511,7 @@ var StakeBuyer = {
         }
 
         if (from !== "" ){
-            Common.postRpc("stake_estimateShares",[params],function (res) {
+            Common.postSeroRpc("stake_estimateShares",[params],function (res) {
                 if(res.result){
                     var result = res.result;
                     var avPrice = result.avPrice;
@@ -644,6 +649,7 @@ var StakeDetail = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
                 $('.shareDetail').text($.i18n.prop('share_detail_title'));
                 $('thead tr td:eq(0) strong').text($.i18n.prop('share_detail_shareId'));
                 $('thead tr td:eq(1) strong').text($.i18n.prop('share_detail_poolId'));

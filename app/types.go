@@ -25,16 +25,17 @@ type BlockInfo struct {
 }
 
 type Utxo struct {
-	Pkr    keys.PKr
-	Root   keys.Uint256
-	TxHash keys.Uint256
-	Nils   []keys.Uint256
-	Num    uint64
-	Asset  assets.Asset
-	IsZ    bool
-	flag   int
-	Out    txtool.Out
-	Fee    big.Int
+	Pkr       keys.PKr
+	Root      keys.Uint256
+	TxHash    keys.Uint256
+	Nils      []keys.Uint256
+	Num       uint64
+	Asset     assets.Asset
+	IsZ       bool
+	flag      int
+	Out       txtool.Out
+	Fee       big.Int
+	Timestamp uint64
 }
 
 // stake pool
@@ -55,4 +56,28 @@ type StakePool struct {
 	Tx          string `json:"tx"`
 	VoteAddress string `json:"voteAddress"`
 	WishVoteNum string `json:"wishVoteNum"`
+}
+
+type TxReceipt struct {
+	// Consensus fields
+	Status            uint64
+	CumulativeGasUsed uint64
+
+	// Implementation fields (don't reorder!)
+	TxHash          keys.Uint256
+	ContractAddress string
+	GasUsed         uint64
+
+	//Staking
+	PoolId  string
+	ShareId string
+
+	BlockNumber uint64
+	BlockHash   string
+}
+
+type BlockEx struct {
+	BlockNumber uint64
+	Timestamp   uint64
+	BlockHash   string
 }

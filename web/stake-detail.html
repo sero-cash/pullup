@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Stake Detail- SERO</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
@@ -16,16 +17,8 @@
 <div id="wrapper">
     <div class="d-flex flex-column" id="content-wrapper">
         <div id="content">
-            <nav class="navbar navbar-light navbar-expand fixed-top bg-primary shadow mb-4 topbar static-top">
-                <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
-                    <ul class="nav navbar-nav">
-                        <li class="nav-item" role="presentation"><a class="nav-link" href="index.html">Home</a></li>
-                        <li class="nav-item" role="presentation"><a class="nav-link" href="transfer.html">Send</a></li>
-                        <li class="nav-item" role="presentation"><a class="nav-link  text-light" href="stake.html">Stake</a></li>
-                    </ul>
-                    <span class="d-none d-lg-inline text-light mr-2 language">English</span>
-                </div>
-            </nav>
+            <div class="header">
+            </div>
             <nav aria-label="breadcrumb" style="margin-top: 80px;">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="stake.html">Stake</a></li>
@@ -85,6 +78,7 @@
 
             </div>
         </div>
+        <div class="footer"></div>
     </div>
     <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
 </div>
@@ -102,6 +96,12 @@
 <script src="assets/js/stake.js"></script>
 
 <script>
+    $('.header').load('header.html');
+    $('.footer').load('footer.html');
+    setTimeout(function () {
+        $("nav div ul li:eq(2) a").addClass('text-light');
+    },5);
+
 
     Common.app = StakeDetail;
 

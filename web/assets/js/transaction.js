@@ -17,6 +17,7 @@ var Transaction = {
                 $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
                 $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
 
                 $('h4:eq(0)').text($.i18n.prop('send_tx'));
                 $('label:eq(0)').text($.i18n.prop('send_tx_from'));

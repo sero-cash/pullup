@@ -1,5 +1,5 @@
 var Common = {
-    host: 'http://127.0.0.1:5439',
+    host: 'http://127.0.0.1:2345',
 
     seroRpcHost: '',
 
@@ -11,23 +11,23 @@ var Common = {
 
     init: function () {
         var that = this;
-        that.app.init();
-        that.getLang();
-
-        $('.language').bind('click', function () {
-            var lang_code = $.cookie('language');
-
-            if ('zh_CN' === lang_code) {
-                $.cookie('language', 'en_US');
-                $('.language').text('简体中文');
-            } else {
-                $.cookie('language', 'zh_CN');
-                $('.language').text('English');
-            }
-
+        setTimeout(function () {
+            that.app.init();
             that.getLang();
-        });
+            $('.language').bind('click', function () {
+                var lang_code = $.cookie('language');
 
+                if ('zh_CN' === lang_code) {
+                    $.cookie('language', 'en_US');
+                    $('.language').text('简体中文');
+                } else {
+                    $.cookie('language', 'zh_CN');
+                    $('.language').text('English');
+                }
+
+                that.getLang();
+            });
+        },10)
     },
 
     getLang: function () {
@@ -114,7 +114,7 @@ var Common = {
     },
 
     //_params is an array
-    postRpc: function (_method, _params, callback) {
+    postSeroRpc: function (_method, _params, callback) {
         var that = this;
         var postData = {
             id: 0,
@@ -125,6 +125,57 @@ var Common = {
 
         $.ajax({
             url:  that.host + '/rpc',
+            type: 'post',
+            dataType: 'json',
+            async: true,
+            data: JSON.stringify(postData),
+            beforeSend: function () {
+            },
+            success: function (res) {
+                if (callback) {
+                    callback(res)
+                }
+            }
+        })
+    },
+
+    //_params is an array
+    postSeroRpcSync: function (_method, _params, callback) {
+        var that = this;
+        var postData = {
+            id: 0,
+            jsonrpc: "2.0",
+            method: _method,
+            params: _params,
+        };
+
+        $.ajax({
+            url:  that.host + '/rpc',
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            data: JSON.stringify(postData),
+            beforeSend: function () {
+            },
+            success: function (res) {
+                if (callback) {
+                    callback(res)
+                }
+            }
+        })
+    },
+
+    //_params is an array
+    postPullupRpc: function (_method, _params, callback) {
+        var that = this;
+        var postData = {
+            id: 0,
+            method: _method,
+            params: _params,
+        };
+
+        $.ajax({
+            url:  that.host + '/pullup_rpc',
             type: 'post',
             dataType: 'json',
             async: true,
