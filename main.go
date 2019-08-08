@@ -237,7 +237,10 @@ func main() {
 			return
 		}
 		resp :=app.HandlePullupRpc(req)
-		json.NewEncoder(w).Encode(resp)
+		err := json.NewEncoder(w).Encode(resp)
+		if err!=nil{
+			logex.Errorf("HandlePullupRpc resp json err: ",err)
+		}
 		return
 	})
 

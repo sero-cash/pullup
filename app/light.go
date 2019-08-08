@@ -832,14 +832,12 @@ func (self *SEROLight) GetPreSendTx(txNo string) (ctq ContractTxReq, err error) 
 	}
 }
 
-func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err error) {
+func (self *SEROLight) DeployContractTx(txNo, password string) (txHash string, err error) {
 
 	if value, ok := self.sendTxMap.Load(txNo); ok {
 		ctq := value.(ContractTxReq)
 
-		abi_c := abi.ABI{}
-		json.Unmarshal([]byte(ctq.Abi), &abi_c)
-		retunData, err := ethapi.PackConstruct(&abi_c, []byte(ctq.Data), ctq.Args)
+		retunData, err := ethapi.PackConstruct(&ctq.Abi, []byte(ctq.Data), ctq.Args)
 		if err != nil {
 			return "", err
 		}
@@ -851,7 +849,14 @@ func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err
 				return "", fmt.Errorf("gasPrice < 0")
 			}
 		}
-
+		gas, err := NewBigIntFromString(ctq.Gas, 10)
+		if err != nil {
+			return "", err
+		} else {
+			if gas.Sign() < 0 {
+				return "", fmt.Errorf("gas < 0")
+			}
+		}
 		amount, err := NewBigIntFromString(ctq.Value, 10)
 		if err != nil {
 			return "", err
@@ -867,14 +872,10 @@ func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err
 			logex.Errorf("account not found")
 			return txHash, fmt.Errorf("account not found")
 		}
-
-		if value, ok := self.pkrIndexMap.Load(*fromPk); !ok {
-			logex.Errorf("pkrIndexMap not store from pk")
-			return txHash, fmt.Errorf("account not found")
-		} else {
-			outReq := value.(outReq)
-			RefundTo = &outReq.Pkr
-		}
+		random := keys.RandUint128()
+		copy(random[:], retunData[:16])
+		fromPkr := self.genPkrContract(fromPk, random)
+		RefundTo = &fromPkr
 
 		account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
 		wallet, err := self.accountManager.Find(account)
@@ -886,12 +887,20 @@ func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err
 			return txHash, err
 		}
 
+		fee := big.NewInt(0).Mul(gas, gasPrice)
 		preTxParam := prepare.PreTxParam{}
 		preTxParam.From = *fromPk
 		preTxParam.RefundTo = RefundTo
-		preTxParam.GasPrice = big.NewInt(0).Exp(big.NewInt(10), big.NewInt(9), nil)
+		preTxParam.GasPrice = gasPrice
 		preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
-		preTxParam.Cmds.Contract.Data = retunData
+		preTxParam.Cmds = prepare.Cmds{
+			Contract: &stx.ContractCmd{
+				Data: retunData,
+				Asset: assets.Asset{
+					Tkn: &assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*amount)},
+				},
+			},
+		}
 
 		param, err := self.GenTx(preTxParam)
 		if err != nil {
@@ -920,13 +929,129 @@ func (self *SEROLight) SendContractTx(txNo, password string) (txHash string, err
 	return txHash, err
 }
 
+func (self *SEROLight) ExecuteContractTx(txNo, password string) (txHash string, err error) {
+
+	if value, ok := self.sendTxMap.Load(txNo); ok {
+		ctq := value.(ContractTxReq)
+		//abi *abi.ABI,contractAddr common.ContractAddress,methodName string,args []string
+		contractAddr := ethapi.ContractAddress{}
+		copy(contractAddr[:],ctq.To[:])
+		//retunData, err := ethapi.PackMethod(&ctq.Abi, contractAddr, ctq.MethodName, ctq.Args)
+
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_packMethod", Params: []interface{}{ctq.Abi,contractAddr,ctq.MethodName,ctq.Args}}
+		data, err := sync.Do()
+		if  err != nil {
+			return txHash, err
+		}
+		returnData,err := data.Result.MarshalJSON()
+		if err != nil {
+			return "", err
+		}
+		gasPrice, err := NewBigIntFromString(ctq.GasPrice, 10)
+		if err != nil {
+			return "", err
+		} else {
+			if gasPrice.Sign() < 0 {
+				return "", fmt.Errorf("gasPrice < 0")
+			}
+		}
+		gas, err := NewBigIntFromString(ctq.Gas, 10)
+		if err != nil {
+			return "", err
+		} else {
+			if gas.Sign() < 0 {
+				return "", fmt.Errorf("gas < 0")
+			}
+		}
+		amount := big.NewInt(0)
+		if ctq.Value != "" {
+			amount, err := NewBigIntFromString(ctq.Value, 10)
+			if err != nil {
+				return "", err
+			} else {
+				if amount.Sign() < 0 {
+					return "", fmt.Errorf("amount < 0")
+				}
+			}
+		}
+
+		fromPk := address.Base58ToAccount(ctq.From).ToUint512()
+		var RefundTo *keys.PKr
+		ac := self.getAccountByPk(*fromPk)
+		if ac == nil {
+			logex.Errorf("account not found")
+			return txHash, fmt.Errorf("account not found")
+		}
+
+		random := keys.RandUint128()
+		copy(random[:], returnData[:16])
+		fromPkr := self.genPkrContract(fromPk, random)
+		RefundTo = &fromPkr
+
+		account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
+		wallet, err := self.accountManager.Find(account)
+		if err != nil {
+			return txHash, err
+		}
+		seed, err := wallet.GetSeedWithPassphrase(password)
+		if err != nil {
+			return txHash, err
+		}
+
+		contractTo := keys.PKr{}
+		copy(contractTo[:], ctq.To[:])
+
+		fee := big.NewInt(0).Mul(gas, gasPrice)
+		preTxParam := prepare.PreTxParam{}
+		preTxParam.From = *fromPk
+		preTxParam.RefundTo = RefundTo
+		preTxParam.GasPrice = gasPrice
+		preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
+		preTxParam.Cmds = prepare.Cmds{
+			Contract: &stx.ContractCmd{
+				Data: returnData,
+				To:   &contractTo,
+				Asset: assets.Asset{
+					Tkn: &assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*amount)},
+				},
+			},
+		}
+
+		param, err := self.GenTx(preTxParam)
+		if err != nil {
+			return txHash, err
+		}
+		sk := keys.Seed2Sk(seed.SeedToUint256())
+		gtx, err := flight.SignTx(&sk, param)
+		if err != nil {
+			return txHash, err
+		}
+
+		txHash = hexutil.Encode(gtx.Hash[:])
+
+		sync = Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
+		if _, err := sync.Do(); err != nil {
+			return txHash, err
+		}
+
+		utxoIn := Utxo{Pkr: *RefundTo, Root: gtx.Hash, TxHash: gtx.Hash, Fee: *fee}
+		self.storePeddingUtxo(param, "SERO", amount, utxoIn, fromPk)
+
+		return txHash, nil
+	} else {
+		return txHash, fmt.Errorf("tx_no not find")
+	}
+	return txHash, err
+}
+
 type ContractTxReq struct {
-	From     string   `json:"from"`
-	To       string   `json:"to"`
-	Value    string   `json:"value"`
-	GasPrice string   `json:"gas_price"`
-	Gas      string   `json:"gas"`
-	Data     string   `json:"data"`
-	Args     []string `json:"args"`
-	Abi      string   `json:"abi"`
+	From       string                 `json:"from"`
+	To         common.Address `json:"to"`
+	Value      string                 `json:"value"`
+	GasPrice   string                 `json:"gas_price"`
+	Gas        string                 `json:"gas"`
+	Data       hexutil.Bytes          `json:"data"`
+	MethodName string                 `json:"method_name"`
+	Args       []string               `json:"args"`
+	Abi        abi.ABI                `json:"abi"`
 }

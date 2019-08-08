@@ -239,3 +239,9 @@ func (self *SEROLight) createPkrHash(pk *keys.Uint512, tk *keys.Uint512, index u
 
 	return pkr
 }
+
+func (self *SEROLight) genPkrContract(pk *keys.Uint512, random keys.Uint128) keys.PKr {
+	pkr := keys.Addr2PKr(pk, random.ToUint256().NewRef())
+	fmt.Println("execute contract pkr: ", base58.Encode(pkr[:]))
+	return pkr
+}
