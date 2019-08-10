@@ -23,7 +23,11 @@ var Index = {
             that.backup();
         });
 
-        Common.post('network/change', "", {}, function (res) {
+        var rpcHost = $.cookie('seroRpcHost');
+        if (!rpcHost || rpcHost==='http://39.98.253.20:8546'){
+            rpcHost = 'http://148.70.169.73:8545';
+        }
+        Common.post('network/change', rpcHost, {}, function (res) {
             if (res.base.code === 'SUCCESS') {
                 $.cookie('seroRpcHost',res.biz);
                 $.cookie('networkUrl', res.biz);
@@ -43,8 +47,8 @@ var Index = {
         var networkRemote = [
             {
                 id: "main",
-                name: '华北(北京)',
-                url: 'http://39.98.253.20:8546',
+                name: '华南(成都)',
+                url: 'http://148.70.169.73:8545',
             },
             {
                 id: "main",
