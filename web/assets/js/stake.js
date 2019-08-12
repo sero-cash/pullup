@@ -22,6 +22,7 @@ var StakeHome = {
             "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T网矿池",
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
             "0xe058df83ef89df930aca3fed0c949ab6de1ccb51d2a87fc056631f11e3cd2ccc":"分水关",
+            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC节点"
         },
         en_US:{
             "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"SERO Node (sero.im)",
@@ -42,6 +43,7 @@ var StakeHome = {
             "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"Tokencan.net Node",
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"Magic Node",
             "0xe058df83ef89df930aca3fed0c949ab6de1ccb51d2a87fc056631f11e3cd2ccc":"Water Separation",
+            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC NODE"
         }
     },
 
