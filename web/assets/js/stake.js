@@ -22,7 +22,9 @@ var StakeHome = {
             "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"T网矿池",
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"魔完",
             "0xe058df83ef89df930aca3fed0c949ab6de1ccb51d2a87fc056631f11e3cd2ccc":"分水关",
-            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC节点"
+            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC节点",
+            "0x5c7dbbe680d7687e23b0dd927c37e77f051d701d57ef118f2e7ef5ad9bf50c51":"超零猫猫",
+            "0x36e40dc58bf2db57f1831a02c2a248b0fa378ba3a99908c17a63ed622174d496":"超零猴哥",
         },
         en_US:{
             "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"SERO Node (sero.im)",
@@ -43,7 +45,9 @@ var StakeHome = {
             "0xf26f8e060b241ad3ff9c5821d85544b21419ef2730c5c64dc7bd89bfc3710885":"Tokencan.net Node",
             "0x6cd71031cdc64db40816eecb01f65b3b56cdbde843bcd0797424e6184bf88e07":"Magic Node",
             "0xe058df83ef89df930aca3fed0c949ab6de1ccb51d2a87fc056631f11e3cd2ccc":"Water Separation",
-            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC NODE"
+            "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC NODE",
+            "0x5c7dbbe680d7687e23b0dd927c37e77f051d701d57ef118f2e7ef5ad9bf50c51":"SERO Cat Node",
+            "0x36e40dc58bf2db57f1831a02c2a248b0fa378ba3a99908c17a63ed622174d496":"SERO Monkey Node",
         }
     },
 
