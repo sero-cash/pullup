@@ -721,7 +721,10 @@ var StakeDetail = {
                                                 <tr>
                                                 <td class="text-break">${share.id}</td>
                                                 <td class="text-break">${share.pool}</td>
-                                                <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
+                                                <td class="text-break">
+                                                    ${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})<br/><br/>
+                                                    Share Address: ${dataShare.addr}
+                                                </td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
@@ -775,7 +778,10 @@ var StakeDetail = {
                                                 <tr>
                                                 <td class="text-break">${share.id}</td>
                                                 <td class="text-break">${share.pool}</td>
-                                                <td class="text-primary">${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})</td>
+                                                <td class="text-break">
+                                                    ${acName}(${data.PK.substring(0, 5) + " ... " + data.PK.substring(data.PK.length - 5)})<br/><br/>
+                                                    Share Address: ${dataShare.addr}
+                                                </td>
                                                 <td>${new BigNumber(share.price, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                                 <td>${(parseFloat(new BigNumber(share.fee,16).toString(10)) / 100).toFixed(2)}%</td>
                                                 <td>${new BigNumber(share.profit, 16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
