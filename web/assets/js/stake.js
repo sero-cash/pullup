@@ -309,19 +309,18 @@ var StakeRegister = {
                 $('.breadcrumb li:eq(1)').text($.i18n.prop('stake_pool_register'));
                 $('h4').text($.i18n.prop('stake_pool_register'));
                 $('.form-group:eq(0) label').text($.i18n.prop('stake_register_from'));
-                $('.form-group:eq(1) label').text($.i18n.prop('stake_register_fee'));
-                $('.form-group:eq(1) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
-                // $('.form-group:eq(2) label').text($.i18n.prop('stake_register_fee'));
-                // $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
-                $('.form-group:eq(2) label').text($.i18n.prop('stake_register_amount'));
-                $('.form-group:eq(2) small').text($.i18n.prop('stake_register_amount_desc'));
-                // $('.form-group:eq(2) div div:eq(2)').text($.i18n.prop('stake_register_fee_desc'));
+                $('.form-group:eq(1) label').text($.i18n.prop('stake_register_address'));
+                $('.form-group:eq(1) .invalid-feedback').text($.i18n.prop('stake_register_address_tips'));
+                $('.form-group:eq(2) label').text($.i18n.prop('stake_register_fee'));
+                $('.form-group:eq(2) .invalid-feedback').text($.i18n.prop('stake_register_fee_tips'));
+                $('.form-group:eq(3) label').text($.i18n.prop('stake_register_amount'));
+                $('.form-group:eq(3) small').text($.i18n.prop('stake_register_amount_desc'));
                 $('.modal-title').text($.i18n.prop('stake_register_confirm_title'));
                 $('.modal-body ul li:eq(0) div div:eq(0)').text($.i18n.prop('stake_register_from'));
-                // $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_address'));
-                $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_fee'));
-                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('stake_register_amount'));
-                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_password'));
+                $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_address'));
+                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('stake_register_fee'));
+                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_amount'));
+                $('.modal-body ul li:eq(4) div div:eq(0)').text($.i18n.prop('stake_register_password'));
                 $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
                 $('#sub1').text($.i18n.prop('stake_register_next'));
                 $('#address').attr('placeholder', $.i18n.prop('stake_register_address_tips'));
@@ -369,7 +368,7 @@ var StakeRegister = {
     confirm: function () {
 
         var from = $(".address").val();
-        // var vote = $("#address").val();
+        var vote = $("#address").val();
         var feeRate = $("#feeRate").val();
 
         $('.modal-footer button:eq(0)').bind('click', function () {
@@ -378,21 +377,24 @@ var StakeRegister = {
         });
 
         $('ul:eq(1) li:eq(0) div div:eq(1)').text(from);
-        // $('ul:eq(1) li:eq(1) div div:eq(1)').text(vote);
-        $('ul:eq(1) li:eq(1) div div:eq(1)').text(feeRate + '%');
-        $('ul:eq(1) li:eq(2) div div:eq(1)').text("200,000 SERO");
+        $('ul:eq(1) li:eq(1) div div:eq(1)').text(vote);
+        $('ul:eq(1) li:eq(2) div div:eq(1)').text(feeRate + '%');
+        $('ul:eq(1) li:eq(3) div div:eq(1)').text("200,000 SERO");
         $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
             var password = $("#password").val();
-            if(password === ''){
+            if(vote === ''){
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_register_address_tips'));
+                $('.toast').toast('show');
+            }else if(password === ''){
                 $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_register_password_place'));
                 $('.toast').toast('show');
             }else{
                 $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
                 var biz = {
                     From: from,
-                    Vote: '',
+                    Vote: vote,
                     FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
                     Password: password,
                 }
