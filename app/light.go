@@ -456,13 +456,12 @@ func (self *SEROLight) CheckNil() {
 					utxo, err := self.getUtxo(root)
 					if err == nil {
 						batch.Delete(penddingTxKey(pk, utxo.TxHash))
-
-						//GetTransactionReceipt
-						self.genTxReceipt(utxo.TxHash, batch)
-						//getBlock RPC
-						self.storeBlockInfo(nilv.Num)
-
 					}
+					//GetTransactionReceipt
+					self.genTxReceipt(nilv.TxHash, batch)
+					//getBlock RPC
+					self.storeBlockInfo(nilv.Num)
+
 					if len(value) == 130 {
 						batch.Delete(value)
 					} else {
@@ -497,26 +496,29 @@ func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
 	if err != nil {
 		logex.Error("sero_getTransactionReceipt request.do err: ", err)
 	} else {
-		err := json.Unmarshal(*resp.Result, &r)
-		if err != nil {
-			logex.Error("sero_getTransactionReceipt json Unmarshal  err: ", err)
-		} else {
-			txReceipt := TxReceipt{
-				Status:            r.Status,
-				CumulativeGasUsed: r.CumulativeGasUsed,
-				TxHash:            *r.TxHash.HashToUint256(),
-				ContractAddress:   r.ContractAddress.Base58(),
-				GasUsed:           r.GasUsed,
-			}
-			if r.PoolId != nil {
-				txReceipt.PoolId = r.PoolId.String()
-				txReceipt.ShareId = r.ShareId.String()
-			}
-			bData, err := rlp.EncodeToBytes(txReceipt)
+		if resp.Result !=nil{
+			err := json.Unmarshal(*resp.Result, &r)
 			if err != nil {
-				logex.Error("sero_getTransactionReceipt rlp.EncodeToBytes err: ", err)
+				logex.Error("sero_getTransactionReceipt json Unmarshal  err: ", err)
 			} else {
-				batch.Put(txReceiptIndex(*r.TxHash.HashToUint256()), bData)
+				txReceipt := TxReceipt{
+					Status:            r.Status,
+					CumulativeGasUsed: r.CumulativeGasUsed,
+					TxHash:            *r.TxHash.HashToUint256(),
+					ContractAddress:   r.ContractAddress.Base58(),
+					GasUsed:           r.GasUsed,
+				}
+				if r.PoolId != nil {
+					txReceipt.PoolId = r.PoolId.String()
+					txReceipt.ShareId = r.ShareId.String()
+				}
+				bData, err := rlp.EncodeToBytes(txReceipt)
+				if err != nil {
+					logex.Error("sero_getTransactionReceipt rlp.EncodeToBytes err: ", err)
+				} else {
+					err = batch.Put(txReceiptIndex(*r.TxHash.HashToUint256()), bData)
+					logex.Error("batch.Put(txReceiptIndex,err :",r.TxHash.Hex(),err)
+				}
 			}
 		}
 	}

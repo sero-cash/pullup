@@ -9,10 +9,10 @@ var (
 	fetchCount = uint64(50000)
 
 	// for Asia
-	//remoteRpcHost  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/config/v0.1.6/node.json"
+	remoteRpcHost  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/config/v0.1.6/node.json"
 
 	// for global
-	remoteRpcHost  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/clients/node-global.json"
+	//remoteRpcHost  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/clients/node-global.json"
 	//defaultRpcHost = "http://52.199.145.159:8545"
 	//defaultWebHost = "http://pullup.sero.cash/v0_1_6/"
 

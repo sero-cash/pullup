@@ -586,7 +586,12 @@ function GetQueryString(name) {
 function convertUTCDate(dateTimestamp){
     if(dateTimestamp && dateTimestamp>0){
         let cDate = new Date(dateTimestamp*1000);
-        return (cDate.getMonth() + 1) + "/" + cDate.getDate() + " " + cDate.getHours() + ":" + cDate.getMinutes();
+        return (cDate.getMonth() + 1) + "/" + cDate.getDate() + " " + appendZero(cDate.getHours()) + ":" + appendZero(cDate.getMinutes());
     }
     return ""
+}
+
+function appendZero(i) {
+    i =  i < 10 ? "0"+i : i;
+    return i;
 }

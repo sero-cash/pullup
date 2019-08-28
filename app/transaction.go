@@ -7,7 +7,6 @@ import (
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
 	"math/big"
-	"time"
 )
 
 type Transaction struct {
@@ -57,7 +56,6 @@ func (self *SEROLight) findTx(pk keys.Uint512, pageCount uint64) (map[string]Tra
 		rlp.DecodeBytes(value, &utxo)
 
 		ukeyb := douthash[:]
-
 		if *powReward.HashToUint256() == douthash || *posReward.HashToUint256() == douthash || *posMiner.HashToUint256() == douthash {
 			ukeyb = append(encodeNumber(utxo.Num), utxo.Pkr[:]...)
 		}
@@ -90,7 +88,7 @@ func (self *SEROLight) findTx(pk keys.Uint512, pageCount uint64) (map[string]Tra
 				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency, Fee: fee}
 				rData, err := self.db.Get(txReceiptIndex(douthash))
 				if err != nil {
-					tx.Timestamp = uint64(time.Now().UnixNano())
+					//tx.Timestamp = uint64(time.Now().Unix())
 					logex.Error("txHash not indexed, hash: ", douthash, err)
 				} else {
 					var r TxReceipt
