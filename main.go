@@ -9,9 +9,9 @@ import (
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
 	"github.com/sero-cash/go-sero/pullup/lorca"
+	"net"
 	"net/http"
 	"runtime"
-	"time"
 )
 
 func main() {
@@ -198,9 +198,9 @@ func main() {
 	)
 	http.Handle("/file/open", accessControl(openFileHandler))
 
-	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, r.URL.Path[1:])
-	})
+	//http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
+	//	http.ServeFile(w, r, r.URL.Path[1:])
+	//})
 
 	http.HandleFunc("/rpc", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -224,6 +224,40 @@ func main() {
 		return
 	})
 
+	//pre collect data
+	http.HandleFunc("/pullup_rpc", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		if r.Method == "OPTIONS" {
+			return
+		}
+		req := app.JSONRpcReq{}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+		resp :=app.HandlePullupRpc(req)
+		err := json.NewEncoder(w).Encode(resp)
+		if err!=nil{
+			logex.Errorf("HandlePullupRpc resp json err: ",err)
+		}
+		return
+	})
+
+	logex.Info("http handler loaded successful.")
+
+
+	ln, err := net.Listen("tcp", "127.0.0.1:2345")
+	if err != nil {
+		logex.Fatal(err)
+	}
+	defer ln.Close()
+	go func() {
+		// Set up your http server here
+		logex.Fatal(http.Serve(ln, nil))
+	}()
+
 	// init ui
 	args := []string{}
 	if runtime.GOOS == "linux" {
@@ -234,9 +268,7 @@ func main() {
 		logex.Fatal(err)
 	}
 	defer ui.Close()
-
 	go func() {
-		time.Sleep(time.Second * 1)
 		// A simple way to know when UI is ready (uses body.onload event in JS)
 		if err = ui.Bind("start", func() {
 			logex.Info("UI is ready")
@@ -246,12 +278,9 @@ func main() {
 		if err = ui.Load(app.GetWebHost()); err != nil {
 			logex.Fatal(err)
 		}
-	}()
 
-	err = http.ListenAndServe(":2345", nil)
-	if err != nil {
-		logex.Fatal(err)
-	}
+	}()
+	<-ui.Done()
 }
 
 func accessControl(h http.Handler) http.Handler {

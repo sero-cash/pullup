@@ -184,14 +184,16 @@ func (s *ServiceApi) AccountBalance(pkStr string) map[string]*big.Int {
 }
 
 type utxoResp struct {
-	Id       uint64
-	Type     uint64
-	To       string
-	Hash     keys.Uint256
-	Block    uint64
-	Currency string
-	Amount   *big.Int
-	Fee      *big.Int
+	Id        uint64
+	Type      uint64
+	To        string
+	Hash      keys.Uint256
+	Block     uint64
+	Currency  string
+	Amount    *big.Int
+	Fee       *big.Int
+	Receipt   TxReceipt
+	Timestamp uint64
 }
 
 type assetResp struct {
@@ -215,7 +217,7 @@ func (u utxosResp) Len() int {
 	return len(u)
 }
 func (u utxosResp) Less(i, j int) bool {
-	return u[i].Block > u[j].Block
+	return u[i].Timestamp > u[j].Timestamp
 }
 func (u utxosResp) Swap(i, j int) {
 	u[i], u[j] = u[j], u[i]
@@ -230,13 +232,15 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 				tx.Block = uint64(999999999999999)
 			}
 			utxo := utxoResp{
-				Type:     tx.Type,
-				To:       base58.Encode(tx.To[:]),
-				Currency: common.BytesToString(tx.Currency[:]),
-				Amount:   tx.Amount,
-				Fee:      tx.Fee,
-				Hash:     tx.Hash,
-				Block:    tx.Block,
+				Type:      tx.Type,
+				To:        base58.Encode(tx.To[:]),
+				Currency:  common.BytesToString(tx.Currency[:]),
+				Amount:    tx.Amount,
+				Fee:       tx.Fee,
+				Hash:      tx.Hash,
+				Block:     tx.Block,
+				Receipt:   tx.Receipt,
+				Timestamp: tx.Timestamp,
 			}
 			if big.NewInt(0).Add(tx.Amount, tx.Fee).Sign() == 0 {
 			} else {
@@ -406,6 +410,10 @@ func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
 	} else {
 		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
+			//get remote rpc host
+			//remoteRpcHost
+
+
 			setRpcHost(defaultRpcHost)
 		} else {
 			setRpcHost(string(hostByte[:]))

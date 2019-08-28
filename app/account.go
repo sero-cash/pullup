@@ -217,7 +217,7 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 	if data, err := self.db.Get(append(onlyUseHashPkrKey, account.pk[:]...)); err == nil {
 		value := decodeNumber(data)
 		if value == 1 {
-			self.useHasPkr.Store(account.pk, 1)
+			self.useHashPkr.Store(account.pk, 1)
 		}
 	}
 }
@@ -237,5 +237,11 @@ func (self *SEROLight) createPkrHash(pk *keys.Uint512, tk *keys.Uint512, index u
 	pkr := keys.Addr2PKr(pk, r)
 	fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
 
+	return pkr
+}
+
+func (self *SEROLight) genPkrContract(pk *keys.Uint512, random keys.Uint128) keys.PKr {
+	pkr := keys.Addr2PKr(pk, random.ToUint256().NewRef())
+	fmt.Println("execute contract pkr: ", base58.Encode(pkr[:]))
 	return pkr
 }

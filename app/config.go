@@ -2,15 +2,16 @@ package app
 
 //config
 var (
-	version   = "v0.1.5"
+	version   = "v0.1.6-dev"
 	cleanData = false
 
 	maxUint64  = ^uint64(0)
 	fetchCount = uint64(50000)
 
 	// for Asia
-	defaultRpcHost = "http://39.98.253.20:8546"
-	defaultWebHost = "http://129.211.98.114:3006/web/v0_1_5/"
+	defaultRpcHost = "http://203.195.255.129:8545"
+	defaultWebHost = "http://129.211.98.114:3006/web/dev/v0_1_6/"
+	remoteRpcHost = "http://129.211.98.114:3006/web/dev/v0_1_6/node.json"
 
 	//defaultRpcHost = "http://52.199.145.159:8545"
 	//defaultWebHost = "http://pullup.sero.cash/v0_1_5/"

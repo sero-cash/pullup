@@ -1,27 +1,30 @@
 package app
 
-import "github.com/sero-cash/go-czero-import/keys"
+import (
+	"github.com/sero-cash/go-czero-import/keys"
+)
 
 var (
-	numPrefix     = []byte("NUM")
-	pkPrefix      = []byte("PK")
-	pkrPrefix     = []byte("PKR")
-	utxoPrefix    = []byte("UTXO")
-	rootPrefix    = []byte("ROOT")
-	allRootPrefix = []byte("ALLROOT")
-	nilPrefix     = []byte("NIL")
-	nilIdPrefix   = []byte("NILID")
-	syncNilKEY    = []byte("SYNCNILNUM")
-
-	nilRootPrefix   = []byte("NOILTOROOT")
-	peddingTxPrefix = []byte("PEDDINGTX")
-	decimalPrefix   = []byte("DECIMAL")
-	pkrIndexPrefix  = []byte("PKRINDEX")
-
-	hostKey   = []byte("HOST")
-	VersonKey = []byte("VERSION")
-
+	numPrefix         = []byte("NUM")
+	pkPrefix          = []byte("PK")
+	pkrPrefix         = []byte("PKR")
+	utxoPrefix        = []byte("UTXO")
+	rootPrefix        = []byte("ROOT")
+	allRootPrefix     = []byte("ALLROOT")
+	nilPrefix         = []byte("NIL")
+	nilIdPrefix       = []byte("NILID")
+	syncNilKEY        = []byte("SYNCNILNUM")
+	nilRootPrefix     = []byte("NOILTOROOT")
+	peddingTxPrefix   = []byte("PEDDINGTX")
+	decimalPrefix     = []byte("DECIMAL")
+	pkrIndexPrefix    = []byte("PKRINDEX")
+	hostKey           = []byte("HOST")
+	VersonKey         = []byte("VERSION")
 	onlyUseHashPkrKey = []byte("USEHASHPKR")
+
+	tokenPrefix     = []byte("Token")
+	txReceiptPrefix = []byte("TXRECEIPT")
+	blockPrefix = []byte("BLOCK")
 )
 
 const (
@@ -36,8 +39,12 @@ func pkrKey(pk keys.Uint512, r keys.Uint256) []byte {
 	return key
 }
 
-func numKey(pk keys.Uint512) []byte {
-	return append(numPrefix, pk[:]...)
+func txReceiptIndex(txHash keys.Uint256) []byte {
+	return append(txReceiptPrefix, txHash[:]...)
+}
+
+func blockIndex(num uint64) []byte {
+	return append(blockPrefix,encodeNumber(num)...)
 }
 
 func nilKey(nil keys.Uint256) []byte {
