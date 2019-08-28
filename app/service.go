@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
@@ -404,16 +405,43 @@ func (self *ServiceApi) getSetNetwork(hostReq string) string {
 
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
 
+	defaultRpcHost := "http://148.70.169.73:8545"
+	defaultWebHost := "http://129.211.98.114:3006/web/v0_1_6/"
+
+	//get remote rpc host
+	resp, err := http.Get(remoteRpcHost)
+	if err != nil {
+		logex.Error("get remoteRpcHost Get err: ",err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logex.Error("get remoteRpcHost ReadAll err: ",err.Error())
+		return
+	}
+	fmt.Println("get remote config success : ",string(body[:]))
+	config := RpcConfig{}
+	err =json.Unmarshal(body,&config)
+	if err != nil {
+		logex.Error("get remoteRpcHost Unmarshal err: ",err.Error())
+		return
+	}
+
+	if config.Default.Rpc != "" {
+		defaultRpcHost = config.Default.Rpc
+	}
+	if config.Default.Web != "" {
+		defaultWebHost = config.Default.Web
+	}
+	fmt.Println("defaultRpcHoGst : ", defaultRpcHost)
+	fmt.Println("defaultWebHost : ", defaultWebHost)
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)
 		self.SL.dbConfig.Put(hostKey, []byte(rpcHostCustomer))
 	} else {
 		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
-			//get remote rpc host
-			//remoteRpcHost
-
-
 			setRpcHost(defaultRpcHost)
 		} else {
 			setRpcHost(string(hostByte[:]))

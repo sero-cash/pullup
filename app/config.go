@@ -2,19 +2,18 @@ package app
 
 //config
 var (
-	version   = "v0.1.6-dev"
-	cleanData = false
+	version   = "v0.1.6"
+	cleanData = true
 
 	maxUint64  = ^uint64(0)
 	fetchCount = uint64(50000)
 
 	// for Asia
-	defaultRpcHost = "http://203.195.255.129:8545"
-	defaultWebHost = "http://129.211.98.114:3006/web/dev/v0_1_6/"
-	remoteRpcHost = "http://129.211.98.114:3006/web/dev/v0_1_6/node.json"
+	remoteRpcHost  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/config/v0.1.6/node.json"
 
 	//defaultRpcHost = "http://52.199.145.159:8545"
-	//defaultWebHost = "http://pullup.sero.cash/v0_1_5/"
+	//defaultWebHost = "http://pullup.sero.cash/v0_1_6/"
+	//remoteRpcHost  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/config/v0.1.6/node.json"
 
 	osType  = ""
 	rpcHost = ""
@@ -48,4 +47,17 @@ func GetWebHost() string {
 }
 func GetOsType() string {
 	return osType
+}
+
+type Node struct {
+	Id      string `json:"id"`
+	Network string `json:"network"`
+	Name    string `json:"name"`
+	Rpc     string `json:"rpc"`
+	Web     string `json:"web"`
+}
+
+type RpcConfig struct {
+	Default Node   `json:"default"`
+	Host    []Node `json:"host"`
 }

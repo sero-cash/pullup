@@ -21,6 +21,15 @@ var Index = {
         $('.backup').bind('click',function () {
             that.backup();
         });
+
+        Common.post('network/change', "", {}, function (res) {
+            if (res.base.code === 'SUCCESS') {
+                // $.cookie('networkName', network);
+                $.cookie('networkUrl', res.biz);
+                $.cookie('seroRpcHost',res.biz);
+                $('.select-net span').text(res.biz);
+            }
+        });
     },
 
     backup:function () {
@@ -35,8 +44,8 @@ var Index = {
 
         $.getJSON("node.json", "", function(data) {　
             $.each(data.host, function(i, net) {
-                $('.list-group').append(`<li class="list-group-item ${localNet === net.url ? 'active' : ''} netcheck" network="${net.url}" netname="${net.name}">
-                    <i class="fas fa-circle ${net.network === 'main' ? 'text-success' : 'text-warning'}"></i> ${net.url} ${net.name}
+                $('.list-group').append(`<li class="list-group-item ${localNet === net.rpc ? 'active' : ''} netcheck" network="${net.rpc}" netname="${net.name}">
+                    <i class="fas fa-circle ${net.network === 'main' ? 'text-success' : 'text-warning'}"></i> ${net.rpc} ${net.name}
                 </li>`);
             })
 
