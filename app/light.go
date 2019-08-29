@@ -140,6 +140,7 @@ func (self *SEROLight) SyncOut() {
 				return false
 			}
 			if len(rtn.utxoMap) > 0 {
+				account.isChanged = true
 				batch := self.db.NewBatch()
 				err = self.indexOuts(rtn.utxoMap, batch)
 				if err != nil {
@@ -150,7 +151,6 @@ func (self *SEROLight) SyncOut() {
 				if err != nil {
 					return false
 				}
-				account.isChanged = true
 			}
 
 			if rtn.useHashPkr {
@@ -267,30 +267,32 @@ func (self *SEROLight) storeBlockInfo(number uint64) {
 	if err != nil {
 		logex.Error("sero_getBlockByNumber request.do err: ", err)
 	} else {
-		var b map[string]interface{}
-		err := json.Unmarshal(*resp.Result, &b)
-		if err != nil {
-			logex.Error("sero_getBlockByNumber json.Unmarshal: ", err)
-		} else {
-			blockEx := BlockEx{}
-			for key, value := range b {
-				if key == "number" {
-					numberHex := value.(string)
-					num, _ := hexutil.DecodeUint64(numberHex)
-					blockEx.BlockNumber = num
+		if resp.Result !=nil{
+			var b map[string]interface{}
+			err := json.Unmarshal(*resp.Result, &b)
+			if err != nil {
+				logex.Error("sero_getBlockByNumber json.Unmarshal: ", err)
+			} else {
+				blockEx := BlockEx{}
+				for key, value := range b {
+					if key == "number" {
+						numberHex := value.(string)
+						num, _ := hexutil.DecodeUint64(numberHex)
+						blockEx.BlockNumber = num
+					}
+					if key == "hash" {
+						blockEx.BlockHash = value.(string)
+					}
+					if key == "timestamp" {
+						timeHex := value.(string)
+						time, _ := hexutil.DecodeUint64(timeHex)
+						blockEx.Timestamp = time
+					}
 				}
-				if key == "hash" {
-					blockEx.BlockHash = value.(string)
+				if blockEx.BlockHash != "" {
+					bData, _ := rlp.EncodeToBytes(blockEx)
+					self.db.Put(blockIndex(number), bData)
 				}
-				if key == "timestamp" {
-					timeHex := value.(string)
-					time, _ := hexutil.DecodeUint64(timeHex)
-					blockEx.Timestamp = time
-				}
-			}
-			if blockEx.BlockHash != "" {
-				bData, _ := rlp.EncodeToBytes(blockEx)
-				self.db.Put(blockIndex(number), bData)
 			}
 		}
 	}
@@ -451,6 +453,9 @@ func (self *SEROLight) CheckNil() {
 				value, _ := self.db.Get(nilKey(Nil))
 				if value != nil {
 					copy(pk[:], value[2:66])
+					if account := self.getAccountByPk(pk); account != nil {
+						account.isChanged = true
+					}
 					var root keys.Uint256
 					copy(root[:], value[98:130])
 					utxo, err := self.getUtxo(root)
@@ -479,9 +484,7 @@ func (self *SEROLight) CheckNil() {
 
 					self.usedFlag.Delete(root)
 				}
-				if account := self.getAccountByPk(pk); account != nil {
-					account.isChanged = true
-				}
+
 			}
 			batch.Write()
 		}
@@ -490,6 +493,12 @@ func (self *SEROLight) CheckNil() {
 }
 
 func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
+
+	if *powReward.HashToUint256() == txHash || *posReward.HashToUint256() == txHash || *posMiner.HashToUint256() == txHash {
+		logex.Info("txHash=",txHash," is rewards Hash")
+		return
+	}
+
 	var r *types.Receipt
 	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getTransactionReceipt", Params: []interface{}{txHash}}
 	resp, err := sync.Do()
@@ -558,36 +567,37 @@ func (self *SEROLight) GetUtxoNum(pk keys.Uint512) map[string]uint64 {
 func (self *SEROLight) GetBalances(pk keys.Uint512) (balances map[string]*big.Int) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
-		if account.isChanged {
-			prefix := append(pkPrefix, pk[:]...)
-			iterator := self.db.NewIteratorWithPrefix(prefix)
-			balances = map[string]*big.Int{}
-			utxoNums := map[string]uint64{}
-			for iterator.Next() {
-				key := iterator.Key()
-				var root keys.Uint256
-				copy(root[:], key[98:130])
+		//if account.isChanged {
+		//} else {
+		//	return account.balances
+		//}
 
-				if utxo, err := self.getUtxo(root); err == nil {
-					if utxo.Asset.Tkn != nil {
-						currency := common.BytesToString(utxo.Asset.Tkn.Currency[:])
-						if amount, ok := balances[currency]; ok {
-							amount.Add(amount, utxo.Asset.Tkn.Value.ToIntRef())
-							utxoNums[currency] += 1
-						} else {
-							balances[currency] = new(big.Int).Set(utxo.Asset.Tkn.Value.ToIntRef())
-							utxoNums[currency] = 1
-						}
+		prefix := append(pkPrefix, pk[:]...)
+		iterator := self.db.NewIteratorWithPrefix(prefix)
+		balances = map[string]*big.Int{}
+		utxoNums := map[string]uint64{}
+		for iterator.Next() {
+			key := iterator.Key()
+			var root keys.Uint256
+			copy(root[:], key[98:130])
+
+			if utxo, err := self.getUtxo(root); err == nil {
+				if utxo.Asset.Tkn != nil {
+					currency := common.BytesToString(utxo.Asset.Tkn.Currency[:])
+					if amount, ok := balances[currency]; ok {
+						amount.Add(amount, utxo.Asset.Tkn.Value.ToIntRef())
+						utxoNums[currency] += 1
+					} else {
+						balances[currency] = new(big.Int).Set(utxo.Asset.Tkn.Value.ToIntRef())
+						utxoNums[currency] = 1
 					}
 				}
 			}
-
-			account.balances = balances
-			account.utxoNums = utxoNums
-			account.isChanged = false
-		} else {
-			return account.balances
 		}
+
+		account.balances = balances
+		account.utxoNums = utxoNums
+		account.isChanged = false
 	}
 	return
 }

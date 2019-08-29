@@ -218,7 +218,7 @@ func (u utxosResp) Len() int {
 	return len(u)
 }
 func (u utxosResp) Less(i, j int) bool {
-	return u[i].Block > u[j].Block
+	return u[i].Timestamp > u[j].Timestamp
 }
 func (u utxosResp) Swap(i, j int) {
 	u[i], u[j] = u[j], u[i]

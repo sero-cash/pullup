@@ -415,9 +415,8 @@ var Detail = {
 
                     };
                 }
-                if (callback) {
-                    callback(res.page)
-                }
+
+                $('#dataTable').DataTable();
             }
         });
     }

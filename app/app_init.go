@@ -37,6 +37,7 @@ func removeFile(file string) {
 
 func CleanData() {
 	cleanFolder(GetDataPath())
+	cleanFolder(GetConfigPath())
 }
 
 func cleanFolder(folder string) {

@@ -97,20 +97,21 @@ func (self *SEROLight) findTx(pk keys.Uint512, pageCount uint64) (map[string]Tra
 						logex.Error("txReceipt rlp.decode err: ", err)
 					} else {
 						tx.Receipt = r
-						bData, err := self.db.Get(blockIndex(utxo.Num))
-						if err != nil {
-							logex.Error("block not indexed, hash: ", utxo.Num, err)
-						} else {
-							var b BlockEx
-							err := rlp.DecodeBytes(bData, &b)
-							if err != nil {
-								logex.Error("rlp.decode err: ", err)
-							} else {
-								tx.Receipt.BlockHash = b.BlockHash
-								tx.Receipt.BlockNumber = b.BlockNumber
-								tx.Timestamp = b.Timestamp+i
-							}
-						}
+					}
+				}
+
+				bData, err := self.db.Get(blockIndex(utxo.Num))
+				if err != nil {
+					logex.Error("block not indexed, hash: ", utxo.Num, err)
+				} else {
+					var b BlockEx
+					err := rlp.DecodeBytes(bData, &b)
+					if err != nil {
+						logex.Error("rlp.decode err: ", err)
+					} else {
+						tx.Receipt.BlockHash = b.BlockHash
+						tx.Receipt.BlockNumber = b.BlockNumber
+						tx.Timestamp = b.Timestamp+i
 					}
 				}
 				txMap[ukey] = tx
