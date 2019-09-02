@@ -385,7 +385,8 @@ var Token = {
                 $('thead tr td:eq(3)').text($.i18n.prop('dapp_token_table_decimal'));
                 $('thead tr td:eq(4)').text($.i18n.prop('dapp_token_table_total'));
                 $('thead tr td:eq(5)').text($.i18n.prop('dapp_token_table_balance'));
-                $('thead tr td:eq(6)').text($.i18n.prop('dapp_token_table_operation'));
+                $('thead tr td:eq(6)').text($.i18n.prop('dapp_token_table_account'));
+                $('thead tr td:eq(7)').text($.i18n.prop('dapp_token_table_operation'));
 
                 $('.modal-title:eq(0)').text($.i18n.prop('dapp_token_modal_issue_title'));
 
@@ -405,8 +406,8 @@ var Token = {
                 $('.ct-addr').text($.i18n.prop('dapp_token_modal_watch_address'));
                 $('.w-st small:eq(0)').text($.i18n.prop('dapp_token_modal_watch_name'));
                 $('.w-st small:eq(2)').text($.i18n.prop('dapp_token_modal_watch_symbol'));
-                $('.w-st small:eq(4)').text($.i18n.prop('dapp_token_modal_watch_total'));
-                $('.w-st small:eq(6)').text($.i18n.prop('dapp_token_modal_watch_decimal'));
+                $('.w-st small:eq(4)').text($.i18n.prop('dapp_token_modal_watch_decimal'));
+                $('.w-st small:eq(6)').text($.i18n.prop('dapp_token_modal_watch_total'));
                 $('.w-st small:eq(8)').text($.i18n.prop('dapp_token_modal_watch_balance'));
 
                 $('.modal-title:eq(2)').text($.i18n.prop('dapp_token_modal_transfer_title'));
@@ -468,17 +469,27 @@ var Token = {
 
                         that.execute(token.ContractAddress, 'balanceOf', [], function (res) {
                             if (res.result) {
-                                $('tbody').append(`
-                                    <tr>
-                                    <td class="text-break">${token.ContractAddress}</td>
-                                    <td>${token.Name}</td>
-                                    <td>${token.Symbol}</td>
-                                    <td>${token.Decimal}</td>
-                                    <td>${new BigNumber(token.Total, 16).toFixed(0)}</td>
-                                    <td>${new BigNumber(res.result).dividedBy(new BigNumber(10).pow(parseInt(token.Decimal))).toFixed(6)}</td>
-                                    <td><button class="btn btn-outline-info" onclick="showTokenModal(${"'" + token.ContractAddress + "'," + token.Decimal})">Transfer</button></td>
-                                    </tr>
-                                `);
+                                var tokenBlance = res.result;
+                                Common.postSeroRpc("sero_getBalance",[token.ContractAddress,"latest"],function (res) {
+                                    var seroS=0;
+                                    if(res.result.tkn){
+                                        seroS=res.result.tkn["SERO"];
+                                    }
+                                    $('tbody').append(`
+                                        <tr>
+                                        <td class="text-break">${token.ContractAddress}</td>
+                                        <td>${token.Name}</td>
+                                        <td>${token.Symbol}</td>
+                                        <td>${token.Decimal}</td>
+                                        <td>${new BigNumber(token.Total, 16).toFixed(0)}</td>
+                                        <td>${new BigNumber(tokenBlance).dividedBy(new BigNumber(10).pow(parseInt(token.Decimal))).toFixed(6)}</td>
+                                        <td>${new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
+                                        <td><button class="btn btn-outline-info" onclick="showTokenModal(${"'" + token.ContractAddress + "'," + token.Decimal})">Transfer</button></td>
+                                        </tr>
+                                    `);
+                                })
+
+
                             }
                         });
 

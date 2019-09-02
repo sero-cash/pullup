@@ -750,7 +750,6 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
-
 	preTxParam.Cmds = prepare.Cmds{RegistPool: &registerPool}
 
 	param, err := self.GenTx(preTxParam)

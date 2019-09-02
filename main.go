@@ -198,9 +198,9 @@ func main() {
 	)
 	http.Handle("/file/open", accessControl(openFileHandler))
 
-	//http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
-	//	http.ServeFile(w, r, r.URL.Path[1:])
-	//})
+	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, r.URL.Path[1:])
+	})
 
 	http.HandleFunc("/rpc", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

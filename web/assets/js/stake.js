@@ -76,7 +76,6 @@ var StakeHome = {
 
         setTimeout(function () {
             that.stakeList();
-            $('#dataTable').DataTable();
         },50)
 
         // setTimeout(function () {
@@ -233,6 +232,12 @@ var StakeHome = {
                     var isMy = `<span class="text-primary">${that.account[data.idPkr]?"Created by: "+that.account[data.idPkr]:""}</span><br/>`;
 
                     var state = `<span class="text-success">OPENING</span>`;
+
+                    if(that.account[data.idPkr]){
+                        state = state +`<br/><button class="btn btn-outline-danger btn-sm" onclick="closeStake()">Close</button>`
+                    }
+
+
                     if (data.closed){
                         state = `<span class="text-success">CLOSED</span>`;
                     }
@@ -270,6 +275,7 @@ var StakeHome = {
                     </tr>
                `);
                 }
+                $('#dataTable').DataTable();
             }
         });
     },
@@ -832,6 +838,7 @@ var StakeDetail = {
                         <small class="text-gray-500">${$.i18n.prop('share_detail_number')}: </small><span class="text-danger">${totalReturnedNumber.toString(10)}</span><br/>
                     `);
                 }
+                $('#dataTable').DataTable();
             }
         })
     },
