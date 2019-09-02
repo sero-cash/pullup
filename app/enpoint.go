@@ -346,6 +346,37 @@ type registerReq struct {
 	FeeRate  string
 }
 
+type closeStakeReq struct {
+	From     string `validate:"required"`
+	Password string `validate:"required"`
+}
+
+//closeShare
+func MakeCloseShareEndpoint(service Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		req := request.(transport.Request)
+		response := transport.Response{}
+		response.SetBaseResponseSuccess()
+
+		if ok, err := validator.ValidateBaseRequestParam(req.Base); !ok {
+			response.SetBaseResponse(errorcode.InvalidBaseParameters, err.Error())
+			return response, nil
+		}
+
+		regO := closeStakeReq{}
+		utils.Convert(req.Biz, &regO)
+
+		txHash, err := service.closeStake(regO.From, regO.Password)
+		if err != nil {
+			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+		} else {
+			response.SetBizResponse(txHash)
+		}
+		return response, nil
+	}
+}
+
 //registerShare
 func MakeRegisterShareEndpoint(service Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {

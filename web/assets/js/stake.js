@@ -2,6 +2,8 @@ var StakeHome = {
 
     account:{},
 
+    accountMap:{},
+
     stakeName:{
         zh_CN:{
             "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"赛罗",
@@ -84,6 +86,9 @@ var StakeHome = {
         //         window.location.href = 'stake-buy.html?id=' + poolId;
         //     });
         // },1000)
+
+        $('.toast').toast({animation: true, autohide: true, delay: 2000})
+
     },
 
     loadProperties: function (lang) {
@@ -123,6 +128,48 @@ var StakeHome = {
                 $('thead tr td:eq(9)').text($.i18n.prop('stake_pool_lastpaytime'));
                 $('thead tr td:eq(10)').text($.i18n.prop('stake_pool_operation'));
                 $('.buyShare').text($.i18n.prop('stake_pool_buyShare'));
+
+                $('.modal-body ul li:eq(0) div div:eq(0)').text($.i18n.prop('send_tx_from'));
+                $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_pool_id'));
+                $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('send_tx_pwd'));
+
+                $('.modal-footer button:eq(0)').text($.i18n.prop('send_tx_cancel'));
+                $('.modal-footer button:eq(1)').text($.i18n.prop('send_tx_confirm'));
+
+            }
+        });
+    },
+
+    closeStakePool: function(pk,id){
+        $('.modal-body ul li:eq(0) div div:eq(1)').text(pk);
+        $('.modal-body ul li:eq(1) div div:eq(1)').text(id);
+        $('.modal').modal({backdrop: 'static', keyboard: false});
+
+        $('.modal-footer button:eq(1)').unbind('click').bind('click',function(){
+            $(this).attr('disabled',true).text($.i18n.prop('send_tx_sending'));
+            var password = $('#password').val();
+            if (!password){
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
+                $('.toast').toast('show');
+                $(this).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+            }else{
+                var biz = {};
+                biz.From = pk;
+                biz.Password = password;
+                var that = this;
+                Common.postAsync('stake/close',biz,{},function (res) {
+                    if(res.base.code === 'success'){
+                        $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                        $('.toast').toast('show');
+                        setTimeout(function () {
+                            $('.modal').modal('hide');
+                        },2000);
+                    }else{
+                        $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(res.base.desc);
+                        $('.toast').toast('show');
+                    }
+                    $(that).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+                })
             }
         });
     },
@@ -149,9 +196,10 @@ var StakeHome = {
                         if (data.Name){
                             acName = data.Name;
                         }
-                        that.account[data.MainPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
-                        that.account[data.MainOldPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")"
-
+                        that.account[data.MainPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")";
+                        that.account[data.MainOldPKr]= acName +"("+data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)+")";
+                        that.accountMap[data.MainPKr]= data;
+                        that.accountMap[data.MainOldPKr]= data;
                         Common.post('share/my', data.MainPKr, {}, function (res2) {
                             if (res2.base.code === 'SUCCESS') {
                                 if (res2.biz.length > 0) {
@@ -234,12 +282,12 @@ var StakeHome = {
                     var state = `<span class="text-success">OPENING</span>`;
 
                     if(that.account[data.idPkr]){
-                        state = state +`<br/><button class="btn btn-outline-danger btn-sm" onclick="closeStake()">Close</button>`
+                        state = state +`<br/><button class="btn btn-outline-danger btn-sm" onclick="closeStake(${"'"+that.accountMap[data.idPkr].PK+"','"+data.id+"',"})">Close</button>`
                     }
 
 
                     if (data.closed){
-                        state = `<span class="text-success">CLOSED</span>`;
+                        state = `<span class="text-danger">CLOSED</span>`;
                     }
                     var choiceNum = new BigNumber(data.choicedNum?data.choicedNum:"0x0", 16);
                     var missed = new BigNumber(data.missedNum?data.missedNum:"0x0", 16);
@@ -279,6 +327,8 @@ var StakeHome = {
             }
         });
     },
+
+
 
 
 };

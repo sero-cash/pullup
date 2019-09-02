@@ -41,6 +41,7 @@ type Service interface {
 
 	registerStakePool(from, vote, passwd string, feeRate uint32) (txHash string, err error)
 	buyStake(from, vote, passwd, pool, amountStr, gaspriceStr string) (txHash string, err error)
+	closeStake(from, passwd string) (txHash string, err error)
 
 	getSetNetwork(host string) string
 
@@ -351,6 +352,15 @@ func (s *ServiceApi) registerStakePool(from, vote, passwd string, feeRate uint32
 	}
 	gasprice := big.NewInt(0).Exp(big.NewInt(10), big.NewInt(9), nil)
 	hash, err := s.SL.registerStakePool(from, vote, passwd, feeRate, amount, gasprice)
+	if err != nil {
+		return txHash, err
+	}
+	return hexutil.Encode(hash[:]), nil
+}
+
+func (s *ServiceApi) closeStake(from, passwd string) (txHash string, err error){
+
+	hash, err := s.SL.closeStakePool(from, passwd)
 	if err != nil {
 		return txHash, err
 	}

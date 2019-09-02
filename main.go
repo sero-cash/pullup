@@ -149,6 +149,13 @@ func main() {
 	)
 	http.Handle("/stake/register", accessControl(registerPoolhandler))
 
+	closePoolhandler := httptransport.NewServer(
+		app.MakeCloseShareEndpoint(privateAccountApi),
+		transport.DecodeRequest,
+		transport.EncodeResponse,
+	)
+	http.Handle("/stake/close", accessControl(closePoolhandler))
+
 	buySharehandler := httptransport.NewServer(
 		app.MakeBuyShareEndpoint(privateAccountApi),
 		transport.DecodeRequest,

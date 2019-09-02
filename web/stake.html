@@ -158,17 +158,37 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLongTitle">Address</h5>
+                <h5 class="modal-title" id="modalLongTitle">Close Pool</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body text-center">
-                <div id="qrcode"></div>
-                <div class="text-break"></div>
+            <div class="modal-body">
+                <div class="toast" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);" id="toast2">
+                    <div class="toast-body alert-danger">
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-lg-3">From</div><div class="col-lg-9 text-break"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-lg-3">Pool Id</div><div class="col-lg-9 text-break"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-lg-3">Password</div><div class="col-lg-9 total"><input type="password" autofocus class="form-control" placeholder="Please Enter Your Password" id="password" autocomplete="off" required/></div>
+                        </div>
+                    </li>
+                </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Confirm</button>
             </div>
         </div>
     </div>
@@ -194,6 +214,10 @@
     },5);
     Common.app = StakeHome;
     Common.init();
+
+    function closeStake(pk,id) {
+        StakeHome.closeStakePool(pk,id);
+    }
 
 </script>
 

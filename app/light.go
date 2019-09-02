@@ -779,6 +779,70 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	return hash, nil
 }
 
+func (self *SEROLight) closeStakePool(from, passwd string) (hash keys.Uint256, err error) {
+
+	fee := new(big.Int).Mul(big.NewInt(25000), big.NewInt(1000000000))
+	fromPk := address.Base58ToAccount(from).ToUint512()
+
+	var RefundTo *keys.PKr
+	ac := self.getAccountByPk(*fromPk)
+	if ac != nil {
+		RefundTo = &ac.mainPkr
+	}
+	//check pk register pool
+	poolId := crypto.Keccak256(ac.mainPkr[:])
+	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
+	_, err = sync.Do()
+	if err != nil {
+		if err.Error() != "stake pool not exists" {
+			logex.Errorf("jsonRep err=[%s]", err.Error())
+			return
+		}
+	}
+	account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
+	wallet, err := self.accountManager.Find(account)
+	if err != nil {
+		return hash, err
+	}
+	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	if err != nil {
+		return hash, err
+	}
+	closePool := stx.ClosePoolCmd{}
+	preTxParam := prepare.PreTxParam{}
+	preTxParam.From = *fromPk
+	preTxParam.RefundTo = RefundTo
+	preTxParam.GasPrice = big.NewInt(1000000000)
+	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
+	preTxParam.Cmds = prepare.Cmds{ClosePool: &closePool}
+
+	param, err := self.GenTx(preTxParam)
+
+	if err != nil {
+		return hash, err
+	}
+
+	sk := keys.Seed2Sk(seed.SeedToUint256())
+
+	gtx, err := flight.SignTx(&sk, param)
+	if err != nil {
+		return hash, err
+	}
+
+	hash = gtx.Hash
+	logex.Info("commit txhash: ", hash)
+	sync = Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
+	if _, err := sync.Do(); err != nil {
+		return hash, err
+	}
+
+	utxoIn := Utxo{Pkr: ac.mainPkr, Root: hash, TxHash: hash, Fee: *fee}
+	self.storePeddingUtxo(param, "SERO", big.NewInt(0), utxoIn, fromPk)
+	ac.isChanged = true
+
+	return hash, nil
+}
+
 func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gasprice *big.Int) (hash keys.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
