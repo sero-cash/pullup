@@ -27,6 +27,7 @@ var StakeHome = {
             "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC节点",
             "0x5c7dbbe680d7687e23b0dd927c37e77f051d701d57ef118f2e7ef5ad9bf50c51":"超零猫猫",
             "0x36e40dc58bf2db57f1831a02c2a248b0fa378ba3a99908c17a63ed622174d496":"超零猴哥",
+            "0x16a800063ef8345f8441de438d97c8a49bc3373778e45a2f2cd25699be8d2c2b":"抹茶节点",
         },
         en_US:{
             "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"SERO Node (sero.im)",
@@ -50,6 +51,7 @@ var StakeHome = {
             "0x24a0a75882b3be4eb1b5ceee17c6f253d147cfbc43cb35e798cd5560f43d93ab":"QBTC NODE",
             "0x5c7dbbe680d7687e23b0dd927c37e77f051d701d57ef118f2e7ef5ad9bf50c51":"SERO Cat Node",
             "0x36e40dc58bf2db57f1831a02c2a248b0fa378ba3a99908c17a63ed622174d496":"SERO Monkey Node",
+            "0x16a800063ef8345f8441de438d97c8a49bc3373778e45a2f2cd25699be8d2c2b":"MXC node",
         }
     },
 
@@ -282,7 +284,7 @@ var StakeHome = {
                     var state = `<span class="text-success">OPENING</span>`;
 
                     if(that.account[data.idPkr]){
-                        state = state +`<br/><button class="btn btn-outline-danger btn-sm" onclick="closeStake(${"'"+that.accountMap[data.idPkr].PK+"','"+data.id+"',"})">Close</button>`
+                        // state = state +`<br/><button class="btn btn-outline-danger btn-sm" onclick="closeStake(${"'"+that.accountMap[data.idPkr].PK+"','"+data.id+"',"})">Close</button>`
                     }
 
 
