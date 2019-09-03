@@ -42,7 +42,6 @@ type SEROLight struct {
 	quit       chan chan error
 	lock       sync.RWMutex
 	useHashPkr sync.Map
-
 }
 
 var currentLight *SEROLight
@@ -267,7 +266,7 @@ func (self *SEROLight) storeBlockInfo(number uint64) {
 	if err != nil {
 		logex.Error("sero_getBlockByNumber request.do err: ", err)
 	} else {
-		if resp.Result !=nil{
+		if resp.Result != nil {
 			var b map[string]interface{}
 			err := json.Unmarshal(*resp.Result, &b)
 			if err != nil {
@@ -495,7 +494,7 @@ func (self *SEROLight) CheckNil() {
 func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
 
 	if *powReward.HashToUint256() == txHash || *posReward.HashToUint256() == txHash || *posMiner.HashToUint256() == txHash {
-		logex.Info("txHash=",txHash," is rewards Hash")
+		logex.Info("txHash=", txHash, " is rewards Hash")
 		return
 	}
 
@@ -505,7 +504,7 @@ func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
 	if err != nil {
 		logex.Error("sero_getTransactionReceipt request.do err: ", err)
 	} else {
-		if resp.Result !=nil{
+		if resp.Result != nil {
 			err := json.Unmarshal(*resp.Result, &r)
 			if err != nil {
 				logex.Error("sero_getTransactionReceipt json Unmarshal  err: ", err)
@@ -526,7 +525,7 @@ func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
 					logex.Error("sero_getTransactionReceipt rlp.EncodeToBytes err: ", err)
 				} else {
 					err = batch.Put(txReceiptIndex(*r.TxHash.HashToUint256()), bData)
-					logex.Error("batch.Put(txReceiptIndex,err :",r.TxHash.Hex(),err)
+					logex.Error("batch.Put(txReceiptIndex,err :", r.TxHash.Hex(), err)
 				}
 			}
 		}
@@ -680,7 +679,6 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	return hash, nil
 }
 
-
 func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string, amount *big.Int, utxoIn Utxo, fromPk *keys.Uint512) {
 	roots := []keys.Uint256{}
 	for _, in := range param.Ins {
@@ -710,6 +708,10 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
 	fromPk := address.Base58ToAccount(from).ToUint512()
 
+	if len(base58.Decode(vote)) != 96 {
+		return hash, fmt.Errorf("Invalid Vote Address ")
+	}
+
 	var RefundTo *keys.PKr
 	ac := self.getAccountByPk(*fromPk)
 	if ac != nil {
@@ -725,9 +727,12 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 			return
 		}
 	} else {
-		err = fmt.Errorf("stake pool exists")
-		logex.Errorf("jsonRep err=[%s]", err.Error())
-		return
+		//amount > 0 is register . amount = 0 is modify
+		if amount.Sign() > 0 {
+			err = fmt.Errorf("stake pool exists")
+			logex.Errorf("jsonRep err=[%s]", err.Error())
+			return
+		}
 	}
 	account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
 	wallet, err := self.accountManager.Find(account)
@@ -744,6 +749,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	} else {
 		copy(votePkr[:], base58.Decode(vote)[:])
 	}
+
 	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate: feeRate}
 	preTxParam := prepare.PreTxParam{}
 	preTxParam.From = *fromPk
@@ -779,16 +785,101 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	return hash, nil
 }
 
-func (self *SEROLight) closeStakePool(from, passwd string) (hash keys.Uint256, err error) {
+func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeRate uint32, amount, gasprice *big.Int) (hash keys.Uint256, err error) {
 
-	fee := new(big.Int).Mul(big.NewInt(25000), big.NewInt(1000000000))
+	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
 	fromPk := address.Base58ToAccount(from).ToUint512()
+
+	if len(base58.Decode(vote)) != 96 {
+		return hash, fmt.Errorf("Invalid Vote Address ")
+	}
+	if idPkrStr != "" && len(base58.Decode(idPkrStr)) != 96 {
+		return hash, fmt.Errorf("Invalid IdPkr ")
+	}
+	var idPkr keys.PKr
+	copy(idPkr[:], base58.Decode(idPkrStr)[:])
 
 	var RefundTo *keys.PKr
 	ac := self.getAccountByPk(*fromPk)
 	if ac != nil {
-		RefundTo = &ac.mainPkr
+		RefundTo = &idPkr
 	}
+
+	//check pk register pool
+	poolId := crypto.Keccak256(ac.mainPkr[:])
+	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
+	_, err = sync.Do()
+	if err != nil {
+		if err.Error() != "stake pool not exists" {
+			logex.Errorf("jsonRep err=[%s]", err.Error())
+			return
+		}
+	}
+	account := accounts.Account{Address: ac.wallet.Accounts()[0].Address}
+	wallet, err := self.accountManager.Find(account)
+	if err != nil {
+		return hash, err
+	}
+	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	if err != nil {
+		return hash, err
+	}
+	var votePkr keys.PKr
+	if vote == "" {
+		votePkr = ac.mainPkr
+	} else {
+		copy(votePkr[:], base58.Decode(vote)[:])
+	}
+
+	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate: feeRate}
+	preTxParam := prepare.PreTxParam{}
+	preTxParam.From = *fromPk
+	preTxParam.RefundTo = RefundTo
+	preTxParam.GasPrice = gasprice
+	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
+	preTxParam.Cmds = prepare.Cmds{RegistPool: &registerPool}
+
+	param, err := self.GenTx(preTxParam)
+
+	if err != nil {
+		return hash, err
+	}
+
+	sk := keys.Seed2Sk(seed.SeedToUint256())
+
+	gtx, err := flight.SignTx(&sk, param)
+	if err != nil {
+		return hash, err
+	}
+
+	hash = gtx.Hash
+	logex.Info("commit txhash: ", hash)
+	sync = Sync{RpcHost: GetRpcHost(), Method: "sero_commitTx", Params: []interface{}{gtx}}
+	if _, err := sync.Do(); err != nil {
+		return hash, err
+	}
+
+	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, fromPk)
+	ac.isChanged = true
+
+	return hash, nil
+}
+
+func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash keys.Uint256, err error) {
+
+	fee := new(big.Int).Mul(big.NewInt(25000), big.NewInt(1000000000))
+	fromPk := address.Base58ToAccount(from).ToUint512()
+
+	if idPkrStr != "" && len(base58.Decode(idPkrStr)) != 96 {
+		return hash, fmt.Errorf("Invalid IdPkr ")
+	}
+	var RefundTo *keys.PKr
+	var idPkr keys.PKr
+	copy(idPkr[:], base58.Decode(idPkrStr)[:])
+	RefundTo = &idPkr
+
+	ac := self.getAccountByPk(*fromPk)
 	//check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
@@ -1056,7 +1147,7 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 
 func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (txHash string, err error) {
 
-	gasPrice, err := NewBigIntFromString(ctq.GasPrice, 10)
+	gasPrice, err := NewBigIntFromString(ctq.GasPrice[2:], 16)
 	if err != nil {
 		return "", err
 	} else {
@@ -1064,7 +1155,7 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 			return "", fmt.Errorf("gasPrice < 0")
 		}
 	}
-	gas, err := NewBigIntFromString(ctq.Gas, 10)
+	gas, err := NewBigIntFromString(ctq.Gas[2:], 16)
 	if err != nil {
 		return "", err
 	} else {
@@ -1074,7 +1165,7 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	}
 	amount := big.NewInt(0)
 	if ctq.Value != "" {
-		amount, err = NewBigIntFromString(ctq.Value, 10)
+		amount, err = NewBigIntFromString(ctq.Value[2:], 16)
 		if err != nil {
 			return "", err
 		} else {
@@ -1083,8 +1174,29 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 			}
 		}
 	}
-
-	fromPk := address.Base58ToAccount(ctq.From).ToUint512()
+	fromPk :=&keys.Uint512{}
+	fromByte := base58.Decode(ctq.From)
+	var isMyPkr = false
+	if len(fromByte) == 96 {
+		pkr := keys.PKr{}
+		copy(pkr[:], fromByte[:])
+		self.accounts.Range(func(key, value interface{}) bool {
+			pk := key.(keys.Uint512)
+			account := value.(*Account)
+			if account.mainPkr == pkr {
+				fromPk = &pk
+				isMyPkr = true
+				return false
+			}
+			return true
+		})
+	}else if len(fromByte) == 64{
+		fromPk = address.Base58ToAccount(ctq.From).ToUint512()
+		isMyPkr = true
+	}
+	if !isMyPkr {
+		return "", fmt.Errorf("PK or MainPKr is valid. ")
+	}
 	var RefundTo *keys.PKr
 	ac := self.getAccountByPk(*fromPk)
 	if ac == nil {

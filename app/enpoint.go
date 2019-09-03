@@ -11,7 +11,10 @@ import (
 	"github.com/sero-cash/go-sero/pullup/common/validator"
 	"os/exec"
 	"strconv"
+	"sync"
 )
+
+var wg sync.WaitGroup
 
 type AccountCreateReq struct {
 	Passphrase string `json:"passphrase"`
@@ -124,11 +127,20 @@ func MakeAccountExportMnemonicEndpoint(service Service) endpoint.Endpoint {
 		aem := accountExportMnemonic{}
 		utils.Convert(req.Biz, &aem)
 
-		resp, err := service.ExportMnemonic(aem.Address, aem.Passphrase)
+		password := enterPassword("Export Mnemonic Words")
+		if password == "" {
+			executeWebview("msgbox", "-t", "Export Failed", "-c", "Please Enter account password", "-b", "Close")
+			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password")
+			return response, nil
+		}
+		resp, err := service.ExportMnemonic(aem.Address, password)
+
 		if err != nil {
-			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+			executeWebview("msgbox", "-t", "Export Failed!", "-c", err.Error(), "-b", "Close")
+			response.SetBaseResponse(errorcode.FAIL_CODE, "The password is incorrect")
 		} else {
-			response.SetBizResponse(resp)
+			executeWebview("msgbox", "-t", "Export Successful, Write it down!", "-c", resp, "-b", "Close")
+			response.SetBizResponse(true)
 		}
 
 		return response, nil
@@ -250,12 +262,13 @@ func MakeTxSendEndpoint(service Service) endpoint.Endpoint {
 		transferReq := transferReq{}
 		utils.Convert(req.Biz, &transferReq)
 
-		if transferReq.Password == "" {
-			response.SetBaseResponse(errorcode.FAIL_CODE, "password can not be nil ")
+		password := enterPassword("Send Transfer")
+		if password == "" {
+			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
 			return response, nil
 		}
 
-		hash, err := service.Transfer(transferReq.From, transferReq.To, transferReq.Currency, transferReq.Amount, transferReq.GasPrice, transferReq.Password)
+		hash, err := service.Transfer(transferReq.From, transferReq.To, transferReq.Currency, transferReq.Amount, transferReq.GasPrice, password)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 			return response, nil
@@ -344,11 +357,14 @@ type registerReq struct {
 	Vote     string
 	Password string
 	FeeRate  string
+	Type     string
+	IdPkr    string
 }
 
 type closeStakeReq struct {
 	From     string `validate:"required"`
-	Password string `validate:"required"`
+	Password string
+	IdPkr    string `validate:"required"`
 }
 
 //closeShare
@@ -367,7 +383,13 @@ func MakeCloseShareEndpoint(service Service) endpoint.Endpoint {
 		regO := closeStakeReq{}
 		utils.Convert(req.Biz, &regO)
 
-		txHash, err := service.closeStake(regO.From, regO.Password)
+		password := enterPassword("Close Stake Node")
+		if password == "" {
+			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
+			return response, nil
+		}
+
+		txHash, err := service.closeStake(regO.From, regO.IdPkr, password)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
@@ -392,19 +414,35 @@ func MakeRegisterShareEndpoint(service Service) endpoint.Endpoint {
 
 		regO := registerReq{}
 		utils.Convert(req.Biz, &regO)
-
+		password := enterPassword("Register or Update Stake Node")
+		if password == "" {
+			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
+			return response, nil
+		}
 		feeRate, err := strconv.ParseUint(regO.FeeRate, 10, 64)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, "fee rate is two decimal places, eg: 25.55% ")
 			return response, nil
 		}
-
-		txHash, err := service.registerStakePool(regO.From, regO.Vote, regO.Password, uint32(feeRate))
-		if err != nil {
-			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+		if regO.Type == "" {
+			txHash, err := service.registerStakePool(regO.From, regO.Vote, password, uint32(feeRate))
+			if err != nil {
+				response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+			} else {
+				response.SetBizResponse(txHash)
+			}
+		} else if regO.Type == "modify" {
+			txHash, err := service.modifyStakePool(regO.From, regO.Vote, password, regO.IdPkr, uint32(feeRate))
+			if err != nil {
+				response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+			} else {
+				response.SetBizResponse(txHash)
+			}
 		} else {
-			response.SetBizResponse(txHash)
+			response.SetBaseResponse(errorcode.InvalidBaseParameters, "Type is invalid")
+			return response, nil
 		}
+
 		return response, nil
 	}
 }
@@ -433,8 +471,12 @@ func MakeBuyShareEndpoint(service Service) endpoint.Endpoint {
 
 		regO := buyShareReq{}
 		utils.Convert(req.Biz, &regO)
-
-		txHash, err := service.buyStake(regO.From, regO.Vote, regO.Password, regO.Pool, regO.Amount, regO.GasPrice)
+		password := enterPassword("Buy Share")
+		if password == "" {
+			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
+			return response, nil
+		}
+		txHash, err := service.buyStake(regO.From, regO.Vote, password, regO.Pool, regO.Amount, regO.GasPrice)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
@@ -586,16 +628,50 @@ func MakeOpenFileEndpoint(service Service) endpoint.Endpoint {
 			cmd := exec.Command("sh", "-c", c)
 			_, err := cmd.Output()
 			if err != nil {
-				logex.Errorf("err:", err.Error())
+				logex.Errorf("err:%s", err.Error())
 			}
 		} else if GetOsType() == "win" {
 			cmd := exec.Command("explorer.exe", app_home_path)
-			err :=cmd.Run()
+			err := cmd.Run()
 			if err != nil {
-				logex.Errorf("open file err:", err.Error())
+				logex.Errorf("open file err:%s", err.Error())
 			}
 		}
 
 		return response, nil
 	}
+}
+
+func MakeSetDappsEndpoint(service Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		req := request.(transport.Request)
+		response := transport.Response{}
+		response.SetBaseResponseSuccess()
+
+		if ok, err := validator.ValidateBaseRequestParam(req.Base); !ok {
+			response.SetBaseResponse(errorcode.InvalidBaseParameters, err.Error())
+			return response, nil
+		}
+		dapp := Dapp{}
+		utils.Convert(req.Biz, &dapp)
+		rest, err := service.setDapps(dapp)
+		if err != nil {
+			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+			return response, nil
+		}
+		response.SetBizResponse(rest)
+
+		return response, nil
+	}
+}
+
+type Dapp struct {
+	ID        string `json:"id"`
+	URL       string `json:"url"`
+	Img       string `json:"img"`
+	Title     string `json:"title"`
+	Desc      string `json:"desc"`
+	Author    string `json:"author"`
+	Operation string `json:"operation"`
 }

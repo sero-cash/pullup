@@ -14,11 +14,13 @@ import (
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
+	"github.com/sero-cash/go-sero/pullup/common/utils"
 	"github.com/tyler-smith/go-bip39"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 //keystore file upload
@@ -40,12 +42,15 @@ type Service interface {
 	GetDecimal(currency string) uint64
 
 	registerStakePool(from, vote, passwd string, feeRate uint32) (txHash string, err error)
+	modifyStakePool(from, vote, passwd, idPkr string, feeRate uint32) (txHash string, err error)
 	buyStake(from, vote, passwd, pool, amountStr, gaspriceStr string) (txHash string, err error)
-	closeStake(from, passwd string) (txHash string, err error)
+	closeStake(from, idPkr, passwd string) (txHash string, err error)
 
 	getSetNetwork(host string) string
 
 	InitHost(rpcHostCustomer, webHostCustomer string)
+
+	setDapps(dapp Dapp) (interface{}, error)
 }
 
 func NewServiceAPI() Service {
@@ -244,10 +249,11 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 				Receipt:   tx.Receipt,
 				Timestamp: tx.Timestamp,
 			}
-			if big.NewInt(0).Add(tx.Amount, tx.Fee).Sign() == 0 {
-			} else {
-				utxos = append(utxos, utxo)
-			}
+			utxos = append(utxos, utxo)
+			//if big.NewInt(0).Add(tx.Amount, tx.Fee).Sign() == 0 {
+			//} else {
+			//
+			//}
 		}
 		sort.Sort(utxos)
 	}
@@ -358,9 +364,19 @@ func (s *ServiceApi) registerStakePool(from, vote, passwd string, feeRate uint32
 	return hexutil.Encode(hash[:]), nil
 }
 
-func (s *ServiceApi) closeStake(from, passwd string) (txHash string, err error){
+func (s *ServiceApi) modifyStakePool(from, vote, passwd, idPkr string, feeRate uint32) (txHash string, err error) {
 
-	hash, err := s.SL.closeStakePool(from, passwd)
+	gasprice := big.NewInt(0).Exp(big.NewInt(10), big.NewInt(9), nil)
+	hash, err := s.SL.modifyStakePool(from, vote, passwd, idPkr, feeRate, big.NewInt(0), gasprice)
+	if err != nil {
+		return txHash, err
+	}
+	return hexutil.Encode(hash[:]), nil
+}
+
+func (s *ServiceApi) closeStake(from, idPkr, passwd string) (txHash string, err error) {
+
+	hash, err := s.SL.closeStakePool(from, idPkr, passwd)
 	if err != nil {
 		return txHash, err
 	}
@@ -413,28 +429,80 @@ func (self *ServiceApi) getSetNetwork(hostReq string) string {
 	}
 }
 
+func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
+	if dapp.Operation == "add" {
+		jsonUrl := "/dapp.json"
+		if dapp.URL != "" {
+			if strings.LastIndex(dapp.URL, "/") == len(dapp.URL)-1 {
+				jsonUrl = dapp.URL[0:len(dapp.URL)-1] + jsonUrl
+			} else {
+				jsonUrl = dapp.URL + jsonUrl
+			}
+		}
+
+		out, err := DoRequest(jsonUrl)
+		if err != nil {
+			return nil,err
+		}
+		dapp := Dapp{}
+		err = json.Unmarshal(out, &dapp)
+		if err != nil {
+			return nil,err
+		}
+		if dapp.URL != "" && dapp.Author != "" && dapp.Desc !="" && dapp.Img != "" && dapp.Title != "" {
+			fmt.Println("Add App to database. ")
+			dapp.ID = utils.UUID()
+			data ,_:=json.Marshal(dapp)
+			err := self.SL.dbConfig.Put(dappKey(dapp.ID), data)
+			if err != nil {
+				return nil,err
+			}
+		}else {
+			return nil,fmt.Errorf("`dapp.json` not exist in web root path")
+		}
+	} else if dapp.Operation == "remove" {
+		err := self.SL.dbConfig.Delete(dappKey(dapp.ID))
+		return true, err
+	} else if dapp.Operation == "list" {
+		iterator := self.SL.dbConfig.NewIteratorWithPrefix(dappPrefix)
+		dapps := []Dapp{}
+		for iterator.Next() {
+			//key := iterator.Key()
+			value := iterator.Value()
+			dapp := Dapp{}
+			err := json.Unmarshal(value, &dapp)
+			if err != nil {
+				return nil, err
+			}
+			dapps = append(dapps, dapp)
+		}
+		return dapps, nil
+	}
+	return nil, nil
+}
+
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
 
 	defaultRpcHost := "http://148.70.169.73:8545"
 	defaultWebHost := "http://129.211.98.114:3006/web/v0_1_6/"
 
 	//get remote rpc host
-	resp, err := http.Get(remoteRpcHost)
+	resp, err := http.Get(GetRemoteConfig())
 	if err != nil {
-		logex.Error("get remoteRpcHost Get err: ",err.Error())
+		logex.Error("get remoteRpcHost Get err: ", err.Error())
 		return
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logex.Error("get remoteRpcHost ReadAll err: ",err.Error())
+		logex.Error("get remoteRpcHost ReadAll err: ", err.Error())
 		return
 	}
-	fmt.Println("get remote config success : ",string(body[:]))
+	fmt.Println("get remote config success : ", string(body[:]))
 	config := RpcConfig{}
-	err =json.Unmarshal(body,&config)
+	err = json.Unmarshal(body, &config)
 	if err != nil {
-		logex.Error("get remoteRpcHost Unmarshal err: ",err.Error())
+		logex.Error("get remoteRpcHost Unmarshal err: ", err.Error())
 		return
 	}
 

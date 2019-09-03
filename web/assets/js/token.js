@@ -395,7 +395,7 @@ var Token = {
                 $('#myModal label:eq(2)').text($.i18n.prop('dapp_token_modal_issue_symbol'));
                 $('#myModal label:eq(3)').text($.i18n.prop('dapp_token_modal_issue_total'));
                 $('#myModal label:eq(4)').text($.i18n.prop('dapp_token_modal_issue_decimal'));
-                $('#myModal label:eq(5)').text($.i18n.prop('dapp_token_modal_issue_password'));
+                // $('#myModal label:eq(5)').text($.i18n.prop('dapp_token_modal_issue_password'));
 
                 $('.coin-fee').text($.i18n.prop('dapp_token_modal_issue_coinfee'));
                 $('.gas-fee').text($.i18n.prop('dapp_token_modal_issue_gasfee'));
@@ -490,6 +490,25 @@ var Token = {
                                 })
 
 
+                            }else {
+                                Common.postSeroRpc("sero_getBalance",[token.ContractAddress,"latest"],function (res) {
+                                    var seroS=0;
+                                    if(res.result.tkn){
+                                        seroS=res.result.tkn["SERO"];
+                                    }
+                                    $('tbody').append(`
+                                        <tr>
+                                        <td class="text-break">${token.ContractAddress}</td>
+                                        <td>${token.Name}</td>
+                                        <td>${token.Symbol}</td>
+                                        <td>${token.Decimal}</td>
+                                        <td>${new BigNumber(token.Total, 16).toFixed(0)}</td>
+                                        <td>0.000000</td>
+                                        <td>${new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
+                                        <td></td>
+                                        </tr>
+                                    `);
+                                })
                             }
                         });
 
@@ -528,7 +547,7 @@ var Token = {
                     Common.postSeroRpcSync("sero_estimateGas", [param], function (res) {
 
                         if (res.result) {
-                            var password = $('#password').val();
+                            // var password = $('#password').val();
                             var contract_tx_req = {
                                 from: from,
                                 value: new BigNumber(that.coinFee).multipliedBy(Common.baseDecimal).toString(10),
@@ -544,7 +563,7 @@ var Token = {
                             }
 
                             var biz = {
-                                password: password,
+                                // password: password,
                                 contract_tx_req: contract_tx_req,
                             }
 
@@ -685,7 +704,22 @@ var Token = {
                             that.isToken = false;
                         }
                     });
+
                 } else {
+                    Common.postSeroRpc("sero_getBalance",[_contractAddress,"latest"],function (res) {
+                        var seroS=0;
+                        if(res.result.tkn){
+                            seroS=res.result.tkn["SERO"];
+                        }
+
+                        that.t_name= 'None';
+                        that.t_symbol= 'None';
+                        that.t_total= 0;
+                        that.t_decimals= 0;
+
+                        $('.account_sero').text(new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6));
+                    })
+
                     that.isToken = false;
                 }
             });
@@ -697,32 +731,38 @@ var Token = {
     addToken: function () {
         var that = this;
         var _contractAddress = $('#contractAddress').val();
-        if(that.t_name){
-            var param = {
-                ContractAddress: _contractAddress,
-                Name: that.t_name[0],
-                Symbol: that.t_symbol[0],
-                Decimal: parseInt(that.t_decimals),
-                Total: that.t_total,
-            }
-            Common.postPullupRpc("watch_tokens", param, function (res) {
-                if (res.result) {
-                    $('#toast2 div:eq(0)').removeClass('alert-danger').addClass('alert-success').text("Add token Successful");
-                    $('#toast2').toast('show');
-                    $('#sub2').attr("disabled",false);
-                    that.getTokenList();
-                }
-                if (res.error) {
-                    $('#toast2 div:eq(0)').removeClass('alert-success').addClass('alert-danger').text(res.error.message);
-                    $('#toast2').toast('show');
-                    $('#sub2').attr("disabled",false);
-                }
-            })
-        }else{
-            $('#toast2 div:eq(0)').removeClass('alert-success').addClass('alert-danger').text("It is not TOKEN contract address");
-            $('#toast2').toast('show');
-            $('#sub2').attr("disabled",false);
+
+        var param = {
+            ContractAddress: _contractAddress,
+            Name: that.t_name[0],
+            Symbol: that.t_symbol[0],
+            Decimal: parseInt(that.t_decimals),
+            Total: that.t_total===0?"0x0":that.t_total,
         }
+        Common.postPullupRpc("watch_tokens", param, function (res) {
+            if (res.result) {
+                $('#toast2 div:eq(0)').removeClass('alert-danger').addClass('alert-success').text("Add token Successful");
+                $('#toast2').toast('show');
+                $('#sub2').attr("disabled",false);
+                setTimeout(function () {
+                    $("#myModa2").modal("hide");
+                },2000);
+                that.getTokenList();
+            }
+            if (res.error) {
+                $('#toast2 div:eq(0)').removeClass('alert-success').addClass('alert-danger').text(res.error.message);
+                $('#toast2').toast('show');
+                $('#sub2').attr("disabled",false);
+            }
+        })
+
+        // if(that.t_name){
+        //
+        // }else{
+        //     $('#toast2 div:eq(0)').removeClass('alert-success').addClass('alert-danger').text("It is not TOKEN contract address");
+        //     $('#toast2').toast('show');
+        //     $('#sub2').attr("disabled",false);
+        // }
 
     },
 
@@ -758,11 +798,11 @@ var Token = {
         var _contractAddress = that.currentContractAddres;
         var _toAddress = $('#e_c_to').val();
         var _value = $('#e_c_amount').val();
-        var _password = $('#e_c_password').val();
+        // var _password = $('#e_c_password').val();
         console.log("that.currentDecimal: ", that.currentDecimal, _value);
         var _decimal = new BigNumber(10).pow(that.currentDecimal);
         var from = $('#e_c_from').find('option:selected').val();
-        if (_contractAddress && _toAddress && _value && _password && from) {
+        if (_contractAddress && _toAddress && _value && from) {
             var params = [
                 _toAddress,
                 "0x" + new BigNumber(_value).multipliedBy(_decimal).toString(16)
@@ -787,7 +827,6 @@ var Token = {
                                 data: data,
                                 gas_price: "1000000000",
                             },
-                            password: _password,
                         };
                         var estimateParam = {
                             from: mainPkr,

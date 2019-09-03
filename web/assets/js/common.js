@@ -27,7 +27,19 @@ var Common = {
 
                 that.getLang();
             });
-        },10)
+        }, 100)
+    },
+
+    convertErrors: function (err) {
+        var s = err;
+        if (err.indexOf("could not decrypt key with given passphrase") > -1) {
+            s = $.i18n.prop('convert_error_password');
+        }else if (err.indexOf("no enough unlocked utxos") > -1) {
+            s = $.i18n.prop('convert_error_utxo');
+        }else if (err.indexOf("stx Verify error") > -1) {
+            s = $.i18n.prop('convert_error_verifytx');
+        }
+        return s
     },
 
     getLang: function () {
@@ -124,7 +136,7 @@ var Common = {
         };
 
         $.ajax({
-            url:  that.host + '/rpc',
+            url: that.host + '/rpc',
             type: 'post',
             dataType: 'json',
             async: true,
@@ -150,7 +162,7 @@ var Common = {
         };
 
         $.ajax({
-            url:  that.host + '/rpc',
+            url: that.host + '/rpc',
             type: 'post',
             dataType: 'json',
             async: false,
@@ -175,7 +187,7 @@ var Common = {
         };
 
         $.ajax({
-            url:  that.host + '/pullup_rpc',
+            url: that.host + '/pullup_rpc',
             type: 'post',
             dataType: 'json',
             async: true,

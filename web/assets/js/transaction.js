@@ -38,7 +38,7 @@ var Transaction = {
                 $('.col-lg-3:eq(4)').text($.i18n.prop('send_tx_total'));
                 $('.col-lg-3:eq(5)').text($.i18n.prop('send_tx_pwd'));
 
-                $('#password').attr('placeholder',$.i18n.prop('send_tx_pwdtips'));
+                // $('#password').attr('placeholder',$.i18n.prop('send_tx_pwdtips'));
                 $('#amount').attr('placeholder',$.i18n.prop('send_tx_amount_tips'));
                 $('#address').attr('placeholder',$.i18n.prop('send_tx_address_tips'));
 
@@ -277,37 +277,37 @@ var Transaction = {
                 $('.modal-footer button:eq(1)').attr('disabled', false);
             } else {
                 $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
-                var password = $("#password").val();
-                if (password === '') {
-                    $('.toast:eq(1) div:eq(0)').text($.i18n.prop('send_tx_pwdtips'));
-                    $('.toast:eq(1)').toast('show');
-                    $('#sub1').attr('disabled', false);
-                    $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                } else {
-                    var biz = {
-                        From: from,
-                        To: to,
-                        Currency: currency,
-                        Amount: amount.toString(10),
-                        GasPrice: gasprice.toString(10),
-                        Password: password,
-                    }
-                    Common.postAsync('tx/transfer', biz, {}, function (res) {
-                        if (res.base.code === 'SUCCESS') {
-                            $('.toast:eq(1) div:eq(0)').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
-                            $('.toast:eq(1)').toast('show')
-                            setTimeout(function () {
-                                window.location.href = "account-detail.html?pk=" + from;
-                            }, 1500);
-                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                        } else {
-                            $('.toast:eq(1) div:eq(0)').text(res.base.desc);
-                            $('.toast:eq(1)').toast('show')
-                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                        }
-                        $('#sub1').attr('disabled', false);
-                    });
+                // var password = $("#password").val();
+                // if (password === '') {
+                //     $('.toast:eq(1) div:eq(0)').text($.i18n.prop('send_tx_pwdtips'));
+                //     $('.toast:eq(1)').toast('show');
+                //     $('#sub1').attr('disabled', false);
+                //     $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                // } else {
+                //
+                // }
+                var biz = {
+                    From: from,
+                    To: to,
+                    Currency: currency,
+                    Amount: amount.toString(10),
+                    GasPrice: gasprice.toString(10),
                 }
+                Common.postAsync('tx/transfer', biz, {}, function (res) {
+                    if (res.base.code === 'SUCCESS') {
+                        $('.toast:eq(1) div:eq(0)').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                        $('.toast:eq(1)').toast('show')
+                        setTimeout(function () {
+                            window.location.href = "account-detail.html?pk=" + from;
+                        }, 1500);
+                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                    } else {
+                        $('.toast:eq(1) div:eq(0)').text(Common.convertErrors(res.base.desc));
+                        $('.toast:eq(1)').toast('show')
+                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                    }
+                    $('#sub1').attr('disabled', false);
+                });
             }
         });
     }

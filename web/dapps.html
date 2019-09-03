@@ -19,6 +19,9 @@
             <div class="header">
             </div>
             <div class="container-fluid" style="margin-top: 100px;">
+                <div class="d-sm-flex justify-content-between align-items-center mb-4 add-dapp">
+                    <h3 class="text-dark mb-0">Dapps</h3><button class="btn btn-primary" onclick="DApps.showAddModal()"><i class="fas fa-plus text-uppercase"></i></button>
+                </div>
                 <div class="row small dapp-data">
                 </div>
             </div>
@@ -46,6 +49,36 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="addDappModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="form1" novalidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="showModalTitle">Add Dapp</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="toast deploy" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);">
+                        <div class="toast-body alert-danger">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input id="url" type="text" class="form-control" required placeholder="http://" autocomplete="off" style="width: 400px"/>
+                        <div class="invalid-feedback">Please Enter Dapp URL.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="sub1">ADD</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script src="assets/plugin/jquery.min.js"></script>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
@@ -67,6 +100,19 @@
     Common.app = DApps;
 
     Common.init();
+
+    $("#form1").submit(function (event) {
+        const f = $(this);
+        event.preventDefault()
+        event.stopPropagation()
+        f.addClass("was-validated")
+        if (f[0].checkValidity() === true) {
+            $('#sub1').attr('disabled', true);
+            setTimeout(function () {
+                DApps.addDapp();
+            }, 10);
+        }
+    })
 </script>
 
 </body>

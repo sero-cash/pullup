@@ -25,12 +25,20 @@ var (
 	tokenPrefix     = []byte("Token")
 	txReceiptPrefix = []byte("TXRECEIPT")
 	blockPrefix = []byte("BLOCK")
+
+
+	dappPrefix = []byte("DAPPS")
 )
 
 const (
 	PRK_TYPE_HASH int8 = 2
 	PKR_TYPE_NUM  int8 = 1
 )
+
+func dappKey(dappId string) []byte {
+	key := append(dappPrefix, dappId[:]...)
+	return key
+}
 
 // PKR + PK + r
 func pkrKey(pk keys.Uint512, r keys.Uint256) []byte {

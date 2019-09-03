@@ -69,7 +69,7 @@ var Account = {
                     $("#sub1").attr('disabled', false);
                 } else {
                     $("#sub1").text("NEXT").attr('disabled', false);
-                    alert(res.base.desc);
+                    alert(Common.convertErrors(res.base.desc));
                 }
 
             })
@@ -147,40 +147,12 @@ var Detail = {
 
     bindExport:function () {
         var that = this;
-        $('.backup').bind('click', function () {
-            $('.modal-title').empty().text($.i18n.prop('account_export_mnemnic'));
-            $('.modal-body div:eq(1)').empty().text('');
-            $('#qrcode').empty().append(`
-                <input type="password" id="password" class="form-control" placeholder="${$.i18n.prop('send_tx_pwdtips')}" maxlength="50" aria-describedby="inputGroup-sizing-sm">
-            `);
-            $('.modal').modal('show');
-            $('.modal-footer button:eq(1)').unbind('click').bind('click',function () {
-                var pasword = $('#password').val();
-                if (pasword){
-                    $('.modal-footer button:eq(1)').attr('disabled',true);
-                    $('.modal-body div:eq(1)').empty();
-                    var biz ={
-                        passphrase:pasword,
-                        address:that.address,
-                    }
-                    Common.postAsync('account/export/mnemonic', biz, {}, function (res) {
-                        if (res.base.code === 'SUCCESS') {
-                            $('.modal-title').empty().text($.i18n.prop('account_new_modal_title'));
-                            $('#qrcode').empty().append(`<span class="text-dark">${res.biz}</span>`);
-                            $('.modal-footer button:eq(1)').unbind('click').bind('click',function () {
-                                $('.modal').modal('hide');
-                                $('.modal-body p:eq(1)').text('');
-                            }).attr('disabled',false);
-                        }else{
-                            $('.modal-body div:eq(1)').empty().append(`<strong class="text-danger">${res.base.desc}</strong>`);
-                            $('.modal-footer button:eq(1)').attr('disabled',false);
-                        }
+        $('.backup').unbind().bind('click', function () {
+            var biz ={
+                address:that.address,
+            }
 
-                    });
-                }else{
-                    $('.modal-body div:eq(1)').empty().append(`<span class="text-danger">${$.i18n.prop('send_tx_pwdtips')}</span>`);
-                }
-
+            Common.post('account/export/mnemonic', biz, {}, function (res) {
             });
         });
     },
@@ -563,7 +535,7 @@ var Mnemnic = {
                 $('.modal-body p:eq(0)').text(address.substring(0,20) + " ... " + address.substring(address.length-20));
             } else {
                 $('.modal-title').text("ERROR");
-                $('.modal-body p:eq(0)').text(res.base.desc);
+                $('.modal-body p:eq(0)').text(Common.convertErrors(res.base.desc));
             }
             $('#myModal').modal({backdrop: 'static', keyboard: false});
             $("#sub1").attr('disabled', false);

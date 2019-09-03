@@ -1,0 +1,8 @@
+{
+  "img": "./assets/img/token.png",
+  "title": "SRC20 Token Tracker",
+  "desc": "SRC20是匿名Token的标准接口, 该标准提供了转移Token的基本功能。",
+  "author": "sero.cash",
+  "url": "./views/contract/token.html",
+  "state": 1
+}

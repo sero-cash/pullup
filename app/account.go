@@ -235,7 +235,7 @@ func (self *SEROLight) createPkrHash(pk *keys.Uint512, tk *keys.Uint512, index u
 	random := append(tk[:], encodeNumber(index)[:]...)
 	r := crypto.Keccak256Hash(random).HashToUint256()
 	pkr := keys.Addr2PKr(pk, r)
-	fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
+	//fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
 
 	return pkr
 }
