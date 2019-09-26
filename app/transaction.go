@@ -89,6 +89,12 @@ func (self *SEROLight) findTx(pk keys.Uint512, pageCount uint64) (map[string]Tra
 				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency, Fee: fee}
 				rData, err := self.db.Get(txReceiptIndex(douthash))
 				if err != nil {
+					if *powReward.HashToUint256() == douthash || *posReward.HashToUint256() == douthash || *posMiner.HashToUint256() == douthash {
+					}else{
+						batch := self.db.NewBatch()
+						self.genTxReceipt(douthash, batch)
+						batch.Write()
+					}
 					logex.Error("txHash not indexed, hash: ", douthash, err)
 				} else {
 					var r TxReceipt
@@ -104,6 +110,7 @@ func (self *SEROLight) findTx(pk keys.Uint512, pageCount uint64) (map[string]Tra
 				}else{
 					bData, err := self.db.Get(blockIndex(utxo.Num))
 					if err != nil {
+						self.storeBlockInfo(utxo.Num)
 						logex.Error("block not indexed, hash: ", utxo.Num, err)
 					} else {
 						var b BlockEx

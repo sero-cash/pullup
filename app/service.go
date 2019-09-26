@@ -257,7 +257,6 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 		}
 		sort.Sort(utxos)
 	}
-
 	return
 }
 
@@ -483,7 +482,7 @@ func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
 
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
 
-	defaultRpcHost := "http://148.70.169.73:8545"
+	defaultRpcHost := "http://140.143.83.98:8545"
 	defaultWebHost := "http://129.211.98.114:3006/web/v0_1_6/"
 
 	//get remote rpc host

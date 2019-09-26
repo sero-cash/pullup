@@ -58,6 +58,23 @@ var DApps = {
             url: "http://134.175.161.78:8088/v2",
             showTips: true,
             state: 1,
+        },{
+            "img": "http://111.231.62.4:8089/vote/v1/vote.jpg",
+            "title": "Vote",
+            "desc": "Support or Oppose, Who can win?",
+            "author": "nobody",
+            "url": "http://111.231.62.4:8089/vote/v1",
+            showTips: true,
+            "state": 1
+        },
+        {
+            img: "./assets/img/bluna.jpeg",
+            title: "Bluna",
+            desc: "Bluna is a distributed ultra-clear streaming media project initiated by BlunaLabs, which mainly serves the transmission protocols of 4k and 8k in the distributed field in the future. At present, Bluna has reached an agreement with a number of media companies, the number of studios reached 2,000.",
+            author: "bluna",
+            url: "",
+            showTips: true,
+            state: 0,
         },
         {
             img: "./assets/img/sanguo.png",
@@ -87,6 +104,23 @@ var DApps = {
             url: "http://134.175.161.78:8088/v2",
             showTips: true,
             state: 1,
+        },{
+            "img": "http://111.231.62.4:8089/vote/v1/vote.jpg",
+            "title": "Vote",
+            "desc": "Support or Oppose, Who can win?",
+            "author": "nobody",
+            "url": "http://111.231.62.4:8089/vote/v1",
+            showTips: true,
+            "state": 1
+        },
+        {
+            img: "./assets/img/bluna.jpeg",
+            title: "Bluna",
+            desc: "Bluna是由BlunaLabs发起的分布式超清流媒体项目，主要服务于今后4k,8k在分布式领域的传输协议。目前Bluna已经于多家媒体公司达成协议，工作室人数达到至2000人。",
+            author: "bluna",
+            url: "",
+            showTips: true,
+            state: 0,
         },
         {
             img: "./assets/img/sanguo.png",
@@ -106,6 +140,8 @@ var DApps = {
     addDapp() {
         var that = this;
         var url = $('#url').val();
+
+        url = url.trim();
         var biz = {
             operation: "add",
             url: url
@@ -118,6 +154,7 @@ var DApps = {
                 $('.toast').toast('show');
                 setTimeout(function () {
                     $('#addDappModal').modal('hide');
+                    $('#url').val('');
                 },1000);
             } else {
                 $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('dapps_modal_add_fail'));
@@ -163,9 +200,9 @@ var DApps = {
             var dapp = data[i];
             if (dapp.state === 1) {
                 $('.dapp-data').append(`
-                    <div class="col-lg-3 col-sm-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow">
-                            <img src="${dapp.img}" width="390" height="280" class="card-img-top">
+                            <img src="${dapp.img}" with="390" class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>
@@ -178,9 +215,9 @@ var DApps = {
                 `);
             } else if (dapp.state === 0) {
                 $('.dapp-data').append(`
-                    <div class="col-lg-3 col-sm-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow">
-                            <img src="${dapp.img}" width="390" height="280" class="card-img-top">
+                            <img src="${dapp.img}" with="390" class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>
@@ -203,9 +240,9 @@ var DApps = {
                 for (var i = 0; i < dapps.length; i++) {
                     var dapp = dapps[i];
                     $('.dapp-data').append(`
-                    <div class="col-lg-3 col-sm-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow" >
-                            <img src="${dapp.img}" width="390" height="280" class="card-img-top">
+                            <img src="${dapp.img}" with="390" class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>

@@ -177,11 +177,13 @@ func (self *SEROLight) SyncOut() {
 		}
 		return true
 	})
+
 	self.CheckNil()
 }
 
 func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start, end uint64) (rtn fetchReturn, err error) {
 
+	logex.Info(account.pk,start,end)
 	pkrTypeMap, currentPkrsMap, pkrs := self.genPkrs(pkrIndex, account)
 
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: []interface{}{pkrs, start, end}}
@@ -248,7 +250,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 		}
 
 		//getBlock RPC
-		self.storeBlockInfo(blockOut.Num)
+		//self.storeBlockInfo(blockOut.Num)
 
 	}
 	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
@@ -395,7 +397,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			roots = append(roots, utxo.Root)
 			//log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nils", common.Bytes2Hex(utxo.Nils[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
 
-			self.genTxReceipt(utxo.TxHash, batch)
+			//self.genTxReceipt(utxo.TxHash, batch)
 		}
 		data, err := rlp.EncodeToBytes(roots)
 		if err != nil {
@@ -429,8 +431,19 @@ func (self *SEROLight) CheckNil() {
 		if value != nil {
 			Nils = append(Nils, hexutil.Encode(Nil[:]))
 		}
-	}
 
+		if len(Nils) == 500 {
+			self.rpcCheckNil(Nils)
+			Nils = []string{}
+			continue
+		}
+	}
+	if len(Nils) >0 {
+		self.rpcCheckNil(Nils)
+	}
+}
+
+func (self *SEROLight) rpcCheckNil(Nils []string)  {
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_checkNil", Params: []interface{}{Nils}}
 	jsonResp, err := sync.Do()
 	if err != nil {
@@ -462,9 +475,9 @@ func (self *SEROLight) CheckNil() {
 						batch.Delete(penddingTxKey(pk, utxo.TxHash))
 					}
 					//GetTransactionReceipt
-					self.genTxReceipt(nilv.TxHash, batch)
+					//self.genTxReceipt(nilv.TxHash, batch)
 					//getBlock RPC
-					self.storeBlockInfo(nilv.Num)
+					//self.storeBlockInfo(nilv.Num)
 
 					if len(value) == 130 {
 						batch.Delete(value)
@@ -488,7 +501,6 @@ func (self *SEROLight) CheckNil() {
 			batch.Write()
 		}
 	}
-
 }
 
 func (self *SEROLight) genTxReceipt(txHash keys.Uint256, batch serodb.Batch) {
