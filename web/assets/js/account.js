@@ -21,8 +21,9 @@ var Account = {
             callback: function () {
                 $('p:eq(0)').text($.i18n.prop('account_new_tips'));
                 $('h4:eq(0)').text($.i18n.prop('account_new'));
-                $('input:eq(0)').attr('placeholder',$.i18n.prop('account_new_password_place')).next('div').text($.i18n.prop('account_new_password_place'));;
-                $('input:eq(1)').attr('placeholder',$.i18n.prop('account_new_password_confirm')).next('div').text($.i18n.prop('account_new_password_place'));
+                $('input:eq(0)').attr('placeholder', $.i18n.prop('account_new_password_place')).next('div').text($.i18n.prop('account_new_password_place'));
+                ;
+                $('input:eq(1)').attr('placeholder', $.i18n.prop('account_new_password_confirm')).next('div').text($.i18n.prop('account_new_password_place'));
                 $('button:eq(0)').text($.i18n.prop('account_new_back'));
                 $('button:eq(1)').text($.i18n.prop('account_new_next'));
 
@@ -63,7 +64,7 @@ var Account = {
                     $('.modal-footer button:eq(1)').bind('click', function () {
                         window.location.href = "index.html";
                     });
-                    $('.modal-body p:eq(0)').text(res.biz.address.substring(0,20) + " ... " + res.biz.address.substring(res.biz.address.length-20));
+                    $('.modal-body p:eq(0)').text(res.biz.address.substring(0, 20) + " ... " + res.biz.address.substring(res.biz.address.length - 20));
                     $('.modal-body p:eq(1)').text(res.biz.mnemonic);
                     $('#myModal').modal({backdrop: 'static', keyboard: false});
                     $("#sub1").attr('disabled', false);
@@ -79,7 +80,7 @@ var Account = {
 
 var Detail = {
 
-    currencyDecimal:{},
+    currencyDecimal: {},
 
     address: '',
 
@@ -145,11 +146,11 @@ var Detail = {
         }, 20000);
     },
 
-    bindExport:function () {
+    bindExport: function () {
         var that = this;
         $('.backup').unbind().bind('click', function () {
-            var biz ={
-                address:that.address,
+            var biz = {
+                address: that.address,
             }
 
             Common.post('account/export/mnemonic', biz, {}, function (res) {
@@ -172,7 +173,7 @@ var Detail = {
                 that.address = res.biz.PK;
                 var pkr = res.biz.PkrBase58;
 
-                if (res.biz.Name){
+                if (res.biz.Name) {
                     $('.a_span').text(res.biz.Name);
                 }
 
@@ -191,7 +192,7 @@ var Detail = {
                         height: 200,
                         text: res.biz.MainPKr
                     });
-                    $('.modal-footer button:eq(1)').bind('click',function () {
+                    $('.modal-footer button:eq(1)').bind('click', function () {
                         $('#myModal').modal('hide');
                         $('.modal-footer button:eq(1)').unbind('click');
                     })
@@ -207,7 +208,7 @@ var Detail = {
                         height: 200,
                         text: pkr
                     });
-                    $('.modal-footer button:eq(1)').bind('click',function () {
+                    $('.modal-footer button:eq(1)').bind('click', function () {
                         $('#myModal').modal('hide');
                         $('.modal-footer button:eq(1)').unbind('click');
                     })
@@ -221,16 +222,16 @@ var Detail = {
                 var strMap = new Map();
                 for (var k of Object.keys(balanceObj)) {
                     strMap.set(k, balanceObj[k]);
-                    if (k !== 'SERO'){
-                        var biz={
-                            Currency:k,
+                    if (k !== 'SERO') {
+                        var biz = {
+                            Currency: k,
                         }
-                        Common.post('decimal',biz,{},function (res) {
+                        Common.post('decimal', biz, {}, function (res) {
                             var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
                             var amount = new BigNumber(balanceObj[k]).dividedBy(cDecimal);
-                            if(res.biz>6){
+                            if (res.biz > 6) {
                                 amount = amount.toFixed(6);
-                            }else{
+                            } else {
                                 amount = amount.toFixed(res.biz);
                             }
                             $('.currency').append(`
@@ -249,7 +250,7 @@ var Detail = {
                                 </div>
                             `);
                         });
-                    }else{
+                    } else {
                         $('.currency').append(`
                         <div class="col-md-3 col-xl-3 mb-4">
                             <div class="card shadow border-left-success py-2">
@@ -321,19 +322,19 @@ var Detail = {
                         var amount = new BigNumber(tx.Amount);
 
 
-                        if(tx.Currency !== 'SERO'){
-                            var biz={
-                                Currency:tx.Currency,
+                        if (tx.Currency !== 'SERO') {
+                            var biz = {
+                                Currency: tx.Currency,
                             }
-                            Common.post('decimal',biz,{},function (res) {
+                            Common.post('decimal', biz, {}, function (res) {
                                 var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
-                                if(res.biz>6){
+                                if (res.biz > 6) {
                                     amount = amount.dividedBy(cDecimal).toFixed(6);
-                                }else{
+                                } else {
                                     amount = amount.dividedBy(cDecimal).toFixed(res.biz);
                                 }
-                                var fee = 0 ;
-                                if(tx.Receipt){
+                                var fee = 0;
+                                if (tx.Receipt) {
                                     var receipt = tx.Receipt;
                                     fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
                                 }
@@ -342,28 +343,28 @@ var Detail = {
                                     <tr>
                                         <td>${i + 1}</td>
                                         <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
+                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
-                                        <td><span class="text-success">${tx.Block!=999999999999999 ? 'Completed' : 'Pending'}</span></td>
+                                        <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
                                         <td>${amount}</td>
                                         <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                         <td>${convertUTCDate(tx.Timestamp)}</td>
                                     </tr>
                                     `
-                                            );
+                                );
                             });
-                        }else{
-                            var fee = new BigNumber(tx.Fee) ;
-                            if(tx.Receipt){
+                        } else {
+                            var fee = new BigNumber(tx.Fee);
+                            if (tx.Receipt) {
                                 var receipt = tx.Receipt;
                                 fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
                             }
 
-                            if( amount.comparedTo(new BigNumber(0))<0 && tx.Block !=999999999999999){
-                                if(amount.plus(fee) < 0 ){
+                            if (amount.comparedTo(new BigNumber(0)) < 0 && tx.Block < 1000000000) {
+                                if (amount.plus(fee) < 0) {
                                     amount = amount.plus(fee)
-                                }else{
+                                } else {
                                     fee = 0;
                                 }
                             }
@@ -373,19 +374,20 @@ var Detail = {
                             <tr>
                                 <td>${i + 1}</td>
                                 <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
+                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
                                 <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                 <td>${tx.Currency}</td>
-                                <td><span class="text-success">${tx.Block !=999999999999999 ? 'Completed' : 'Pending'}</span></td>
+                                <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
                                 <td>${amount}</td>
                                 <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                 <td>${convertUTCDate(tx.Timestamp)}</td>
                             </tr>
                             `
-                                );
+                            );
                         }
 
-                    };
+                    }
+                    ;
                 }
 
                 $('#dataTable').DataTable();
@@ -532,7 +534,7 @@ var Mnemnic = {
             if (res.base.code === 'SUCCESS') {
                 var address = res.biz.address
                 $('.modal-title').text("Import Successful");
-                $('.modal-body p:eq(0)').text(address.substring(0,20) + " ... " + address.substring(address.length-20));
+                $('.modal-body p:eq(0)').text(address.substring(0, 20) + " ... " + address.substring(address.length - 20));
             } else {
                 $('.modal-title').text("ERROR");
                 $('.modal-body p:eq(0)').text(Common.convertErrors(res.base.desc));
@@ -546,7 +548,6 @@ var Mnemnic = {
 }
 
 
-
 function GetQueryString(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
     var r = window.location.search.substr(1).match(reg);
@@ -554,15 +555,15 @@ function GetQueryString(name) {
     return null;
 }
 
-function convertUTCDate(dateTimestamp){
-    if(dateTimestamp && dateTimestamp>0){
-        let cDate = new Date(dateTimestamp*1000);
+function convertUTCDate(dateTimestamp) {
+    if (dateTimestamp && dateTimestamp > 0) {
+        let cDate = new Date(dateTimestamp * 1000);
         return (cDate.getMonth() + 1) + "/" + cDate.getDate() + " " + appendZero(cDate.getHours()) + ":" + appendZero(cDate.getMinutes());
     }
     return ""
 }
 
 function appendZero(i) {
-    i =  i < 10 ? "0"+i : i;
+    i = i < 10 ? "0" + i : i;
     return i;
 }

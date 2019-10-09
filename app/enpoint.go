@@ -3,15 +3,17 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"github.com/sero-cash/go-sero/common/hexutil"
+	"os/exec"
+	"strconv"
+	"sync"
+
 	"github.com/go-kit/kit/endpoint"
 	"github.com/sero-cash/go-sero/pullup/common/errorcode"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
 	"github.com/sero-cash/go-sero/pullup/common/utils"
 	"github.com/sero-cash/go-sero/pullup/common/validator"
-	"os/exec"
-	"strconv"
-	"sync"
 )
 
 var wg sync.WaitGroup
@@ -39,7 +41,19 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase)
+		//get NODE block  number
+
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_blockNumber", Params: []interface{}{}}
+		jsonResp, err := sync.Do()
+		if err != nil {
+			logex.Errorf("jsonRep err=[%s]", err.Error())
+			response.SetBaseResponse(errorcode.FAIL_CODE, "server busy")
+			return response, nil
+		}
+		var blockNumber hexutil.Uint64
+		json.Unmarshal(*jsonResp.Result, &blockNumber)
+
+		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase, uint64(blockNumber))
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
@@ -97,7 +111,7 @@ func MakeAccountImportWithPrivateKeyEndpoint(service Service) endpoint.Endpoint 
 		aipq := accountImportWithPrivateKeyReq{}
 		utils.Convert(req.Biz, &aipq)
 
-		resp, err := service.ImportAccountFromRawKey(aipq.PrivateKey, aipq.Passphrase)
+		resp, err := service.ImportAccountFromRawKey(aipq.PrivateKey, aipq.Passphrase, 0, 2)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {

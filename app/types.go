@@ -1,11 +1,14 @@
 package app
 
 import (
-	"github.com/sero-cash/go-czero-import/keys"
+	"github.com/sero-cash/go-sero/common"
+	"math/big"
+
+	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/zero/txs/assets"
 	"github.com/sero-cash/go-sero/zero/txtool"
-	"math/big"
 )
+
 
 type BlockOutResp struct {
 	CurrentNum uint64
@@ -14,21 +17,38 @@ type BlockOutResp struct {
 
 type BlockOut struct {
 	Num  uint64
-	Outs []txtool.Out
+	Data []BlockData
+}
+
+type BlockData struct {
+	TxInfo TxInfo
+	Out txtool.Out
+}
+
+type TxInfo struct {
+	TxHash   c_type.Uint256
+	Num      uint64
+	BlockHash common.Hash
+	Gas       uint64
+	GasUsed   uint64
+	GasPrice  big.Int
+	From      common.Address
+	To        common.Address
+	Time      big.Int
 }
 
 type BlockInfo struct {
 	Num  uint64
-	Hash keys.Uint256
-	Ins  []keys.Uint256
+	Hash c_type.Uint256
+	Ins  []c_type.Uint256
 	Outs []Utxo
 }
 
 type Utxo struct {
-	Pkr       keys.PKr
-	Root      keys.Uint256
-	TxHash    keys.Uint256
-	Nils      []keys.Uint256
+	Pkr       c_type.PKr
+	Root      c_type.Uint256
+	TxHash    c_type.Uint256
+	Nils      []c_type.Uint256
 	Num       uint64
 	Asset     assets.Asset
 	IsZ       bool
@@ -64,7 +84,7 @@ type TxReceipt struct {
 	CumulativeGasUsed uint64
 
 	// Implementation fields (don't reorder!)
-	TxHash          keys.Uint256
+	TxHash          c_type.Uint256
 	ContractAddress string
 	GasUsed         uint64
 
