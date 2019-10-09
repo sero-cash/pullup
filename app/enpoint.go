@@ -3,15 +3,16 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"os/exec"
+	"strconv"
+	"sync"
+
 	"github.com/go-kit/kit/endpoint"
 	"github.com/sero-cash/go-sero/pullup/common/errorcode"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
 	"github.com/sero-cash/go-sero/pullup/common/utils"
 	"github.com/sero-cash/go-sero/pullup/common/validator"
-	"os/exec"
-	"strconv"
-	"sync"
 )
 
 var wg sync.WaitGroup
@@ -67,7 +68,7 @@ func MakeAccountImportWithMnemonicEndpoint(service Service) endpoint.Endpoint {
 		aimq := accountImportWithMnemonicReq{}
 		utils.Convert(req.Biz, &aimq)
 
-		resp, err := service.ImportAccountFromMnemonic(aimq.Mnemonic, aimq.Passphrase)
+		resp, err := service.ImportAccountFromMnemonic(aimq.Mnemonic, aimq.Passphrase, 0, 2)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
@@ -97,7 +98,7 @@ func MakeAccountImportWithPrivateKeyEndpoint(service Service) endpoint.Endpoint 
 		aipq := accountImportWithPrivateKeyReq{}
 		utils.Convert(req.Biz, &aipq)
 
-		resp, err := service.ImportAccountFromRawKey(aipq.PrivateKey, aipq.Passphrase)
+		resp, err := service.ImportAccountFromRawKey(aipq.PrivateKey, aipq.Passphrase, 0, 2)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {

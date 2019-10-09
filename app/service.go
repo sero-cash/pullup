@@ -4,8 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"net/http"
+	"sort"
+	"strings"
+
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/sero-cash/go-czero-import/keys"
+	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/accounts"
 	"github.com/sero-cash/go-sero/accounts/keystore"
 	"github.com/sero-cash/go-sero/common"
@@ -16,11 +22,6 @@ import (
 	"github.com/sero-cash/go-sero/pullup/common/transport"
 	"github.com/sero-cash/go-sero/pullup/common/utils"
 	"github.com/tyler-smith/go-bip39"
-	"io/ioutil"
-	"math/big"
-	"net/http"
-	"sort"
-	"strings"
 )
 
 //keystore file upload
@@ -29,8 +30,8 @@ const maxUploadSize = 1 * 1024 * 2014 // 2 MB
 type Service interface {
 	NewAccountWithMnemonic(passphrase string) (map[string]string, error)
 	UploadKeystoreHandler() http.HandlerFunc
-	ImportAccountFromMnemonic(mnemonic, password string) (map[string]string, error)
-	ImportAccountFromRawKey(privkey, password string) (map[string]string, error)
+	ImportAccountFromMnemonic(mnemonic, password string, at uint64, version int) (map[string]string, error)
+	ImportAccountFromRawKey(privkey, password string, at uint64, version int) (map[string]string, error)
 	ExportMnemonic(addressStr, password string) (string, error)
 	AccountList() accountResps
 	AccountDetail(pkStr string) accountResp
@@ -38,7 +39,7 @@ type Service interface {
 	TXNum(pkStr string) map[string]uint64
 	TXList(pkStr string, request transport.PageRequest) (utxosResp, error)
 
-	Transfer(from, to, currency, amount, gasPrice, pwd string) (hash keys.Uint256, err error)
+	Transfer(from, to, currency, amount, gasPrice, pwd string) (hash c_type.Uint256, err error)
 	GetDecimal(currency string) uint64
 
 	registerStakePool(from, vote, passwd string, feeRate uint32) (txHash string, err error)
@@ -63,8 +64,8 @@ type ServiceApi struct {
 	SL *SEROLight
 }
 
-func (s *ServiceApi) ExportMnemonic(addressStr, password string) (string, error) {
-	return fetchKeystore(s.SL.accountManager).ExportMnemonic(accounts.Account{Address: address.Base58ToAccount(addressStr)}, password)
+func (s *ServiceApi) ExportMnemonic(accoutKey, password string) (string, error) {
+	return fetchKeystore(s.SL.accountManager).ExportMnemonic(accounts.Account{Key: common.Base58ToAccountKey(accoutKey)}, password)
 }
 
 // fetchKeystore retrives the encrypted keystore from the account manager.
@@ -81,11 +82,11 @@ func (s *ServiceApi) NewAccountWithMnemonic(passphrase string) (map[string]strin
 	}
 	result := map[string]string{}
 	result["mnemonic"] = mnemonic
-	result["address"] = acc.Address.Base58()
+	result["address"] = acc.Key.Base58()
 	return result, nil
 }
 
-func (s *ServiceApi) ImportAccountFromMnemonic(mnemonic, password string) (map[string]string, error) {
+func (s *ServiceApi) ImportAccountFromMnemonic(mnemonic, password string, at uint64, version int) (map[string]string, error) {
 	_, err := bip39.MnemonicToByteArray(mnemonic)
 	if err != nil {
 		return nil, err
@@ -101,26 +102,26 @@ func (s *ServiceApi) ImportAccountFromMnemonic(mnemonic, password string) (map[s
 	if err != nil {
 		return nil, err
 	}
-	acc, err := fetchKeystore(s.SL.accountManager).ImportECDSA(key, password)
+	acc, err := fetchKeystore(s.SL.accountManager).ImportECDSA(key, password, at, version)
 	if err != nil {
 		return nil, err
 	}
 	result := map[string]string{}
-	result["address"] = acc.Address.Base58()
+	result["address"] = acc.Key.Base58()
 	return result, nil
 }
 
-func (s *ServiceApi) ImportAccountFromRawKey(privkey, password string) (map[string]string, error) {
+func (s *ServiceApi) ImportAccountFromRawKey(privkey, password string, at uint64, version int) (map[string]string, error) {
 	key, err := crypto.HexToECDSA(privkey)
 	if err != nil {
 		return nil, err
 	}
-	acc, err := fetchKeystore(s.SL.accountManager).ImportECDSA(key, password)
+	acc, err := fetchKeystore(s.SL.accountManager).ImportECDSA(key, password, at, version)
 	if err != nil {
 		return nil, err
 	}
 	result := map[string]string{}
-	result["address"] = acc.Address.Base58()
+	result["address"] = acc.Key.Base58()
 	return result, nil
 }
 
@@ -151,15 +152,15 @@ func (acrs accountResps) Swap(i, j int) {
 
 func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 	s.SL.accounts.Range(func(key, value interface{}) bool {
-		pk := key.(keys.Uint512)
+		accountKey := key.(common.AccountKey)
 		account := value.(*Account)
-		latestPKr := keys.PKr{}
-		if v, ok := s.SL.pkrIndexMap.Load(pk); ok {
+		latestPKr := c_type.PKr{}
+		if v, ok := s.SL.pkrIndexMap.Load(accountKey); ok {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(account.mainPkr[:]), MainOldPKr: base58.Encode(account.mainOldPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name}
+		balance := s.SL.GetBalances(accountKey)
+		accountListResp := accountResp{PK: base58.Encode(accountKey[:]), MainPKr: base58.Encode(account.mainPkr[:]), MainOldPKr: base58.Encode(account.mainOldPkr[:]), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -169,32 +170,32 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 	return accountListResps
 }
 
-func (s *ServiceApi) AccountDetail(pkStr string) (account accountResp) {
-	pk := *address.Base58ToAccount(pkStr).ToUint512()
-	if ac := s.SL.getAccountByPk(pk); ac != nil {
-		latestPKr := keys.PKr{}
-		if v, ok := s.SL.pkrIndexMap.Load(pk); ok {
+func (s *ServiceApi) AccountDetail(accountKeyStr string) (account accountResp) {
+	accoutKey := common.Base58ToAccountKey(accountKeyStr)
+	if ac := s.SL.getAccountByKey(accoutKey); ac != nil {
+		latestPKr := c_type.PKr{}
+		if v, ok := s.SL.pkrIndexMap.Load(accoutKey); ok {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: base58.Encode(pk[:]), MainPKr: base58.Encode(ac.mainPkr[:]), MainOldPKr: base58.Encode(ac.mainOldPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), Name: ac.name}
+		balance := s.SL.GetBalances(accoutKey)
+		account := accountResp{PK: base58.Encode(accoutKey[:]), MainPKr: base58.Encode(ac.mainPkr[:]), MainOldPKr: base58.Encode(ac.mainOldPkr[:]), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), Name: ac.name}
 
 		return account
 	}
 	return account
 }
 
-func (s *ServiceApi) AccountBalance(pkStr string) map[string]*big.Int {
-	pk := address.Base58ToAccount(pkStr)
-	return s.SL.GetBalances(*pk.ToUint512())
+func (s *ServiceApi) AccountBalance(accountKeyStr string) map[string]*big.Int {
+	accountKey := common.Base58ToAccountKey(accountKeyStr)
+	return s.SL.GetBalances(accountKey)
 }
 
 type utxoResp struct {
 	Id        uint64
 	Type      uint64
 	To        string
-	Hash      keys.Uint256
+	Hash      c_type.Uint256
 	Block     uint64
 	Currency  string
 	Amount    *big.Int
@@ -261,7 +262,7 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 	return
 }
 
-func (s *ServiceApi) Transfer(from, to, currency, amountStr, gasPriceStr, password string) (hash keys.Uint256, err error) {
+func (s *ServiceApi) Transfer(from, to, currency, amountStr, gasPriceStr, password string) (hash c_type.Uint256, err error) {
 
 	amount, err := NewBigIntFromString(amountStr, 10)
 	if err != nil {
@@ -338,12 +339,12 @@ func (s *ServiceApi) UploadKeystoreHandler() http.HandlerFunc {
 			return
 		}
 
-		if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.Address.String(), fileBytes, 0600); err != nil {
+		if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.AccountKey.String(), fileBytes, 0600); err != nil {
 			renderError(w, "INVALID_FILE", http.StatusOK)
 			return
 		}
 
-		logex.Infof("Import account successful. address=[%s]", key.Address)
+		logex.Infof("Import account successful. accountKey=[%s]", key.AccountKey)
 		w.Write([]byte("SUCCESS"))
 		return
 	})
@@ -442,23 +443,23 @@ func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
 
 		out, err := DoRequest(jsonUrl)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		dapp := Dapp{}
 		err = json.Unmarshal(out, &dapp)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-		if dapp.URL != "" && dapp.Author != "" && dapp.Desc !="" && dapp.Img != "" && dapp.Title != "" {
+		if dapp.URL != "" && dapp.Author != "" && dapp.Desc != "" && dapp.Img != "" && dapp.Title != "" {
 			fmt.Println("Add App to database. ")
 			dapp.ID = utils.UUID()
-			data ,_:=json.Marshal(dapp)
+			data, _ := json.Marshal(dapp)
 			err := self.SL.dbConfig.Put(dappKey(dapp.ID), data)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
-		}else {
-			return nil,fmt.Errorf("`dapp.json` not exist in web root path")
+		} else {
+			return nil, fmt.Errorf("`dapp.json` not exist in web root path")
 		}
 	} else if dapp.Operation == "remove" {
 		err := self.SL.dbConfig.Delete(dappKey(dapp.ID))

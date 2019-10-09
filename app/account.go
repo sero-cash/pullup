@@ -3,29 +3,33 @@ package app
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/sero-cash/go-czero-import/c_superzk"
+	"github.com/sero-cash/go-czero-import/seroparam"
+
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/pborman/uuid"
-	"github.com/sero-cash/go-czero-import/keys"
+	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/accounts"
 	"github.com/sero-cash/go-sero/accounts/keystore"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/crypto"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
-	"io/ioutil"
-	"math/big"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 type Account struct {
 	wallet     accounts.Wallet
-	pk         *keys.Uint512
-	tk         *keys.Uint512
-	skr        keys.PKr
-	mainPkr    keys.PKr
-	mainOldPkr keys.PKr
+	key        *common.AccountKey
+	tk         *c_type.Tk
+	skr        c_type.PKr
+	mainPkr    c_type.PKr
+	mainOldPkr c_type.PKr
 	balances   map[string]*big.Int
 	utxoNums   map[string]uint64
 	//use for map sort
@@ -34,6 +38,7 @@ type Account struct {
 	keyPath       string
 	initTimestamp int64
 	name          string
+	version       int
 }
 
 func makeAccountManager() (*accounts.Manager, error) {
@@ -51,7 +56,7 @@ func makeAccountManager() (*accounts.Manager, error) {
 	return accounts.NewManager(backends...), nil
 }
 
-func (account *Account) Create(passphrase string) error {
+func (account *Account) Create(passphrase string, at uint64) error {
 
 	var privateKey *ecdsa.PrivateKey
 	// If not loaded, generate random.
@@ -59,26 +64,33 @@ func (account *Account) Create(passphrase string) error {
 	if err != nil {
 		return err
 	}
+	version := 1
+	if at >= seroparam.SIP5() {
+		version = keystore.Version
+	}
 	// Create the keyfile object with a random UUID.
 	id := uuid.NewRandom()
-	address := crypto.PrivkeyToAddress(privateKey)
+	accountKey := crypto.PrivkeyToAccoutKey(privateKey)
 	key := &keystore.Key{
 		Id:         id,
-		Address:    crypto.PrivkeyToAddress(privateKey),
+		AccountKey: crypto.PrivkeyToAccoutKey(privateKey),
 		Tk:         crypto.PrivkeyToTk(privateKey),
 		PrivateKey: privateKey,
+		Version:    version,
+		At:         at,
 	}
+
 	// Encrypt key with passphrase.
 	keyjson, err := keystore.EncryptKey(key, passphrase, keystore.StandardScryptN, keystore.StandardScryptP)
 	if err != nil {
 		return err
 	}
 	// Store the file to disk.
-	if err := os.MkdirAll(filepath.Dir(GetKeystorePath()+"/"+address.String()), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(GetKeystorePath()+"/"+accountKey.String()), 0700); err != nil {
 		logex.Fatalf("Could not create directory %s", filepath.Dir(GetKeystorePath()))
 		return err
 	}
-	if err := ioutil.WriteFile(GetKeystorePath()+"/"+address.String(), keyjson, 0600); err != nil {
+	if err := ioutil.WriteFile(GetKeystorePath()+"/"+accountKey.String(), keyjson, 0600); err != nil {
 		logex.Fatalf("Failed to write keyfile to %s: %v", GetKeystorePath(), err)
 		return err
 	}
@@ -101,7 +113,7 @@ func (account *Account) Import(passphrase, keyPath string) error {
 		return err
 	}
 	// Then write the new keyfile in place of the old one.
-	if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.Address.String(), keyJson, 0600); err != nil {
+	if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.AccountKey.String(), keyJson, 0600); err != nil {
 		logex.Errorf("Error writing new keyFile to disk: %v", err)
 		return err
 	}
@@ -129,7 +141,7 @@ func (account *Account) UpdatePass(oldPas, newPass string) error {
 	}
 
 	// Then write the new keyfile in place of the old one.
-	if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.Address.String(), newJson, 0600); err != nil {
+	if err := ioutil.WriteFile(GetKeystorePath()+"/"+key.AccountKey.String(), newJson, 0600); err != nil {
 		//logex.Errorf("Error writing new keyFile to disk: %v", err)
 		return err
 	}
@@ -174,17 +186,29 @@ func (self *SEROLight) keystoreListener() {
 }
 
 func (self *SEROLight) initWallet(w accounts.Wallet) {
-	if _, ok := self.accounts.Load(*w.Accounts()[0].Address.ToUint512()); !ok {
+	if _, ok := self.accounts.Load(w.Accounts()[0].Key); !ok {
 		account := Account{}
 		account.wallet = w
-		account.pk = w.Accounts()[0].Address.ToUint512()
-		account.tk = w.Accounts()[0].Tk.ToUint512()
+		account.key = &w.Accounts()[0].Key
+		tk := w.Accounts()[0].Tk.ToTk()
+		account.tk = &tk
 		account.at = w.Accounts()[0].At
+		account.version = w.Accounts()[0].Version
 		copy(account.skr[:], account.tk[:])
-		account.mainPkr = self.createPkrHash(account.pk, account.tk, 1)
-		account.mainOldPkr = self.createPkr(account.pk, 1)
+		mainPkr, err := self.createPkrHash(account.tk, 1, account.version)
+		if err != nil {
+			panic("init account failed accountKey = " + base58.Encode(account.key[:]))
+		}
+		account.mainPkr = *mainPkr
+		if account.version == 1 {
+			oldPkr, err := self.createPkr(account.tk, 1)
+			if err != nil {
+				panic("init account failed accountKey = " + base58.Encode(account.key[:]))
+			}
+			account.mainOldPkr = *oldPkr
+		}
 
-		self.accounts.Store(*account.pk, &account)
+		self.accounts.Store(*account.key, &account)
 		account.isChanged = true
 		account.initTimestamp = time.Now().UnixNano()
 		self.recoverPkrIndex(account, w.Accounts()[0].At)
@@ -196,52 +220,64 @@ func (self *SEROLight) initWallet(w accounts.Wallet) {
 			account.name = keystoreName[len(split):]
 		}
 
-		fmt.Println("init wallet :", base58.Encode(account.pk[:]))
+		fmt.Println("init wallet :", base58.Encode(account.key[:]))
 	}
 }
 
 func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
-	pk := *account.pk
-	value, _ := self.db.Get(append(pkrIndexPrefix, pk[:]...))
+	accountKey := *account.key
+	value, _ := self.db.Get(append(pkrIndexPrefix, accountKey[:]...))
 	if value == nil {
-		self.pkrIndexMap.Store(pk, outReq{Num: at, Pkr: account.mainPkr, PkrIndex: 1})
+		self.pkrIndexMap.Store(accountKey, outReq{Num: at, Pkr: account.mainPkr, PkrIndex: 1})
 	} else {
 		var otq outReq
 		err := rlp.DecodeBytes(value, &otq)
 		if err != nil {
 			return
 		}
-		self.pkrIndexMap.Store(pk, otq)
+		self.pkrIndexMap.Store(accountKey, otq)
 	}
 
-	if data, err := self.db.Get(append(onlyUseHashPkrKey, account.pk[:]...)); err == nil {
+	if data, err := self.db.Get(append(onlyUseHashPkrKey, accountKey[:]...)); err == nil {
 		value := decodeNumber(data)
 		if value == 1 {
-			self.useHashPkr.Store(account.pk, 1)
+			self.useHashPkr.Store(account.key, 1)
 		}
 	}
 }
 
-func (self *SEROLight) createPkr(pk *keys.Uint512, index uint64) keys.PKr {
-	r := keys.Uint256{}
+func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, error) {
+	r := c_type.Uint256{}
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
-	pkr := keys.Addr2PKr(pk, &r)
-	fmt.Println("oldPkr: ", base58.Encode(pkr[:]))
-	//self.setPKrIndex(*pk, index, pkr)
-	return pkr
+	pk, err := c_superzk.Czero_Tk2PK(tk)
+	if err != nil {
+		return nil, err
+	}
+	pkr, err := c_superzk.Pk2PKr(&pk, &r)
+	if err != nil {
+		return nil, err
+	}
+	return &pkr, nil
 }
 
-func (self *SEROLight) createPkrHash(pk *keys.Uint512, tk *keys.Uint512, index uint64) keys.PKr {
+func (self *SEROLight) createPkrHash(tk *c_type.Tk, index uint64, version int) (*c_type.PKr, error) {
 	random := append(tk[:], encodeNumber(index)[:]...)
 	r := crypto.Keccak256Hash(random).HashToUint256()
-	pkr := keys.Addr2PKr(pk, r)
+	var pk c_type.Uint512
+	var err error
+	if version == 2 {
+		pk, err = c_superzk.Tk2Pk(tk)
+	} else {
+		pk, err = c_superzk.Czero_Tk2PK(tk)
+	}
+	if err != nil {
+		return nil, err
+	}
+	pkr, err := c_superzk.Pk2PKr(&pk, r)
+	if err != nil {
+		return nil, err
+	}
 	//fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
 
-	return pkr
-}
-
-func (self *SEROLight) genPkrContract(pk *keys.Uint512, random keys.Uint128) keys.PKr {
-	pkr := keys.Addr2PKr(pk, random.ToUint256().NewRef())
-	fmt.Println("execute contract pkr: ", base58.Encode(pkr[:]))
-	return pkr
+	return &pkr, nil
 }
