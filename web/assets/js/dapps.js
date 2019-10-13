@@ -58,12 +58,22 @@ var DApps = {
             url: "http://134.175.161.78:8088/v2",
             showTips: true,
             state: 1,
-        },{
+        },
+        {
             "img": "http://111.231.62.4:8089/vote/v1/vote.jpg",
             "title": "Vote",
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
             "url": "http://111.231.62.4:8089/vote/v1",
+            showTips: true,
+            "state": 1
+        },
+        {
+            "img": "http://osaifu.io:3000/logo.png",
+            "title": "LUCKY",
+            "desc": "Decentralized Lucky Game",
+            "author": "Satoshi Nakamoto",
+            "url": "http://osaifu.io:3000/",
             showTips: true,
             "state": 1
         },
@@ -110,6 +120,15 @@ var DApps = {
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
             "url": "http://111.231.62.4:8089/vote/v1",
+            showTips: true,
+            "state": 1
+        },
+        {
+            "img": "http://osaifu.io:3000/logo.png",
+            "title": "LUCKY",
+            "desc": "Decentralized Lucky Game",
+            "author": "Satoshi Nakamoto",
+            "url": "http://osaifu.io:3000/",
             showTips: true,
             "state": 1
         },
@@ -200,7 +219,7 @@ var DApps = {
             var dapp = data[i];
             if (dapp.state === 1) {
                 $('.dapp-data').append(`
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6" style="padding-bottom:15px;">
                         <div class="card shadow">
                             <img src="${dapp.img}" with="390" style="max-height:280px" class="card-img-top">
                             <div class="card-body" style="height:130px;">
@@ -215,7 +234,7 @@ var DApps = {
                 `);
             } else if (dapp.state === 0) {
                 $('.dapp-data').append(`
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6" style="padding-bottom:15px;">
                         <div class="card shadow">
                             <img src="${dapp.img}" with="390" style="max-height:280px"  class="card-img-top">
                             <div class="card-body" style="height:130px;">
@@ -240,7 +259,7 @@ var DApps = {
                 for (var i = 0; i < dapps.length; i++) {
                     var dapp = dapps[i];
                     $('.dapp-data').append(`
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6" style="padding-bottom:15px;">
                         <div class="card shadow" >
                             <img src="${dapp.img}" with="390" style="max-height:280px"  class="card-img-top">
                             <div class="card-body" style="height:130px;">
