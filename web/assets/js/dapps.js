@@ -202,7 +202,7 @@ var DApps = {
                 $('.dapp-data').append(`
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow">
-                            <img src="${dapp.img}" with="390" class="card-img-top">
+                            <img src="${dapp.img}" with="390" style="max-height:280px" class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>
@@ -217,7 +217,7 @@ var DApps = {
                 $('.dapp-data').append(`
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow">
-                            <img src="${dapp.img}" with="390" class="card-img-top">
+                            <img src="${dapp.img}" with="390" style="max-height:280px"  class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>
@@ -242,7 +242,7 @@ var DApps = {
                     $('.dapp-data').append(`
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow" >
-                            <img src="${dapp.img}" with="390" class="card-img-top">
+                            <img src="${dapp.img}" with="390" style="max-height:280px"  class="card-img-top">
                             <div class="card-body" style="height:130px;">
                                 <h6 class="card-title text-dark">${dapp.title}</h6>
                                 <p class="card-text">${dapp.desc}</p>
