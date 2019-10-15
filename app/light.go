@@ -139,7 +139,7 @@ func (self *SEROLight) SyncOut() {
 		pk := key.(c_type.Uint512)
 		otreq := value.(outReq)
 		for {
-			var start, end = otreq.Num, otreq.Num + fetchCount
+			var start, end = otreq.Num, otreq.Num+fetchCount
 			account := self.getAccountByKey(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
@@ -217,15 +217,21 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 	var hasResWithHashPkr = false
 	var hasResWithOldPkr = false
 	for _, blockOut := range blockOuts {
-		outs := blockOut.Outs
-		for _, out := range outs {
+		datas := blockOut.Data
+		for _, data := range datas {
+			out := data.Out
 			var pkr c_type.PKr
-			if out.State.OS.Out_Z != nil {
+
+			if out.State.OS.Out_C != nil {
+				pkr = out.State.OS.Out_C.PKr
+			} else if out.State.OS.Out_O != nil {
+				pkr = out.State.OS.Out_O.Addr
+			} else if out.State.OS.Out_P != nil {
+				pkr = out.State.OS.Out_P.PKr
+			} else if out.State.OS.Out_Z != nil {
 				pkr = out.State.OS.Out_Z.PKr
 			}
-			if out.State.OS.Out_O != nil {
-				pkr = out.State.OS.Out_O.Addr
-			}
+
 			if currentPkrsMap[pkr] == 1 {
 				rtn.again = true
 				//gen min block Num
@@ -254,11 +260,16 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			} else {
 				utxosMap[key] = []Utxo{utxo}
 			}
+
+			// index base tx info
+			txInfo := data.TxInfo
+			fmt.Println("index hash:", txInfo.TxHash)
+			txData, _ := rlp.EncodeToBytes(txInfo)
+			self.db.Put(txHashKey(txInfo.TxHash[:]), txData)
 		}
 
 		//getBlock RPC
-		self.storeBlockInfo(blockOut.Num)
-
+		//self.storeBlockInfo(blockOut.Num)
 	}
 	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
 	if _, ok := self.useHashPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
@@ -269,42 +280,43 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 	return rtn, nil
 }
 
-func (self *SEROLight) storeBlockInfo(number uint64) {
-	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getBlockByNumber", Params: []interface{}{hexutil.EncodeUint64(number), false}}
-	resp, err := sync.Do()
-	if err != nil {
-		logex.Error("sero_getBlockByNumber request.do err: ", err)
-	} else {
-		if resp.Result != nil {
-			var b map[string]interface{}
-			err := json.Unmarshal(*resp.Result, &b)
-			if err != nil {
-				logex.Error("sero_getBlockByNumber json.Unmarshal: ", err)
-			} else {
-				blockEx := BlockEx{}
-				for key, value := range b {
-					if key == "number" {
-						numberHex := value.(string)
-						num, _ := hexutil.DecodeUint64(numberHex)
-						blockEx.BlockNumber = num
-					}
-					if key == "hash" {
-						blockEx.BlockHash = value.(string)
-					}
-					if key == "timestamp" {
-						timeHex := value.(string)
-						time, _ := hexutil.DecodeUint64(timeHex)
-						blockEx.Timestamp = time
-					}
-				}
-				if blockEx.BlockHash != "" {
-					bData, _ := rlp.EncodeToBytes(blockEx)
-					self.db.Put(blockIndex(number), bData)
-				}
-			}
-		}
-	}
-}
+//
+//func (self *SEROLight) storeBlockInfo(number uint64) {
+//	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getBlockByNumber", Params: []interface{}{hexutil.EncodeUint64(number), false}}
+//	resp, err := sync.Do()
+//	if err != nil {
+//		logex.Error("sero_getBlockByNumber request.do err: ", err)
+//	} else {
+//		if resp.Result != nil {
+//			var b map[string]interface{}
+//			err := json.Unmarshal(*resp.Result, &b)
+//			if err != nil {
+//				logex.Error("sero_getBlockByNumber json.Unmarshal: ", err)
+//			} else {
+//				blockEx := BlockEx{}
+//				for key, value := range b {
+//					if key == "number" {
+//						numberHex := value.(string)
+//						num, _ := hexutil.DecodeUint64(numberHex)
+//						blockEx.BlockNumber = num
+//					}
+//					if key == "hash" {
+//						blockEx.BlockHash = value.(string)
+//					}
+//					if key == "timestamp" {
+//						timeHex := value.(string)
+//						time, _ := hexutil.DecodeUint64(timeHex)
+//						blockEx.Timestamp = time
+//					}
+//				}
+//				if blockEx.BlockHash != "" {
+//					bData, _ := rlp.EncodeToBytes(blockEx)
+//					self.db.Put(blockIndex(number), bData)
+//				}
+//			}
+//		}
+//	}
+//}
 
 func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PKr]int8, map[c_type.PKr]int8, []string) {
 	pkrTypeMap := map[c_type.PKr]int8{}
@@ -362,7 +374,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 	for key, list := range utxosMap {
 		roots := []c_type.Uint256{}
 		for _, utxo := range list {
-			data, err := rlp.EncodeToBytes(utxo)
+			data, err := rlp.EncodeToBytes(&utxo)
 			if err != nil {
 				return nil, err
 			}
@@ -404,7 +416,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			roots = append(roots, utxo.Root)
 			//log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nils", common.Bytes2Hex(utxo.Nils[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
 
-			self.genTxReceipt(utxo.TxHash, batch)
+			//self.genTxReceipt(utxo.TxHash, batch)
 		}
 		data, err := rlp.EncodeToBytes(roots)
 		if err != nil {
@@ -471,9 +483,9 @@ func (self *SEROLight) CheckNil() {
 						batch.Delete(penddingTxKey(pk, utxo.TxHash))
 					}
 					//GetTransactionReceipt
-					self.genTxReceipt(nilv.TxHash, batch)
+					//self.genTxReceipt(nilv.TxHash, batch)
 					//getBlock RPC
-					self.storeBlockInfo(nilv.Num)
+					//self.storeBlockInfo(nilv.Num)
 
 					if len(value) == 130 {
 						batch.Delete(value)
@@ -650,7 +662,7 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 
 	var RefundTo *c_type.PKr
 	ac := self.getAccountByPk(addr.ToUint512())
-	pk := ac.pk
+	pk := *ac.pk
 	if ac == nil {
 		logex.Errorf("account not found")
 		return hash, fmt.Errorf("account not found")

@@ -27,6 +27,7 @@ var (
 	blockPrefix     = []byte("BLOCK")
 
 	dappPrefix = []byte("DAPPS")
+	hashPrefix = []byte("HASH")
 )
 
 const (
@@ -34,6 +35,9 @@ const (
 	PKR_TYPE_NUM  int8 = 1
 )
 
+func txHashKey(hash []byte) []byte  {
+	return append(hashPrefix,hash[:]...)
+}
 func dappKey(dappId string) []byte {
 	key := append(dappPrefix, dappId[:]...)
 	return key

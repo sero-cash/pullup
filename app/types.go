@@ -1,12 +1,14 @@
 package app
 
 import (
+	"github.com/sero-cash/go-sero/common"
 	"math/big"
 
 	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/zero/txs/assets"
 	"github.com/sero-cash/go-sero/zero/txtool"
 )
+
 
 type BlockOutResp struct {
 	CurrentNum uint64
@@ -15,7 +17,24 @@ type BlockOutResp struct {
 
 type BlockOut struct {
 	Num  uint64
-	Outs []txtool.Out
+	Data []BlockData
+}
+
+type BlockData struct {
+	TxInfo TxInfo
+	Out txtool.Out
+}
+
+type TxInfo struct {
+	TxHash   c_type.Uint256
+	Num      uint64
+	BlockHash common.Hash
+	Gas       uint64
+	GasUsed   uint64
+	GasPrice  big.Int
+	From      common.Address
+	To        common.Address
+	Time      big.Int
 }
 
 type BlockInfo struct {

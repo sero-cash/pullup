@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/sero-cash/go-sero/common/hexutil"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -50,11 +50,10 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 			response.SetBaseResponse(errorcode.FAIL_CODE, "server busy")
 			return response, nil
 		}
-		var blockNumber uint64
+		var blockNumber hexutil.Uint64
 		json.Unmarshal(*jsonResp.Result, &blockNumber)
-		fmt.Println("blockNumber:",blockNumber)
 
-		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase, blockNumber)
+		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase, uint64(blockNumber))
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {

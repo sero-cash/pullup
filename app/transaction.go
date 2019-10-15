@@ -1,14 +1,13 @@
 package app
 
 import (
-	"math/big"
-	"time"
-
 	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/hexutil"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/rlp"
+	"math/big"
+	"time"
 )
 
 type Transaction struct {
@@ -88,37 +87,20 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 			} else {
 
 				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency, Fee: fee}
-				rData, err := self.db.Get(txReceiptIndex(douthash))
+
+				rData, err := self.db.Get(txHashKey(douthash[:]))
 				if err != nil {
 					logex.Error("txHash not indexed, hash: ", douthash, err)
-				} else {
-					var r TxReceipt
-					err := rlp.DecodeBytes(rData, &r)
-					if err != nil {
-						logex.Error("txReceipt rlp.decode err: ", err)
-					} else {
-						tx.Receipt = r
-					}
-				}
-				if utxo.Num == 0 {
 					tx.Timestamp = uint64(time.Now().Unix())
-				} else {
-					bData, err := self.db.Get(blockIndex(utxo.Num))
-					if err != nil {
-						logex.Error("block not indexed, hash: ", utxo.Num, err)
-					} else {
-						var b BlockEx
-						err := rlp.DecodeBytes(bData, &b)
-						if err != nil {
-							logex.Error("rlp.decode err: ", err)
-						} else {
-							tx.Receipt.BlockHash = b.BlockHash
-							tx.Receipt.BlockNumber = b.BlockNumber
-							tx.Timestamp = b.Timestamp + i
-						}
-					}
+				}else{
+					var txInfo TxInfo
+					rlp.DecodeBytes(rData,&txInfo)
+					tx.Receipt.TxHash = txInfo.TxHash
+					tx.Receipt.BlockHash = txInfo.BlockHash.String()
+					tx.Receipt.BlockNumber = txInfo.Num
+					tx.Receipt.GasUsed=txInfo.GasUsed
+					tx.Timestamp = txInfo.Time.Uint64() + i
 				}
-
 				txMap[ukey] = tx
 			}
 		}
