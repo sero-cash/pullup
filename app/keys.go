@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/sero-cash/go-czero-import/c_type"
-	"github.com/sero-cash/go-sero/common"
 )
 
 var (
@@ -63,8 +62,8 @@ func rootKey(root c_type.Uint256) []byte {
 	return append(rootPrefix, root[:]...)
 }
 
-type AccountKey struct {
-	Key common.AccountKey
+type PkKey struct {
+	Pk  c_type.Uint512
 	Num uint64
 }
 
@@ -77,7 +76,7 @@ func nilToRootKey(nil c_type.Uint256) []byte {
 	return append(nilRootPrefix, nil[:]...)
 }
 
-func penddingTxKey(accountKey common.AccountKey, hash c_type.Uint256) []byte {
-	key := append(peddingTxPrefix, accountKey[:]...)
+func penddingTxKey(pk c_type.Uint512, hash c_type.Uint256) []byte {
+	key := append(peddingTxPrefix, pk[:]...)
 	return append(key, hash[:]...)
 }

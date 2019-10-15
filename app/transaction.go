@@ -27,8 +27,8 @@ type Transaction struct {
 var txHashPrefix = []byte("TXHASH")
 
 //"TXHASH"+PK+hash+root+outType = utxo
-func indexTxKey(accountKey common.AccountKey, hash c_type.Uint256, root c_type.Uint256, outType uint64) []byte {
-	key := append(txHashPrefix, accountKey[:]...)
+func indexTxKey(pk c_type.Uint512, hash c_type.Uint256, root c_type.Uint256, outType uint64) []byte {
+	key := append(txHashPrefix, pk[:]...)
 	key = append(key, hash[:]...)
 	key = append(key, root[:]...)
 	return append(key, encodeNumber(outType)...)

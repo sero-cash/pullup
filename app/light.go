@@ -8,6 +8,10 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/sero-cash/go-sero/zero/account"
+
+	"github.com/pkg/errors"
+
 	"github.com/sero-cash/go-czero-import/c_superzk"
 
 	"github.com/sero-cash/go-czero-import/c_type"
@@ -120,7 +124,7 @@ type outReq struct {
 }
 
 type fetchReturn struct {
-	utxoMap    map[AccountKey][]Utxo
+	utxoMap    map[PkKey][]Utxo
 	again      bool
 	remoteNum  uint64
 	nextNum    uint64
@@ -132,11 +136,11 @@ func (self *SEROLight) SyncOut() {
 		return
 	}
 	self.pkrIndexMap.Range(func(key, value interface{}) bool {
-		accountKey := key.(common.AccountKey)
+		pk := key.(c_type.Uint512)
 		otreq := value.(outReq)
 		for {
 			var start, end = otreq.Num, otreq.Num + fetchCount
-			account := self.getAccountByKey(accountKey)
+			account := self.getAccountByKey(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
 				logex.Errorf("fetchAndDecOuts,err=[%s]", err.Error())
@@ -157,8 +161,8 @@ func (self *SEROLight) SyncOut() {
 			}
 
 			if rtn.useHashPkr {
-				self.useHashPkr.Store(account.key, 1)
-				self.db.Put(append(onlyUseHashPkrKey, accountKey[:]...), encodeNumber(1))
+				self.useHashPkr.Store(account.pk, 1)
+				self.db.Put(append(onlyUseHashPkrKey, pk[:]...), encodeNumber(1))
 			}
 
 			if rtn.again {
@@ -167,14 +171,14 @@ func (self *SEROLight) SyncOut() {
 				nextPkr, _ := self.createPkrHash(account.tk, otreq.PkrIndex, account.version)
 				otreq.Pkr = *nextPkr
 				data, _ := rlp.EncodeToBytes(otreq)
-				self.pkrIndexMap.Store(accountKey, otreq)
-				self.db.Put(append(pkrIndexPrefix, accountKey[:]...), data)
+				self.pkrIndexMap.Store(pk, otreq)
+				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
 				continue
 			} else {
 				otreq.Num = rtn.nextNum
 				data, _ := rlp.EncodeToBytes(otreq)
-				self.pkrIndexMap.Store(accountKey, otreq)
-				self.db.Put(append(pkrIndexPrefix, accountKey[:]...), data)
+				self.pkrIndexMap.Store(pk, otreq)
+				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
 				if end >= rtn.remoteNum {
 					break
 				}
@@ -200,7 +204,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 		logex.Errorf("json.Unmarshal err=[%s]", err.Error())
 		return
 	}
-	utxosMap := map[AccountKey][]Utxo{}
+	utxosMap := map[PkKey][]Utxo{}
 	// if not find outs , the end block return query current block
 	blockOuts := bor.BlockOuts
 	rtn.remoteNum = bor.CurrentNum
@@ -230,7 +234,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 				}
 			}
 
-			if _, ok := self.useHashPkr.Load(account.key); !ok {
+			if _, ok := self.useHashPkr.Load(account.pk); !ok {
 				if pkrTypeMap[pkr] == PRK_TYPE_HASH {
 					hasResWithHashPkr = true
 				} else if pkrTypeMap[pkr] == PKR_TYPE_NUM {
@@ -241,7 +245,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			//dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
 			dout := flight.DecOut(account.tk, []txtool.Out{out})[0]
 
-			key := AccountKey{Key: *account.key, Num: blockOut.Num}
+			key := PkKey{Pk: *account.pk, Num: blockOut.Num}
 			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
 
 			//log.Info("DecOuts", "PK", base58.Encode(account.pk[:]), "root", common.Bytes2Hex(out.Root[:]), "currency", common.BytesToString(utxo.Asset.Tkn.Currency[:]), "value", utxo.Asset.Tkn.Value)
@@ -257,7 +261,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 
 	}
 	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
-	if _, ok := self.useHashPkr.Load(account.key); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
+	if _, ok := self.useHashPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
 		rtn.useHashPkr = true
 	}
 
@@ -323,7 +327,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 	for i := int(pkrIndex); i > pkrNum; i-- {
 		pkrHash, _ := self.createPkrHash(account.tk, uint64(i), account.version)
 		pkrs = append(pkrs, base58.Encode(pkrHash[:]))
-		if _, ok := self.useHashPkr.Load(account.key); !ok {
+		if _, ok := self.useHashPkr.Load(account.pk); !ok {
 			pkrOld, _ := self.createPkr(account.tk, uint64(i))
 			pkrs = append(pkrs, base58.Encode(pkrOld[:]))
 			pkrTypeMap[*pkrHash] = PRK_TYPE_HASH
@@ -340,7 +344,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 }
 
 //if the currentpkr in the outs, again = true, then loop continue next Pkr
-func (self *SEROLight) indexOuts(utxosMap map[AccountKey][]Utxo, batch serodb.Batch) (err error) {
+func (self *SEROLight) indexOuts(utxosMap map[PkKey][]Utxo, batch serodb.Batch) (err error) {
 	if len(utxosMap) > 0 {
 		ops, err := self.indexUtxo(utxosMap, batch)
 		if err != nil {
@@ -353,7 +357,7 @@ func (self *SEROLight) indexOuts(utxosMap map[AccountKey][]Utxo, batch serodb.Ba
 	return err
 }
 
-func (self *SEROLight) indexUtxo(utxosMap map[AccountKey][]Utxo, batch serodb.Batch) (opsReturn map[string]string, err error) {
+func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) (opsReturn map[string]string, err error) {
 	ops := map[string]string{}
 	for key, list := range utxosMap {
 		roots := []c_type.Uint256{}
@@ -366,7 +370,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[AccountKey][]Utxo, batch serodb.Ba
 			batch.Put(rootKey(utxo.Root), data)
 
 			//"TXHASH" + PK + hash + root + outType
-			batch.Put(indexTxKey(key.Key, utxo.TxHash, utxo.Root, uint64(1)), data)
+			batch.Put(indexTxKey(key.Pk, utxo.TxHash, utxo.Root, uint64(1)), data)
 
 			//nil => root
 			for _, Nil := range utxo.Nils {
@@ -376,11 +380,11 @@ func (self *SEROLight) indexUtxo(utxosMap map[AccountKey][]Utxo, batch serodb.Ba
 			var pkKey []byte
 			if utxo.Asset.Tkn != nil {
 				// "PK" + PK + currency + root
-				pkKey = utxoPkKey(key.Key, utxo.Asset.Tkn.Currency[:], &utxo.Root)
+				pkKey = utxoPkKey(key.Pk, utxo.Asset.Tkn.Currency[:], &utxo.Root)
 
 			} else if utxo.Asset.Tkt != nil {
 				// "PK" + PK + tkt + root
-				pkKey = utxoPkKey(key.Key, utxo.Asset.Tkt.Value[:], &utxo.Root)
+				pkKey = utxoPkKey(key.Pk, utxo.Asset.Tkt.Value[:], &utxo.Root)
 			}
 			// "PK" + PK + currency + root => 0
 			ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
@@ -408,7 +412,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[AccountKey][]Utxo, batch serodb.Ba
 		}
 
 		// utxo PK + at  => [roots]
-		batch.Put(utxoKey(key.Num, key.Key), data)
+		batch.Put(utxoKey(key.Num, key.Pk), data)
 	}
 	return ops, nil
 }
@@ -452,19 +456,19 @@ func (self *SEROLight) CheckNil() {
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
 			for _, nilv := range nilvs {
-				var accountKey common.AccountKey
+				var pk c_type.Uint512
 				Nil := nilv.Nil
 				value, _ := self.db.Get(nilKey(Nil))
 				if value != nil {
-					copy(accountKey[:], value[2:66])
-					if account := self.getAccountByKey(accountKey); account != nil {
+					copy(pk[:], value[2:66])
+					if account := self.getAccountByKey(pk); account != nil {
 						account.isChanged = true
 					}
 					var root c_type.Uint256
 					copy(root[:], value[98:130])
 					utxo, err := self.getUtxo(root)
 					if err == nil {
-						batch.Delete(penddingTxKey(accountKey, utxo.TxHash))
+						batch.Delete(penddingTxKey(pk, utxo.TxHash))
 					}
 					//GetTransactionReceipt
 					self.genTxReceipt(nilv.TxHash, batch)
@@ -481,10 +485,10 @@ func (self *SEROLight) CheckNil() {
 					batch.Delete(nilKey(root))
 
 					//remove pending tx
-					batch.Delete(indexTxKey(accountKey, nilv.TxHash, nilv.TxHash, uint64(2)))
+					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Fee: nilv.TxFee, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
 					data, _ := rlp.EncodeToBytes(utxoI)
-					batch.Put(indexTxKey(accountKey, nilv.TxHash, root, uint64(2)), data)
+					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 
 					self.usedFlag.Delete(root)
 				}
@@ -537,8 +541,8 @@ func (self *SEROLight) genTxReceipt(txHash c_type.Uint256, batch serodb.Batch) {
 	}
 }
 
-func (self *SEROLight) getAccountByKey(accoutkey common.AccountKey) *Account {
-	if value, ok := self.accounts.Load(accoutkey); ok {
+func (self *SEROLight) getAccountByKey(pk c_type.Uint512) *Account {
+	if value, ok := self.accounts.Load(pk); ok {
 		return value.(*Account)
 	}
 	return nil
@@ -549,7 +553,7 @@ func (self *SEROLight) getAccountByPk(pk c_type.Uint512) *Account {
 	if err != nil {
 		return nil
 	}
-	return self.getAccountByKey(acc.Key)
+	return self.getAccountByKey(acc.GetPk())
 
 }
 
@@ -558,17 +562,17 @@ func (self *SEROLight) getAccountByPkr(pkr c_type.PKr) *Account {
 	if err != nil {
 		return nil
 	}
-	return self.getAccountByKey(acc.Key)
+	return self.getAccountByKey(acc.GetPk())
 }
 
 // "UTXO" + pk + number
-func utxoKey(number uint64, accountKey common.AccountKey) []byte {
-	return append(utxoPrefix, append(accountKey[:], encodeNumber(number)...)...)
+func utxoKey(number uint64, pk c_type.Uint512) []byte {
+	return append(utxoPrefix, append(pk[:], encodeNumber(number)...)...)
 }
 
 // utxoKey = PK + currency +root
-func utxoPkKey(accountKey common.AccountKey, currency []byte, root *c_type.Uint256) []byte {
-	key := append(pkPrefix, accountKey[:]...)
+func utxoPkKey(pk c_type.Uint512, currency []byte, root *c_type.Uint256) []byte {
+	key := append(pkPrefix, pk[:]...)
 	if len(currency) > 0 {
 		key = append(key, currency...)
 	}
@@ -578,22 +582,22 @@ func utxoPkKey(accountKey common.AccountKey, currency []byte, root *c_type.Uint2
 	return key
 }
 
-func (self *SEROLight) GetUtxoNum(accountKey common.AccountKey) map[string]uint64 {
-	if account := self.getAccountByKey(accountKey); account != nil {
+func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
+	if account := self.getAccountByKey(pk); account != nil {
 		return account.utxoNums
 	}
 	return map[string]uint64{}
 }
 
-func (self *SEROLight) GetBalances(accountKey common.AccountKey) (balances map[string]*big.Int) {
-	if value, ok := self.accounts.Load(accountKey); ok {
+func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int) {
+	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
 		//if account.isChanged {
 		//} else {
 		//	return account.balances
 		//}
 
-		prefix := append(pkPrefix, accountKey[:]...)
+		prefix := append(pkPrefix, pk[:]...)
 		iterator := self.db.NewIteratorWithPrefix(prefix)
 		balances = map[string]*big.Int{}
 		utxoNums := map[string]uint64{}
@@ -642,17 +646,17 @@ func (self *SEROLight) getUtxo(root c_type.Uint256) (utxo Utxo, e error) {
 func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gasprice *big.Int) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
-	cpk := address.Base58ToAccount(from).ToUint512()
+	addr := address.StringToPk(from)
 
 	var RefundTo *c_type.PKr
-	ac := self.getAccountByPk(*cpk)
-	accountKey := ac.key
+	ac := self.getAccountByPk(addr.ToUint512())
+	pk := ac.pk
 	if ac == nil {
 		logex.Errorf("account not found")
 		return hash, fmt.Errorf("account not found")
 	}
 
-	if value, ok := self.pkrIndexMap.Load(accountKey); !ok {
+	if value, ok := self.pkrIndexMap.Load(pk); !ok {
 		logex.Errorf("pkrIndexMap not store from accountKey")
 		return hash, fmt.Errorf("account not found")
 	} else {
@@ -660,7 +664,7 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 		RefundTo = &outReq.Pkr
 	}
 
-	account := accounts.Account{Key: *ac.key}
+	account := accounts.Account{Address: addr}
 	wallet, err := self.accountManager.Find(account)
 	if err != nil {
 		return hash, err
@@ -674,7 +678,7 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	reception := self.genReceiption(currency, amount, toPkr)
 
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *accountKey
+	preTxParam.From = addr.ToUint512()
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -696,13 +700,13 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	}
 
 	utxoIn := Utxo{Pkr: toPkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, currency, amount, utxoIn, accountKey)
+	self.storePeddingUtxo(param, currency, amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return hash, nil
 }
 
-func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string, amount *big.Int, utxoIn Utxo, fromKey *common.AccountKey) {
+func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string, amount *big.Int, utxoIn Utxo, pk *c_type.Uint512) {
 	roots := []c_type.Uint256{}
 	for _, in := range param.Ins {
 		roots = append(roots, in.Out.Root)
@@ -713,7 +717,7 @@ func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string,
 	assetc.Tkn = &tknc
 	utxoIn.Asset = assetc
 	dataIn, _ := rlp.EncodeToBytes(utxoIn)
-	self.db.Put(indexTxKey(*fromKey, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
+	self.db.Put(indexTxKey(*pk, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
 }
 
 func (self *SEROLight) genReceiption(currency string, amount *big.Int, toPkr c_type.PKr) prepare.Reception {
@@ -729,16 +733,19 @@ func (self *SEROLight) genReceiption(currency string, amount *big.Int, toPkr c_t
 func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint32, amount, gasprice *big.Int) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
-	fromPk := address.Base58ToAccount(from).ToUint512()
+	fromAddress := address.StringToPk(from)
+	fromPk := fromAddress.ToUint512()
 
 	if len(base58.Decode(vote)) != 96 {
 		return hash, fmt.Errorf("Invalid Vote Address ")
 	}
 
 	var RefundTo *c_type.PKr
-	ac := self.getAccountByPk(*fromPk)
+	ac := self.getAccountByPk(fromPk)
 	if ac != nil {
 		RefundTo = &ac.mainPkr
+	} else {
+		return hash, errors.New("unknown account")
 	}
 	//check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
@@ -757,12 +764,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 			return
 		}
 	}
-	account := accounts.Account{Key: *ac.key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return hash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	seed, err := ac.wallet.GetSeedWithPassphrase(passwd)
 	if err != nil {
 		return hash, err
 	}
@@ -775,7 +777,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 
 	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate: feeRate}
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -802,7 +804,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	}
 
 	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return hash, nil
@@ -811,7 +813,8 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeRate uint32, amount, gasprice *big.Int) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
-	fromPk := address.Base58ToAccount(from).ToUint512()
+	fromAddress := address.StringToPk(from)
+	fromPk := fromAddress.ToUint512()
 
 	if len(base58.Decode(vote)) != 96 {
 		return hash, fmt.Errorf("Invalid Vote Address ")
@@ -823,9 +826,11 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 	copy(idPkr[:], base58.Decode(idPkrStr)[:])
 
 	var RefundTo *c_type.PKr
-	ac := self.getAccountByPk(*fromPk)
+	ac := self.getAccountByPk(fromPk)
 	if ac != nil {
-		RefundTo = &idPkr
+		RefundTo = &ac.mainPkr
+	} else {
+		return hash, errors.New("unknown account")
 	}
 
 	//check pk register pool
@@ -838,12 +843,7 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 			return
 		}
 	}
-	account := accounts.Account{Key: *ac.key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return hash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	seed, err := ac.wallet.GetSeedWithPassphrase(passwd)
 	if err != nil {
 		return hash, err
 	}
@@ -856,7 +856,7 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 
 	registerPool := stx.RegistPoolCmd{Value: utils.U256(*amount), Vote: votePkr, FeeRate: feeRate}
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -883,7 +883,7 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 	}
 
 	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return hash, nil
@@ -892,7 +892,8 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), big.NewInt(1000000000))
-	fromPk := address.Base58ToAccount(from).ToUint512()
+	fromAddress := address.StringToPk(from)
+	fromPk := fromAddress.ToUint512()
 
 	if idPkrStr != "" && len(base58.Decode(idPkrStr)) != 96 {
 		return hash, fmt.Errorf("Invalid IdPkr ")
@@ -902,7 +903,10 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 	copy(idPkr[:], base58.Decode(idPkrStr)[:])
 	RefundTo = &idPkr
 
-	ac := self.getAccountByPk(*fromPk)
+	ac := self.getAccountByPk(fromPk)
+	if ac == nil {
+		return hash, errors.New("unknown account")
+	}
 	//check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
@@ -913,18 +917,13 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 			return
 		}
 	}
-	account := accounts.Account{Key: *ac.key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return hash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	seed, err := ac.wallet.GetSeedWithPassphrase(passwd)
 	if err != nil {
 		return hash, err
 	}
 	closePool := stx.ClosePoolCmd{}
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = big.NewInt(1000000000)
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -951,7 +950,7 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 	}
 
 	utxoIn := Utxo{Pkr: ac.mainPkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", big.NewInt(0), utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", big.NewInt(0), utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return hash, nil
@@ -960,20 +959,18 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gasprice *big.Int) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
-	fromPk := address.Base58ToAccount(from).ToUint512()
+	fromAddress := address.StringToPk(from)
+	fromPk := fromAddress.ToUint512()
 
 	var RefundTo *c_type.PKr
-	ac := self.getAccountByPk(*fromPk)
+	ac := self.getAccountByPk(fromPk)
 	if ac != nil {
 		RefundTo = &ac.mainPkr
+	} else {
+		return hash, errors.New("unknown account")
 	}
 
-	account := accounts.Account{Key: *ac.key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return hash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(passwd)
+	seed, err := ac.wallet.GetSeedWithPassphrase(passwd)
 	if err != nil {
 		return hash, err
 	}
@@ -986,7 +983,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	poolId := common.HexToHash(pool)
 	buyShareCmd := stx.BuyShareCmd{Value: utils.U256(*amount), Vote: votePkr, Pool: poolId.HashToUint256()}
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -1009,7 +1006,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	}
 
 	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return hash, nil
@@ -1052,8 +1049,8 @@ func (self *SEROLight) getAccountBlock() uint64 {
 	return number
 }
 
-func (self *SEROLight) getLatestPKrs(accountKey common.AccountKey) (pais []pkrAndIndex) {
-	prefix := append(pkrPrefix, accountKey[:]...)
+func (self *SEROLight) getLatestPKrs(pk c_type.Uint512) (pais []pkrAndIndex) {
+	prefix := append(pkrPrefix, pk[:]...)
 	iterator := self.db.NewIteratorWithPrefix(prefix)
 	count := 0
 	for iterator.Next() {
@@ -1101,9 +1098,10 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 			return "", fmt.Errorf("amount < 0")
 		}
 	}
-	fromPk := address.Base58ToAccount(ctq.From).ToUint512()
+	fromAddress := address.StringToPk(ctq.From)
+	fromPk := fromAddress.ToUint512()
 	var RefundTo *c_type.PKr
-	ac := self.getAccountByPk(*fromPk)
+	ac := self.getAccountByPk(fromPk)
 	if ac == nil {
 		logex.Errorf("account not found")
 		return txHash, fmt.Errorf("account not found")
@@ -1114,19 +1112,14 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	//RefundTo = &fromPkr
 	RefundTo = &ac.mainPkr
 
-	account := accounts.Account{Key: ac.wallet.Accounts()[0].Key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return txHash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(password)
+	seed, err := ac.wallet.GetSeedWithPassphrase(password)
 	if err != nil {
 		return txHash, err
 	}
 
 	fee := big.NewInt(0).Mul(gas, gasPrice)
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = fromPk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasPrice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -1157,7 +1150,7 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	}
 
 	utxoIn := Utxo{Pkr: *RefundTo, Root: gtx.Hash, TxHash: gtx.Hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	ctq.Token.TxHash = txHash
@@ -1198,7 +1191,11 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 		}
 	}
 	var ac *Account
-	fromByte := base58.Decode(ctq.From)
+	add, err := account.NewAddressByString(ctq.From)
+	if err != nil {
+		return txHash, err
+	}
+	fromByte := add.Bytes
 	if len(fromByte) == 96 {
 		pkr := c_type.PKr{}
 		copy(pkr[:], fromByte[:])
@@ -1221,12 +1218,8 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	//RefundTo = &fromPkr
 
 	RefundTo = &ac.mainPkr
-	account := accounts.Account{Key: ac.wallet.Accounts()[0].Key}
-	wallet, err := self.accountManager.Find(account)
-	if err != nil {
-		return txHash, err
-	}
-	seed, err := wallet.GetSeedWithPassphrase(password)
+
+	seed, err := ac.wallet.GetSeedWithPassphrase(password)
 	if err != nil {
 		return txHash, err
 	}
@@ -1239,7 +1232,7 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	}
 	fee := big.NewInt(0).Mul(gas, gasPrice)
 	preTxParam := prepare.PreTxParam{}
-	preTxParam.From = *ac.key
+	preTxParam.From = *ac.pk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasPrice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
@@ -1271,7 +1264,7 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	}
 
 	utxoIn := Utxo{Pkr: *RefundTo, Root: gtx.Hash, TxHash: gtx.Hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.key)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk)
 	ac.isChanged = true
 
 	return txHash, nil

@@ -68,7 +68,7 @@ func MakeAccountImportWithMnemonicEndpoint(service Service) endpoint.Endpoint {
 		aimq := accountImportWithMnemonicReq{}
 		utils.Convert(req.Biz, &aimq)
 
-		resp, err := service.ImportAccountFromMnemonic(aimq.Mnemonic, aimq.Passphrase, 0, 2)
+		resp, err := service.ImportAccountFromMnemonic(aimq.Mnemonic, aimq.Passphrase)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {

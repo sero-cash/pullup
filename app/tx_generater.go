@@ -2,24 +2,25 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/sero-cash/go-czero-import/keys"
+	"math/big"
+	"strings"
+
+	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/hexutil"
 	"github.com/sero-cash/go-sero/zero/localdb"
 	"github.com/sero-cash/go-sero/zero/txs/assets"
 	"github.com/sero-cash/go-sero/zero/txtool"
 	"github.com/sero-cash/go-sero/zero/txtool/prepare"
-	"math/big"
-	"strings"
 )
 
 func (self *SEROLight) GenTx(param prepare.PreTxParam) (txParam *txtool.GTxParam, e error) {
-	txParam, e = prepare.GenTxParam(&param, self,self)
+	txParam, e = prepare.GenTxParam(&param, self, self)
 	return
 }
 
 //===== TxParamGenerator interface impl
-func (self *SEROLight) findUtxos(pk *keys.Uint512, currency string, amount *big.Int) (utxos []Utxo, remain *big.Int) {
+func (self *SEROLight) findUtxos(pk *c_type.Uint512, currency string, amount *big.Int) (utxos []Utxo, remain *big.Int) {
 	remain = new(big.Int).Set(amount)
 
 	currency = strings.ToUpper(currency)
@@ -28,7 +29,7 @@ func (self *SEROLight) findUtxos(pk *keys.Uint512, currency string, amount *big.
 
 	for iterator.Next() {
 		key := iterator.Key()
-		var root keys.Uint256
+		var root c_type.Uint256
 		copy(root[:], key[98:130])
 
 		if utxo, err := self.getUtxo(root); err == nil {
@@ -46,22 +47,22 @@ func (self *SEROLight) findUtxos(pk *keys.Uint512, currency string, amount *big.
 	return
 }
 
-func (self *SEROLight) findUtxosByTicket(pk *keys.Uint512, tickets map[keys.Uint256]keys.Uint256) (utxos []Utxo, remain map[keys.Uint256]keys.Uint256) {
-	remain = map[keys.Uint256]keys.Uint256{}
-	for value, category := range tickets {
-		remain[value] = category
-		prefix := append(pkPrefix, append(pk[:], value[:]...)...)
+func (self *SEROLight) findUtxosByTicket(pk *c_type.Uint512, tickets []assets.Ticket) (utxos []Utxo, remain map[c_type.Uint256]c_type.Uint256) {
+	remain = map[c_type.Uint256]c_type.Uint256{}
+	for _, t := range tickets {
+		remain[t.Value] = t.Category
+		prefix := append(pkPrefix, append(pk[:], t.Value[:]...)...)
 		iterator := self.db.NewIteratorWithPrefix(prefix)
 		if iterator.Next() {
 			key := iterator.Key()
-			var root keys.Uint256
+			var root c_type.Uint256
 			copy(root[:], key[98:130])
 
 			if utxo, err := self.getUtxo(root); err == nil {
-				if utxo.Asset.Tkt != nil && utxo.Asset.Tkt.Category == category {
+				if utxo.Asset.Tkt != nil && utxo.Asset.Tkt.Category == t.Category {
 					if _, ok := self.usedFlag.Load(utxo.Root); !ok {
 						utxos = append(utxos, utxo)
-						delete(remain, value)
+						delete(remain, t.Value)
 					}
 				}
 			}
@@ -70,7 +71,7 @@ func (self *SEROLight) findUtxosByTicket(pk *keys.Uint512, tickets map[keys.Uint
 	return
 }
 
-func (self *SEROLight) FindRoots(pk *keys.Uint512, currency string, amount *big.Int) (roots prepare.Utxos, remain big.Int) {
+func (self *SEROLight) FindRoots(pk *c_type.Uint512, currency string, amount *big.Int) (roots prepare.Utxos, remain big.Int) {
 	utxos, r := self.findUtxos(pk, currency, amount)
 	for _, utxo := range utxos {
 		roots = append(roots, prepare.Utxo{utxo.Root, utxo.Asset})
@@ -80,7 +81,7 @@ func (self *SEROLight) FindRoots(pk *keys.Uint512, currency string, amount *big.
 }
 
 // tickets map[keys.Uint256]keys.Uint256) (utxos []Utxo, remain map[keys.Uint256]keys.Uint256)
-func (self *SEROLight) FindRootsByTicket(pk *keys.Uint512, tickets map[keys.Uint256]keys.Uint256) (roots prepare.Utxos, remain map[keys.Uint256]keys.Uint256) {
+func (self *SEROLight) FindRootsByTicket(pk *c_type.Uint512, tickets []assets.Ticket) (roots prepare.Utxos, remain map[c_type.Uint256]c_type.Uint256) {
 	utxos, remain := self.findUtxosByTicket(pk, tickets)
 	for _, utxo := range utxos {
 		roots = append(roots, prepare.Utxo{utxo.Root, utxo.Asset})
@@ -88,7 +89,7 @@ func (self *SEROLight) FindRootsByTicket(pk *keys.Uint512, tickets map[keys.Uint
 	return
 }
 
-func (self *SEROLight) DefaultRefundTo(from *keys.Uint512) (ret *keys.PKr) {
+func (self *SEROLight) DefaultRefundTo(from *c_type.Uint512) (ret *c_type.PKr) {
 	if value, ok := self.accounts.Load(from); ok {
 		account := value.(*Account)
 		return &account.mainPkr
@@ -97,7 +98,7 @@ func (self *SEROLight) DefaultRefundTo(from *keys.Uint512) (ret *keys.PKr) {
 	}
 }
 
-func (self *SEROLight) GetRoot(root *keys.Uint256) (utxos *prepare.Utxo) {
+func (self *SEROLight) GetRoot(root *c_type.Uint256) (utxos *prepare.Utxo) {
 	if u, e := self.getUtxo(*root); e != nil {
 		return nil
 	} else {
@@ -107,7 +108,7 @@ func (self *SEROLight) GetRoot(root *keys.Uint256) (utxos *prepare.Utxo) {
 
 //===== TxParamState interface impl
 
-func (self *SEROLight) GetAnchor(roots []keys.Uint256) ([]txtool.Witness, error) {
+func (self *SEROLight) GetAnchor(roots []c_type.Uint256) ([]txtool.Witness, error) {
 	params := []string{}
 	for _, each := range roots {
 		params = append(params, hexutil.Encode(each[:]))
@@ -125,14 +126,14 @@ func (self *SEROLight) GetAnchor(roots []keys.Uint256) ([]txtool.Witness, error)
 	return nil, nil
 }
 
-func (self *SEROLight) GetOut(root *keys.Uint256) (out *localdb.RootState) {
+func (self *SEROLight) GetOut(root *c_type.Uint256) (out *localdb.RootState) {
 	if u, e := self.getUtxo(*root); e != nil {
 		return nil
 	} else {
 		return &u.Out.State
 	}
 }
-func (self *SEROLight) GetPkgById(id *keys.Uint256) (ret *localdb.ZPkg) {
+func (self *SEROLight) GetPkgById(id *c_type.Uint256) (ret *localdb.ZPkg) {
 	return nil
 }
 
