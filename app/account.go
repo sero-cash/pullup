@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/sero-cash/go-czero-import/superzk"
+
 	"github.com/sero-cash/go-sero/zero/account"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -272,7 +274,7 @@ func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, erro
 	if err != nil {
 		return nil, err
 	}
-	pkr, err := c_superzk.Pk2PKr(&pk, &r)
+	pkr, err := c_superzk.Czero_PK2PKr(&pk, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +294,7 @@ func (self *SEROLight) createPkrHash(tk *c_type.Tk, index uint64, version int) (
 	if err != nil {
 		return nil, err
 	}
-	pkr, err := c_superzk.Pk2PKr(&pk, r)
+	pkr := superzk.Pk2PKr(&pk, r)
 	if err != nil {
 		return nil, err
 	}
