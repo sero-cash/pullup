@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	httptransport "github.com/go-kit/kit/transport/http"
-	"github.com/sero-cash/go-czero-import/cpt"
+	"github.com/sero-cash/go-czero-import/superzk"
 	"github.com/sero-cash/go-sero/pullup/app"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	//init Zero import
-	cpt.ZeroInit_OnlyInOuts()
+	superzk.ZeroInit_OnlyInOuts()
 	logex.Info("ZeroInit_OnlyInOuts successful! ")
 
 	if l == "zh"{

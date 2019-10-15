@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -40,7 +41,20 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 			return response, nil
 		}
 
-		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase)
+		//get NODE block  number
+
+		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_blockNumber", Params: []interface{}{}}
+		jsonResp, err := sync.Do()
+		if err != nil {
+			logex.Errorf("jsonRep err=[%s]", err.Error())
+			response.SetBaseResponse(errorcode.FAIL_CODE, "server busy")
+			return response, nil
+		}
+		var blockNumber uint64
+		json.Unmarshal(*jsonResp.Result, &blockNumber)
+		fmt.Println("blockNumber:",blockNumber)
+
+		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase, blockNumber)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 		} else {
