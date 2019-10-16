@@ -28,6 +28,7 @@ var (
 
 	dappPrefix = []byte("DAPPS")
 	hashPrefix = []byte("HASH")
+	remoteNumKey= []byte("REMOTENUM")
 )
 
 const (

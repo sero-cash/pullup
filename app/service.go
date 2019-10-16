@@ -194,7 +194,7 @@ func (s *ServiceApi) AccountDetail(pkstr string) (account accountResp) {
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), Name: ac.name}
+		account := accountResp{PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58:ac.PkrString(latestPKr), Name: ac.name}
 
 		return account
 	}

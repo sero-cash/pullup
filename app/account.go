@@ -11,8 +11,6 @@ import (
 
 	"github.com/sero-cash/go-czero-import/superzk"
 
-	"github.com/sero-cash/go-sero/zero/account"
-
 	"github.com/btcsuite/btcutil/base58"
 
 	"github.com/sero-cash/go-sero/common/address"
@@ -168,13 +166,7 @@ func (account *Account) PkString() string {
 	return addr.String()
 }
 func (a Account) PkrString(pkr c_type.PKr) string {
-	if c_superzk.IsSzkPKr(&pkr) {
-		a := account.NewAddressByBytes(pkr[:])
-		a.SetProtocol("SC")
-		return a.ToCode()
-	} else {
-		return base58.Encode(pkr[:])
-	}
+	return base58.Encode(pkr[:])
 }
 
 func (self *SEROLight) keystoreListener() {

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/hexutil"
@@ -71,22 +72,28 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 				tx.Type = 2
 			}
 		}
+
 		if utxo.Asset.Tkn != nil {
+			fmt.Println(hexutil.Encode(douthash[:]))
+			fmt.Println(hexutil.Encode(doutroot[:]))
+			fmt.Println(outType)
+			fmt.Println(utxo.Asset.Tkn.Value.ToInt().String())
+			fmt.Println("--------------")
+
 			amount := utxo.Asset.Tkn.Value.ToIntRef()
-			fee := &utxo.Fee
+
 			if outType == 2 {
 				amount = big.NewInt(0).Mul(amount, big.NewInt(-1))
 			}
 			if tx, ok := txMap[ukey]; ok {
 				tx.Amount = big.NewInt(0).Add(tx.Amount, amount)
 				if outType == 2 {
-					tx.Fee = fee
+					//tx.Fee = fee
 					tx.To = utxo.Pkr
 				}
 				txMap[ukey] = tx
 			} else {
-
-				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency, Fee: fee}
+				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency}
 
 				rData, err := self.db.Get(txHashKey(douthash[:]))
 				if err != nil {
@@ -100,6 +107,7 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 					tx.Receipt.BlockNumber = txInfo.Num
 					tx.Receipt.GasUsed=txInfo.GasUsed
 					tx.Timestamp = txInfo.Time.Uint64() + i
+					tx.Fee = big.NewInt(0).Mul(big.NewInt(int64(txInfo.GasUsed)),&txInfo.GasPrice)
 				}
 				txMap[ukey] = tx
 			}

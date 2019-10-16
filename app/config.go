@@ -26,6 +26,9 @@ var (
 
 	IsDev = false
 	CmdPath = ""
+
+	//default setting
+	useZNum = uint64(100)
 )
 
 func SetRemoteConfig(config string)  {
