@@ -78,7 +78,7 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 			fmt.Println(hexutil.Encode(doutroot[:]))
 			fmt.Println(outType)
 			fmt.Println(utxo.Asset.Tkn.Value.ToInt().String())
-			fmt.Println("--------------")
+			fmt.Println("--------------",outType)
 
 			amount := utxo.Asset.Tkn.Value.ToIntRef()
 

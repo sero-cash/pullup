@@ -255,8 +255,8 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			//dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
 			dout := flight.DecOut(account.tk, []txtool.Out{out})[0]
 
-			dy,_ := json.Marshal(dout)
-			fmt.Println("dout",string(dy[:]))
+			dy, _ := json.Marshal(dout)
+			fmt.Println("dout", string(dy[:]))
 
 			key := PkKey{Pk: *account.pk, Num: blockOut.Num}
 			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
@@ -332,7 +332,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 	pkrNum := int(1)
 	// need append two main pkr
 	pkrs = append(pkrs, base58.Encode(account.mainPkr[:]))
-	if !c_superzk.IsSzkPKr(&account.mainPkr){
+	if !c_superzk.IsSzkPKr(&account.mainPkr) {
 		pkrs = append(pkrs, base58.Encode(account.mainOldPkr[:]))
 	}
 
@@ -341,7 +341,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 		currentPkrsMap[account.mainOldPkr] = 1
 		pkrTypeMap[account.mainPkr] = PRK_TYPE_HASH
 
-		if !c_superzk.IsSzkPKr(&account.mainPkr){
+		if !c_superzk.IsSzkPKr(&account.mainPkr) {
 			pkrTypeMap[account.mainOldPkr] = PKR_TYPE_NUM
 		}
 	}
@@ -354,7 +354,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 		if _, ok := self.useHashPkr.Load(account.pk); !ok {
 			pkrTypeMap[*pkrHash] = PRK_TYPE_HASH
 
-			if !c_superzk.IsSzkPKr(&account.mainPkr){
+			if !c_superzk.IsSzkPKr(&account.mainPkr) {
 				pkrOld, _ := self.createPkr(account.tk, uint64(i))
 				pkrs = append(pkrs, base58.Encode(pkrOld[:]))
 				pkrTypeMap[*pkrOld] = PKR_TYPE_NUM
@@ -452,9 +452,9 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 //}
 
 type NilValue struct {
-	Nil      c_type.Uint256
-	Num      uint64
-	TxHash   c_type.Uint256
+	Nil    c_type.Uint256
+	Num    uint64
+	TxHash c_type.Uint256
 	TxInfo TxInfo
 }
 
@@ -486,6 +486,7 @@ func (self *SEROLight) CheckNil() {
 			logex.Errorf("json.Unmarshal err=[%s]", err.Error())
 			return
 		}
+		fmt.Println("nilvs:",nilvs)
 		logex.Infof("light_checkNil result=[%d]", len(nilvs))
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
@@ -519,14 +520,19 @@ func (self *SEROLight) CheckNil() {
 					batch.Delete(nilKey(root))
 
 					//TODO remove pending tx
+					fmt.Println("batch indexTxKey:",string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]),2)
+
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
+
+					b, _ :=json.Marshal(utxoI)
+					fmt.Println("b:::",string(b))
+
 					data, _ := rlp.EncodeToBytes(utxoI)
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 
 					self.usedFlag.Delete(root)
 				}
-
 			}
 			batch.Write()
 		}
@@ -760,8 +766,8 @@ func (self *SEROLight) needSzk(param *txtool.GTxParam) {
 	data, err := self.db.Get(remoteNumKey)
 	if err == nil {
 		num := decodeNumber(data[:])
-		fmt.Println("needSzk num:",num)
-		fmt.Println("needSzk useZNum:",useZNum)
+		fmt.Println("needSzk num:", num)
+		fmt.Println("needSzk useZNum:", useZNum)
 		if num >= useZNum {
 			param.Z = &need_szk
 		}
