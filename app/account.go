@@ -77,11 +77,14 @@ func (account *Account) Create(passphrase string, at uint64) error {
 	}
 	// Create the keyfile object with a random UUID.
 	id := uuid.NewRandom()
-	address := crypto.PrivkeyToAddress(privateKey, version)
+	tk := crypto.PrivkeyToTk(privateKey, version)
+	pk, _ := superzk.Tk2Pk(tk.ToTk().NewRef())
+	var address address.PKAddress
+	copy(address[:], pk[:])
 	key := &keystore.Key{
 		Id:         id,
 		Address:    address,
-		Tk:         crypto.PrivkeyToTk(privateKey),
+		Tk:         tk,
 		PrivateKey: privateKey,
 		Version:    version,
 		At:         at,
@@ -270,7 +273,7 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, error) {
 	r := c_type.Uint256{}
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
-	pk, err := c_superzk.Czero_Tk2PK(tk)
+	pk, err := superzk.Tk2Pk(tk)
 	if err != nil {
 		return nil, err
 	}
@@ -281,16 +284,10 @@ func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, erro
 	return &pkr, nil
 }
 
-func (self *SEROLight) createPkrHash(tk *c_type.Tk, index uint64, version int) (*c_type.PKr, error) {
+func (self *SEROLight) createPkrHash(tk *c_type.Tk, index uint64) (*c_type.PKr, error) {
 	random := append(tk[:], encodeNumber(index)[:]...)
 	r := crypto.Keccak256Hash(random).HashToUint256()
-	var pk c_type.Uint512
-	var err error
-	if version == 2 {
-		pk, err = c_superzk.Tk2Pk(tk)
-	} else {
-		pk, err = c_superzk.Czero_Tk2PK(tk)
-	}
+	pk, err := superzk.Tk2Pk(tk)
 	if err != nil {
 		return nil, err
 	}
