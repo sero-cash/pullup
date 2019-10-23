@@ -2,8 +2,8 @@ package app
 
 //config
 var (
-	version   = "v0.1.7"
-	cleanData = false
+	version   = "v0.1.8"
+	cleanData = true
 
 	maxUint64  = ^uint64(0)
 	fetchCount = uint64(50000)

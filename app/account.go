@@ -75,10 +75,8 @@ func (account *Account) Create(passphrase string, at uint64) error {
 	}
 	// Create the keyfile object with a random UUID.
 	id := uuid.NewRandom()
-	tk := crypto.PrivkeyToTk(privateKey, version)
-	pk, _ := superzk.Tk2Pk(tk.ToTk().NewRef())
-	var address address.PKAddress
-	copy(address[:], pk[:])
+	tk :=crypto.PrivkeyToTk(privateKey,version)
+	address := tk.ToPk()
 	key := &keystore.Key{
 		Id:         id,
 		Address:    address,
@@ -265,7 +263,7 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, error) {
 	r := c_type.Uint256{}
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
-	pk, err := superzk.Tk2Pk(tk)
+	pk, err := c_superzk.Czero_Tk2Pk(tk)
 	if err != nil {
 		return nil, err
 	}
