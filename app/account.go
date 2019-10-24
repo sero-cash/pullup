@@ -209,7 +209,7 @@ func (self *SEROLight) initWallet(w accounts.Wallet) {
 		account.at = w.Accounts()[0].At
 		account.version = w.Accounts()[0].Version
 		copy(account.skr[:], account.tk[:])
-		mainPkr, err := self.createPkrHash(account.tk, 1, account.version)
+		mainPkr, err := self.createPkrHash(account.tk, 1)
 		if err != nil {
 			panic("init account failed pk = " + account.PkString())
 		}
@@ -263,7 +263,7 @@ func (self *SEROLight) recoverPkrIndex(account Account, at uint64) {
 func (self *SEROLight) createPkr(tk *c_type.Tk, index uint64) (*c_type.PKr, error) {
 	r := c_type.Uint256{}
 	copy(r[:], common.LeftPadBytes(encodeNumber(index), 32))
-	pk, err := c_superzk.Czero_Tk2Pk(tk)
+	pk, err := superzk.Tk2Pk(tk)
 	if err != nil {
 		return nil, err
 	}
