@@ -172,7 +172,7 @@ func (self *SEROLight) SyncOut() {
 			if rtn.again {
 				otreq.Num = rtn.nextNum
 				otreq.PkrIndex = otreq.PkrIndex + 1
-				nextPkr, _ := self.createPkrHash(account.tk, otreq.PkrIndex, account.version)
+				nextPkr, _ := self.createPkrHash(account.tk, otreq.PkrIndex)
 				otreq.Pkr = *nextPkr
 				data, _ := rlp.EncodeToBytes(otreq)
 				self.pkrIndexMap.Store(pk, otreq)
@@ -349,7 +349,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 		pkrNum = int(pkrIndex) - 5
 	}
 	for i := int(pkrIndex); i > pkrNum; i-- {
-		pkrHash, _ := self.createPkrHash(account.tk, uint64(i), account.version)
+		pkrHash, _ := self.createPkrHash(account.tk, uint64(i))
 		pkrs = append(pkrs, base58.Encode(pkrHash[:]))
 		if _, ok := self.useHashPkr.Load(account.pk); !ok {
 			pkrTypeMap[*pkrHash] = PRK_TYPE_HASH
