@@ -57,31 +57,31 @@ var currentLight *SEROLight
 func NewSeroLight() {
 
 	logex.Info("App start ,version: ", version)
-	//new AccountManage
+	// new AccountManage
 	accountManager, err := makeAccountManager()
 	if err != nil {
 		logex.Fatalf("makeAccountManager, err=[%v]", err)
 	}
 
-	//new config db
+	// new config db
 	configdb, err := serodb.NewLDBDatabase(GetConfigPath(), 1024, 1024)
 	if err != nil {
 		logex.Fatalf("NewLDBDatabase, err=[%v]", err)
 	}
 
-	//check this version clean data on start
+	// check this version clean data on start
 	if cleanData {
 		versionByte, err := configdb.Get(VersonKey[:])
 		if err != nil {
 			configdb.Put(VersonKey[:], []byte(GetVersion()))
-			//clean data
+			// clean data
 			CleanData()
 		} else {
 			if string(versionByte[:]) == GetVersion() {
 				logex.Info("latest version:", string(versionByte[:]))
 			} else {
 				configdb.Put(VersonKey[:], []byte(GetVersion()))
-				//clean data
+				// clean data
 				CleanData()
 			}
 		}
@@ -124,11 +124,12 @@ type outReq struct {
 }
 
 type fetchReturn struct {
-	utxoMap    map[PkKey][]Utxo
-	again      bool
-	remoteNum  uint64
-	nextNum    uint64
-	useHashPkr bool
+	utxoMap         map[PkKey][]Utxo
+	again           bool
+	remoteNum       uint64
+	nextNum         uint64
+	useHashPkr      bool
+	lastBlockNumber uint64
 }
 
 func (self *SEROLight) SyncOut() {
@@ -138,8 +139,11 @@ func (self *SEROLight) SyncOut() {
 	self.pkrIndexMap.Range(func(key, value interface{}) bool {
 		pk := key.(c_type.Uint512)
 		otreq := value.(outReq)
+
+		start := otreq.Num
+		end := uint64(0)
 		for {
-			var start, end = otreq.Num, otreq.Num+fetchCount
+			// var start, end = otreq.Num, otreq.Num + fetchCount
 			account := self.getAccountByKey(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
@@ -170,22 +174,27 @@ func (self *SEROLight) SyncOut() {
 			}
 
 			if rtn.again {
-				otreq.Num = rtn.nextNum
+				// otreq.Num = rtn.nextNum
 				otreq.PkrIndex = otreq.PkrIndex + 1
 				nextPkr, _ := self.createPkrHash(account.tk, otreq.PkrIndex)
 				otreq.Pkr = *nextPkr
 				data, _ := rlp.EncodeToBytes(otreq)
 				self.pkrIndexMap.Store(pk, otreq)
 				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
+				if (end == 0) {
+					end = rtn.lastBlockNumber
+				}
 				continue
 			} else {
-				otreq.Num = rtn.nextNum
+				otreq.Num = rtn.lastBlockNumber + 1
+				// otreq.Num = rtn.nextNum
 				data, _ := rlp.EncodeToBytes(otreq)
 				self.pkrIndexMap.Store(pk, otreq)
 				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
-				if end >= rtn.remoteNum {
-					break
-				}
+				// if end >= rtn.remoteNum {
+				// 	break
+				// }
+				break
 			}
 		}
 		return true
@@ -197,7 +206,12 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 
 	pkrTypeMap, currentPkrsMap, pkrs := self.genPkrs(pkrIndex, account)
 
-	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: []interface{}{pkrs, start, end}}
+	param := []interface{}{pkrs, start}
+	if (end != 0) {
+		param = append(param, end)
+	}
+
+	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: param}
 	jsonResp, err := sync.Do()
 	if err != nil {
 		logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -211,6 +225,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 	utxosMap := map[PkKey][]Utxo{}
 	// if not find outs , the end block return query current block
 	blockOuts := bor.BlockOuts
+	rtn.lastBlockNumber = bor.CurrentNum;
 	rtn.remoteNum = bor.CurrentNum
 	if rtn.remoteNum > end {
 		rtn.nextNum = end + 1
@@ -238,7 +253,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 
 			if currentPkrsMap[pkr] == 1 {
 				rtn.again = true
-				//gen min block Num
+				// gen min block Num
 				if rtn.nextNum > blockOut.Num {
 					rtn.nextNum = blockOut.Num
 				}
@@ -252,7 +267,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 				}
 			}
 
-			//dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
+			// dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
 			dout := flight.DecOut(account.tk, []txtool.Out{out})[0]
 
 			dy, _ := json.Marshal(dout)
@@ -261,7 +276,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			key := PkKey{Pk: *account.pk, Num: blockOut.Num}
 			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
 
-			//log.Info("DecOuts", "PK", base58.Encode(account.pk[:]), "root", common.Bytes2Hex(out.Root[:]), "currency", common.BytesToString(utxo.Asset.Tkn.Currency[:]), "value", utxo.Asset.Tkn.Value)
+			// log.Info("DecOuts", "PK", base58.Encode(account.pk[:]), "root", common.Bytes2Hex(out.Root[:]), "currency", common.BytesToString(utxo.Asset.Tkn.Currency[:]), "value", utxo.Asset.Tkn.Value)
 			if list, ok := utxosMap[key]; ok {
 				utxosMap[key] = append(list, utxo)
 			} else {
@@ -274,8 +289,8 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			self.db.Put(txHashKey(txInfo.TxHash[:]), txData)
 		}
 
-		//getBlock RPC
-		//self.storeBlockInfo(blockOut.Num)
+		// getBlock RPC
+		// self.storeBlockInfo(blockOut.Num)
 	}
 	// if hash pkr return >0 and old pkr return = 0 ,set use hash pkr flag
 	if _, ok := self.useHashPkr.Load(account.pk); !ok && (hasResWithHashPkr && !hasResWithOldPkr) {
@@ -287,7 +302,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 }
 
 //
-//func (self *SEROLight) storeBlockInfo(number uint64) {
+// func (self *SEROLight) storeBlockInfo(number uint64) {
 //	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getBlockByNumber", Params: []interface{}{hexutil.EncodeUint64(number), false}}
 //	resp, err := sync.Do()
 //	if err != nil {
@@ -322,11 +337,11 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 //			}
 //		}
 //	}
-//}
+// }
 
 func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PKr]int8, map[c_type.PKr]int8, []string) {
 	pkrTypeMap := map[c_type.PKr]int8{}
-	//check loop again
+	// check loop again
 	currentPkrsMap := map[c_type.PKr]int8{}
 	var pkrs = []string{}
 	pkrNum := int(1)
@@ -370,7 +385,7 @@ func (self *SEROLight) genPkrs(pkrIndex uint64, account *Account) (map[c_type.PK
 	return pkrTypeMap, currentPkrsMap, pkrs
 }
 
-//if the currentpkr in the outs, again = true, then loop continue next Pkr
+// if the currentpkr in the outs, again = true, then loop continue next Pkr
 func (self *SEROLight) indexOuts(utxosMap map[PkKey][]Utxo, batch serodb.Batch) (err error) {
 	if len(utxosMap) > 0 {
 		ops, err := self.indexUtxo(utxosMap, batch)
@@ -396,10 +411,10 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			// "ROOT" + root
 			batch.Put(rootKey(utxo.Root), data)
 
-			//"TXHASH" + PK + hash + root + outType
+			// "TXHASH" + PK + hash + root + outType
 			batch.Put(indexTxKey(key.Pk, utxo.TxHash, utxo.Root, uint64(1)), data)
 
-			//nil => root
+			// nil => root
 			for _, Nil := range utxo.Nils {
 				batch.Put(nilToRootKey(Nil), utxo.Root[:])
 			}
@@ -418,7 +433,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 
 			// "NIL" + PK + tkt + root => "PK" + PK + currency + root
 			for _, Nil := range utxo.Nils {
-				//nilIdkey := nilIdKey(utxo.Nils)
+				// nilIdkey := nilIdKey(utxo.Nils)
 				nilkey := nilKey(Nil)
 				// "NIL" +nil/root => pkKey
 				ops[common.Bytes2Hex(nilkey)] = common.Bytes2Hex(pkKey)
@@ -427,11 +442,11 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 
 			// "NIL" +nil/root => pkKey
 			ops[common.Bytes2Hex(rootkey)] = common.Bytes2Hex(pkKey)
-			//ops[common.Bytes2Hex(nilIdkey)] = common.Bytes2Hex(encodeNumber(key.Num))
+			// ops[common.Bytes2Hex(nilIdkey)] = common.Bytes2Hex(encodeNumber(key.Num))
 			roots = append(roots, utxo.Root)
-			//log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nils", common.Bytes2Hex(utxo.Nils[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
+			// log.Info("Index add", "PK", base58.Encode(key.PK[:]), "Nils", common.Bytes2Hex(utxo.Nils[:]), "root", common.Bytes2Hex(utxo.Root[:]), "Value", utxo.Asset.Tkn.Value)
 
-			//self.genTxReceipt(utxo.TxHash, batch)
+			// self.genTxReceipt(utxo.TxHash, batch)
 		}
 		data, err := rlp.EncodeToBytes(roots)
 		if err != nil {
@@ -444,12 +459,12 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 	return ops, nil
 }
 
-//type NilValue struct {
+// type NilValue struct {
 //	Nil    c_type.Uint256
 //	Num    uint64
 //	TxHash c_type.Uint256
 //	TxFee  big.Int
-//}
+// }
 
 type NilValue struct {
 	Nil    c_type.Uint256
@@ -461,7 +476,7 @@ type NilValue struct {
 func (self *SEROLight) CheckNil() {
 
 	iterator := self.db.NewIteratorWithPrefix(nilPrefix)
-	//Nils := []keys.Uint256{}
+	// Nils := []keys.Uint256{}
 	Nils := []string{}
 	for iterator.Next() {
 		key := iterator.Key()
@@ -486,7 +501,7 @@ func (self *SEROLight) CheckNil() {
 			logex.Errorf("json.Unmarshal err=[%s]", err.Error())
 			return
 		}
-		fmt.Println("nilvs:",nilvs)
+		fmt.Println("nilvs:", nilvs)
 		logex.Infof("light_checkNil result=[%d]", len(nilvs))
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
@@ -505,10 +520,10 @@ func (self *SEROLight) CheckNil() {
 					if err == nil {
 						batch.Delete(penddingTxKey(pk, utxo.TxHash))
 					}
-					//GetTransactionReceipt
-					//self.genTxReceipt(nilv.TxHash, batch)
-					//getBlock RPC
-					//self.storeBlockInfo(nilv.Num)
+					// GetTransactionReceipt
+					// self.genTxReceipt(nilv.TxHash, batch)
+					// getBlock RPC
+					// self.storeBlockInfo(nilv.Num)
 
 					if len(value) == 130 {
 						batch.Delete(value)
@@ -519,14 +534,14 @@ func (self *SEROLight) CheckNil() {
 					batch.Delete(nilKey(Nil))
 					batch.Delete(nilKey(root))
 
-					//TODO remove pending tx
-					fmt.Println("batch indexTxKey:",string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]),2)
+					// TODO remove pending tx
+					fmt.Println("batch indexTxKey:", string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]), 2)
 
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
 
-					b, _ :=json.Marshal(utxoI)
-					fmt.Println("b:::",string(b))
+					b, _ := json.Marshal(utxoI)
+					fmt.Println("b:::", string(b))
 
 					data, _ := rlp.EncodeToBytes(utxoI)
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
@@ -632,10 +647,10 @@ func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
 func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
-		//if account.isChanged {
-		//} else {
+		// if account.isChanged {
+		// } else {
 		//	return account.balances
-		//}
+		// }
 
 		prefix := append(pkPrefix, pk[:]...)
 		iterator := self.db.NewIteratorWithPrefix(prefix)
@@ -815,7 +830,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	} else {
 		return hash, errors.New("unknown account")
 	}
-	//check pk register pool
+	// check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
 	_, err = sync.Do()
@@ -825,7 +840,7 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 			return
 		}
 	} else {
-		//amount > 0 is register . amount = 0 is modify
+		// amount > 0 is register . amount = 0 is modify
 		if amount.Sign() > 0 {
 			err = fmt.Errorf("stake pool exists")
 			logex.Errorf("jsonRep err=[%s]", err.Error())
@@ -902,7 +917,7 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 		return hash, errors.New("unknown account")
 	}
 
-	//check pk register pool
+	// check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
 	_, err = sync.Do()
@@ -977,7 +992,7 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 	if ac == nil {
 		return hash, errors.New("unknown account")
 	}
-	//check pk register pool
+	// check pk register pool
 	poolId := crypto.Keccak256(ac.mainPkr[:])
 	sync := Sync{RpcHost: GetRpcHost(), Method: "stake_poolState", Params: []interface{}{hexutil.Encode(poolId)}}
 	_, err = sync.Do()
@@ -1177,10 +1192,10 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 		logex.Errorf("account not found")
 		return txHash, fmt.Errorf("account not found")
 	}
-	//random := keys.RandUint128()
-	//copy(random[:], ctq.Data[:16])
-	//fromPkr := self.genPkrContract(fromPk, random)
-	//RefundTo = &fromPkr
+	// random := keys.RandUint128()
+	// copy(random[:], ctq.Data[:16])
+	// fromPkr := self.genPkrContract(fromPk, random)
+	// RefundTo = &fromPkr
 	RefundTo = &ac.mainPkr
 
 	seed, err := ac.wallet.GetSeedWithPassphrase(password)
@@ -1285,10 +1300,10 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 		return txHash, fmt.Errorf("account not found")
 	}
 
-	//random := keys.RandUint128()
-	//copy(random[:], ctq.Data[:16])
-	//fromPkr := self.genPkrContract(fromPk, random)
-	//RefundTo = &fromPkr
+	// random := keys.RandUint128()
+	// copy(random[:], ctq.Data[:16])
+	// fromPkr := self.genPkrContract(fromPk, random)
+	// RefundTo = &fromPkr
 
 	RefundTo = &ac.mainPkr
 
@@ -1349,14 +1364,14 @@ func (self *SEROLight) getTokens() ([]TokenReq, error) {
 	iterator := self.db.NewIteratorWithPrefix(prefix)
 	tokens := []TokenReq{}
 	for iterator.Next() {
-		//key := iterator.Key()
+		// key := iterator.Key()
 		value := iterator.Value()
 		token := TokenReq{}
 		err := rlp.DecodeBytes(value, &token)
 		if err != nil {
 			return nil, err
 		}
-		////get Transaction Receipt
+		// //get Transaction Receipt
 		if token.TxHash != "" && token.Symbol != "" {
 			sync := Sync{RpcHost: GetRpcHost(), Method: "sero_currencyToContractAddress", Params: []interface{}{token.Symbol}}
 			jsonResp, err := sync.Do()
