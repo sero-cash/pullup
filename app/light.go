@@ -506,8 +506,10 @@ func (self *SEROLight) CheckNil() {
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
 			for _, nilv := range nilvs {
+				fmt.Println(nilv)
 				var pk c_type.Uint512
 				Nil := nilv.Nil
+
 				value, _ := self.db.Get(nilKey(Nil))
 				if value != nil {
 					copy(pk[:], value[2:66])
@@ -520,10 +522,6 @@ func (self *SEROLight) CheckNil() {
 					if err == nil {
 						batch.Delete(penddingTxKey(pk, utxo.TxHash))
 					}
-					// GetTransactionReceipt
-					// self.genTxReceipt(nilv.TxHash, batch)
-					// getBlock RPC
-					// self.storeBlockInfo(nilv.Num)
 
 					if len(value) == 130 {
 						batch.Delete(value)
@@ -534,17 +532,22 @@ func (self *SEROLight) CheckNil() {
 					batch.Delete(nilKey(Nil))
 					batch.Delete(nilKey(root))
 
-					// TODO remove pending tx
-					fmt.Println("batch indexTxKey:", string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]), 2)
-
+					//TODO remove pending tx
+					//fmt.Println("batch indexTxKey:",string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]),2)
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
-
-					b, _ := json.Marshal(utxoI)
-					fmt.Println("b:::", string(b))
-
-					data, _ := rlp.EncodeToBytes(utxoI)
+					data, err := rlp.EncodeToBytes(&utxoI)
+					if err !=nil{
+						fmt.Println("EncodeToBytes err:",err)
+						continue
+					}
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
+
+
+					txInfo := nilv.TxInfo
+					txData, _ := rlp.EncodeToBytes(txInfo)
+					batch.Put(txHashKey(nilv.TxHash[:]), txData)
+
 
 					self.usedFlag.Delete(root)
 				}

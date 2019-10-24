@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/hexutil"
@@ -54,9 +53,9 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 		copy(douthash[:], key[70:102])
 		copy(doutroot[:], key[102:134])
 		outType := decodeNumber(key[134:142])
+
 		utxo := Utxo{}
 		rlp.DecodeBytes(value, &utxo)
-
 		ukeyb := douthash[:]
 		if *powReward.HashToUint256() == douthash || *posReward.HashToUint256() == douthash || *posMiner.HashToUint256() == douthash {
 			ukeyb = append(encodeNumber(utxo.Num), utxo.Pkr[:]...)
@@ -72,14 +71,7 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 				tx.Type = 2
 			}
 		}
-
 		if utxo.Asset.Tkn != nil {
-			fmt.Println(hexutil.Encode(douthash[:]))
-			fmt.Println(hexutil.Encode(doutroot[:]))
-			fmt.Println(outType)
-			fmt.Println(utxo.Asset.Tkn.Value.ToInt().String())
-			fmt.Println("--------------",outType)
-
 			amount := utxo.Asset.Tkn.Value.ToIntRef()
 
 			if outType == 2 {
@@ -87,10 +79,10 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 			}
 			if tx, ok := txMap[ukey]; ok {
 				tx.Amount = big.NewInt(0).Add(tx.Amount, amount)
-				if outType == 2 {
+				//if outType == 2 {
 					//tx.Fee = fee
-					tx.To = utxo.Pkr
-				}
+					//tx.To = utxo.Pkr
+				//}
 				txMap[ukey] = tx
 			} else {
 				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency}
