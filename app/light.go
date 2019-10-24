@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/sero-cash/go-czero-import/superzk"
 	"math/big"
 	"strconv"
 	"sync"
@@ -143,7 +144,7 @@ func (self *SEROLight) SyncOut() {
 		start := otreq.Num
 		end := uint64(0)
 		for {
-			// var start, end = otreq.Num, otreq.Num + fetchCount
+			//var start, end = otreq.Num, otreq.Num + fetchCount
 			account := self.getAccountByKey(pk)
 			rtn, err := self.fetchAndDecOuts(account, otreq.PkrIndex, start, end)
 			if err != nil {
@@ -174,7 +175,7 @@ func (self *SEROLight) SyncOut() {
 			}
 
 			if rtn.again {
-				// otreq.Num = rtn.nextNum
+				//otreq.Num = rtn.nextNum
 				otreq.PkrIndex = otreq.PkrIndex + 1
 				nextPkr, _ := self.createPkrHash(account.tk, otreq.PkrIndex)
 				otreq.Pkr = *nextPkr
@@ -187,13 +188,13 @@ func (self *SEROLight) SyncOut() {
 				continue
 			} else {
 				otreq.Num = rtn.lastBlockNumber + 1
-				// otreq.Num = rtn.nextNum
+				//otreq.Num = rtn.nextNum
 				data, _ := rlp.EncodeToBytes(otreq)
 				self.pkrIndexMap.Store(pk, otreq)
 				self.db.Put(append(pkrIndexPrefix, pk[:]...), data)
-				// if end >= rtn.remoteNum {
-				// 	break
-				// }
+				//if end >= rtn.remoteNum {
+				//	break
+				//}
 				break
 			}
 		}
@@ -207,8 +208,10 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 	pkrTypeMap, currentPkrsMap, pkrs := self.genPkrs(pkrIndex, account)
 
 	param := []interface{}{pkrs, start}
-	if (end != 0) {
+	if end != 0 {
 		param = append(param, end)
+	} else {
+		param = []interface{}{pkrs, start, nil}
 	}
 
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_getOutsByPKr", Params: param}
@@ -269,9 +272,6 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 
 			// dout := DecOuts([]txtool.Out{out}, &account.skr)[0]
 			dout := flight.DecOut(account.tk, []txtool.Out{out})[0]
-
-			dy, _ := json.Marshal(dout)
-			fmt.Println("dout", string(dy[:]))
 
 			key := PkKey{Pk: *account.pk, Num: blockOut.Num}
 			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
@@ -501,12 +501,10 @@ func (self *SEROLight) CheckNil() {
 			logex.Errorf("json.Unmarshal err=[%s]", err.Error())
 			return
 		}
-		fmt.Println("nilvs:", nilvs)
 		logex.Infof("light_checkNil result=[%d]", len(nilvs))
 		if len(nilvs) > 0 {
 			batch := self.db.NewBatch()
 			for _, nilv := range nilvs {
-				fmt.Println(nilv)
 				var pk c_type.Uint512
 				Nil := nilv.Nil
 
@@ -537,17 +535,15 @@ func (self *SEROLight) CheckNil() {
 					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
 					data, err := rlp.EncodeToBytes(&utxoI)
-					if err !=nil{
-						fmt.Println("EncodeToBytes err:",err)
+					if err != nil {
+						fmt.Println("EncodeToBytes err:", err)
 						continue
 					}
 					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
 
-
 					txInfo := nilv.TxInfo
 					txData, _ := rlp.EncodeToBytes(txInfo)
 					batch.Put(txHashKey(nilv.TxHash[:]), txData)
-
 
 					self.usedFlag.Delete(root)
 				}
@@ -761,7 +757,8 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	if err != nil {
 		return hash, err
 	}
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
+
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
 		return hash, err
@@ -784,8 +781,6 @@ func (self *SEROLight) needSzk(param *txtool.GTxParam) {
 	data, err := self.db.Get(remoteNumKey)
 	if err == nil {
 		num := decodeNumber(data[:])
-		fmt.Println("needSzk num:", num)
-		fmt.Println("needSzk useZNum:", useZNum)
 		if num >= useZNum {
 			param.Z = &need_szk
 		}
@@ -876,7 +871,8 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 		return hash, err
 	}
 
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
 
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
@@ -956,7 +952,8 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 		return hash, err
 	}
 
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
 
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
@@ -1024,7 +1021,9 @@ func (self *SEROLight) closeStakePool(from, idPkrStr, passwd string) (hash c_typ
 	}
 	self.needSzk(param)
 
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
+
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
 		return hash, err
@@ -1082,7 +1081,9 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	if err != nil {
 		return hash, err
 	}
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
+
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
 		return hash, err
@@ -1227,7 +1228,8 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	if err != nil {
 		return txHash, err
 	}
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
 		return txHash, err
@@ -1342,7 +1344,8 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	if err != nil {
 		return txHash, err
 	}
-	sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
+	sk := superzk.Seed2Sk(seed.SeedToUint256(),ac.version)
 	gtx, err := flight.SignTx(&sk, param)
 	if err != nil {
 		return txHash, err

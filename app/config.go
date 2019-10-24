@@ -6,7 +6,7 @@ var (
 	cleanData = true
 
 	maxUint64  = ^uint64(0)
-	fetchCount = uint64(50000)
+	fetchCount = uint64(500000)
 
 	remoteConfig = ""
 
@@ -28,7 +28,7 @@ var (
 	CmdPath = ""
 
 	//default setting
-	useZNum = uint64(100)
+	useZNum = uint64(1958696)
 )
 
 func SetRemoteConfig(config string)  {
