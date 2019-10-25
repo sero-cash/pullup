@@ -703,7 +703,11 @@ func (self *SEROLight) setZ() bool {
 		return false
 	}
 	num := decodeNumber(data[8:])
-	if num >= useZNum {
+	snum := useZNum
+	if IsDev {
+		snum = uint64(100)
+	}
+	if num >= snum {
 		return true
 	} else {
 		return false

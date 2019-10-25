@@ -28,8 +28,7 @@ var (
 	CmdPath = ""
 
 	//default setting
-	//useZNum = uint64(1958696)
-	useZNum = uint64(100)
+	useZNum = uint64(1958696)
 )
 
 func SetRemoteConfig(config string)  {
