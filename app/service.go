@@ -194,7 +194,7 @@ func (s *ServiceApi) AccountDetail(pkstr string) (account accountResp) {
 			latestPKr = o.Pkr
 		}
 		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58:ac.PkrString(latestPKr), Name: ac.name}
+		account := accountResp{PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: ac.PkrString(latestPKr), Name: ac.name}
 
 		return account
 	}
@@ -240,7 +240,7 @@ func (u utxosResp) Len() int {
 	return len(u)
 }
 func (u utxosResp) Less(i, j int) bool {
-	return u[i].Timestamp > u[j].Timestamp
+	return u[i].Block > u[j].Block
 }
 func (u utxosResp) Swap(i, j int) {
 	u[i], u[j] = u[j], u[i]
@@ -250,9 +250,11 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 	pk := address.StringToPk(pkStr)
 
 	if txs, err := s.SL.findTx(pk.ToUint512(), uint64(request.PageSize)); err == nil {
+		pendingBlockNumber := uint64(1000000000)
 		for _, tx := range txs {
 			if tx.Block == 0 {
-				tx.Block = uint64(999999999999999)
+				pendingBlockNumber = pendingBlockNumber + 1
+				tx.Block = pendingBlockNumber
 			}
 			utxo := utxoResp{
 				Type:      tx.Type,

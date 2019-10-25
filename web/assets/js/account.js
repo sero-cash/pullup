@@ -342,10 +342,10 @@ var Detail = {
                                     <tr>
                                         <td>${i + 1}</td>
                                         <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
+                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block>=1000000000?0:tx.Block}</a></td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
-                                        <td><span class="text-success">${tx.Block!=999999999999999 ? 'Completed' : 'Pending'}</span></td>
+                                        <td><span class="text-success">${tx.Block>=1000000000 ? 'Completed' : 'Pending'}</span></td>
                                         <td>${amount}</td>
                                         <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                         <td>${convertUTCDate(tx.Timestamp)}</td>
@@ -360,7 +360,7 @@ var Detail = {
                                 fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
                             }
 
-                            if( amount.comparedTo(new BigNumber(0))<0 && tx.Block !=999999999999999){
+                            if( amount.comparedTo(new BigNumber(0))<0 && tx.Block>=1000000000){
                                 if(amount.plus(fee) < 0 ){
                                     amount = amount.plus(fee)
                                 }else{
@@ -373,10 +373,10 @@ var Detail = {
                             <tr>
                                 <td>${i + 1}</td>
                                 <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block==999999999999999?0:tx.Block}</a></td>
+                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block>=1000000000?0:tx.Block}</a></td>
                                 <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                 <td>${tx.Currency}</td>
-                                <td><span class="text-success">${tx.Block !=999999999999999 ? 'Completed' : 'Pending'}</span></td>
+                                <td><span class="text-success">${tx.Block>=1000000000 ? 'Completed' : 'Pending'}</span></td>
                                 <td>${amount}</td>
                                 <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                 <td>${convertUTCDate(tx.Timestamp)}</td>
