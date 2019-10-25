@@ -102,6 +102,11 @@ func (s *ServiceApi) ImportAccountFromMnemonic(mnemonic, password string) (map[s
 			return nil, errors.New("invalid mnemonic")
 		}
 	}
+	_, blockNumber := getRemoteBlockNumber()
+	if version == 2 && uint64(blockNumber) < useZNum {
+		return nil, errors.New("You cannot import a new version of the account before the fork point ")
+	}
+
 	_, err := bip39.MnemonicToByteArray(mnemonic)
 	if err != nil {
 		return nil, err

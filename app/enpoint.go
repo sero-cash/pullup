@@ -43,15 +43,7 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 
 		//get NODE block  number
 
-		sync := Sync{RpcHost: GetRpcHost(), Method: "sero_blockNumber", Params: []interface{}{}}
-		jsonResp, err := sync.Do()
-		if err != nil {
-			logex.Errorf("jsonRep err=[%s]", err.Error())
-			response.SetBaseResponse(errorcode.FAIL_CODE, "server busy")
-			return response, nil
-		}
-		var blockNumber hexutil.Uint64
-		json.Unmarshal(*jsonResp.Result, &blockNumber)
+		_, blockNumber := getRemoteBlockNumber()
 
 		resp, err := service.NewAccountWithMnemonic(accountCreateReq.Passphrase, uint64(blockNumber))
 		if err != nil {
@@ -61,6 +53,14 @@ func MakeAccountCreateEndpoint(service Service) endpoint.Endpoint {
 		}
 		return response, nil
 	}
+}
+
+func getRemoteBlockNumber() (error, hexutil.Uint64) {
+	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_blockNumber", Params: []interface{}{}}
+	jsonResp, err := sync.Do()
+	var blockNumber hexutil.Uint64
+	json.Unmarshal(*jsonResp.Result, &blockNumber)
+	return err, blockNumber
 }
 
 type accountImportWithMnemonicReq struct {
