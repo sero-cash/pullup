@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/sero-cash/go-czero-import/keys"
+	"github.com/sero-cash/go-czero-import/c_type"
 )
 
 var (
@@ -24,10 +24,11 @@ var (
 
 	tokenPrefix     = []byte("Token")
 	txReceiptPrefix = []byte("TXRECEIPT")
-	blockPrefix = []byte("BLOCK")
-
+	blockPrefix     = []byte("BLOCK")
 
 	dappPrefix = []byte("DAPPS")
+	hashPrefix = []byte("HASH")
+	remoteNumKey= []byte("REMOTENUM")
 )
 
 const (
@@ -35,49 +36,52 @@ const (
 	PKR_TYPE_NUM  int8 = 1
 )
 
+func txHashKey(hash []byte) []byte  {
+	return append(hashPrefix,hash[:]...)
+}
 func dappKey(dappId string) []byte {
 	key := append(dappPrefix, dappId[:]...)
 	return key
 }
 
 // PKR + PK + r
-func pkrKey(pk keys.Uint512, r keys.Uint256) []byte {
+func pkrKey(pk c_type.Uint512, r c_type.Uint256) []byte {
 	key := append(pkrPrefix, pk[:]...)
 	key = append(key, r[:]...)
 	return key
 }
 
-func txReceiptIndex(txHash keys.Uint256) []byte {
+func txReceiptIndex(txHash c_type.Uint256) []byte {
 	return append(txReceiptPrefix, txHash[:]...)
 }
 
 func blockIndex(num uint64) []byte {
-	return append(blockPrefix,encodeNumber(num)...)
+	return append(blockPrefix, encodeNumber(num)...)
 }
 
-func nilKey(nil keys.Uint256) []byte {
+func nilKey(nil c_type.Uint256) []byte {
 	return append(nilPrefix, nil[:]...)
 }
 
-func rootKey(root keys.Uint256) []byte {
+func rootKey(root c_type.Uint256) []byte {
 	return append(rootPrefix, root[:]...)
 }
 
 type PkKey struct {
-	PK  keys.Uint512
+	Pk  c_type.Uint512
 	Num uint64
 }
 
 type pkrAndIndex struct {
-	pkr   keys.PKr
+	pkr   c_type.PKr
 	index uint64
 }
 
-func nilToRootKey(nil keys.Uint256) []byte {
+func nilToRootKey(nil c_type.Uint256) []byte {
 	return append(nilRootPrefix, nil[:]...)
 }
 
-func penddingTxKey(pk keys.Uint512, hash keys.Uint256) []byte {
+func penddingTxKey(pk c_type.Uint512, hash c_type.Uint256) []byte {
 	key := append(peddingTxPrefix, pk[:]...)
 	return append(key, hash[:]...)
 }

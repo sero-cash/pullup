@@ -3,10 +3,10 @@ package app
 //config
 var (
 	version   = "v0.1.8"
-	cleanData = false
+	cleanData = true
 
 	maxUint64  = ^uint64(0)
-	fetchCount = uint64(50000)
+	fetchCount = uint64(500000)
 
 	remoteConfig = ""
 
@@ -26,6 +26,9 @@ var (
 
 	IsDev = false
 	CmdPath = ""
+
+	//default setting
+	useZNum = uint64(1958696)
 )
 
 func SetRemoteConfig(config string)  {

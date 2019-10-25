@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	httptransport "github.com/go-kit/kit/transport/http"
-	"github.com/sero-cash/go-czero-import/cpt"
+	"github.com/sero-cash/go-czero-import/superzk"
 	"github.com/sero-cash/go-sero/pullup/app"
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
@@ -28,9 +28,9 @@ var (
 
 var (
 	// for Asia
-	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.7/node.json"
+	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.8/node.json"
 	// for global
-	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/clients/pullup/v0.1.7/node.json"
+	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.8/node-global.json"
 
 	//crossOrigin
 	crossOrigin = "http://pullup.sero.cash"
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	//init Zero import
-	cpt.ZeroInit_OnlyInOuts()
+	superzk.ZeroInit_OnlyInOuts()
 	logex.Info("ZeroInit_OnlyInOuts successful! ")
 
 	if l == "zh"{
