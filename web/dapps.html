@@ -88,7 +88,7 @@
 
 <script src="assets/js/bignumber.js"></script>
 <script src="assets/js/common.js"></script>
-<script src="assets/js/dapps.js?v"></script>
+<script src="assets/js/dapps.js?v0.1.8"></script>
 
 <script>
     $('.header').load('header.html');
@@ -100,6 +100,11 @@
     Common.app = DApps;
 
     Common.init();
+
+    var refer = document.referrer;
+    if(){
+        Common.postPullupRpc()
+    }
 
     $("#form1").submit(function (event) {
         const f = $(this);
