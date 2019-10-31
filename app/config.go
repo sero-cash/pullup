@@ -2,7 +2,7 @@ package app
 
 //config
 var (
-	version   = "v0.1.8"
+	version   = "v0.1.9"
 	cleanData = true
 
 	maxUint64  = ^uint64(0)
