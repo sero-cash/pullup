@@ -27,16 +27,16 @@ var Common = {
 
                 that.getLang();
             });
-        }, 100)
+        }, 100);
     },
 
     convertErrors: function (err) {
         var s = err;
         if (err.indexOf("could not decrypt key with given passphrase") > -1) {
             s = $.i18n.prop('convert_error_password');
-        }else if (err.indexOf("no enough unlocked utxos") > -1) {
+        } else if (err.indexOf("no enough unlocked utxos") > -1) {
             s = $.i18n.prop('convert_error_utxo');
-        }else if (err.indexOf("stx Verify error") > -1) {
+        } else if (err.indexOf("stx Verify error") > -1) {
             s = $.i18n.prop('convert_error_verifytx');
         }
         return s

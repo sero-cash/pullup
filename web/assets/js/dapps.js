@@ -37,7 +37,6 @@ var DApps = {
         });
         $('.toast').toast({animation: true, autohide: true, delay: 2000})
         this.genPageData();
-
     },
 
     dapps_en_US: [
@@ -78,6 +77,15 @@ var DApps = {
             "state": 1
         },
         {
+            img: "./assets/img/sanguo.png",
+            title: "超零三国-无限穿越",
+            desc: "抽卡功能已上线！人物全服唯一，是属于你的数字资产，可交易，可赚钱！ 后续马上推出游历闯关、红颜约会、武将养成、养马、三国杀等丰富玩法！  超零平台第一款真正意义上的游戏",
+            author: "盘古",
+            url: "http://122.112.190.100/www/slg/slg.html",
+            showTips: true,
+            state: 1,
+        },
+        {
             img: "./assets/img/bluna.jpeg",
             title: "Bluna",
             desc: "Bluna is a distributed ultra-clear streaming media project initiated by BlunaLabs, which mainly serves the transmission protocols of 4k and 8k in the distributed field in the future. At present, Bluna has reached an agreement with a number of media companies, the number of studios reached 2,000.",
@@ -85,16 +93,7 @@ var DApps = {
             url: "",
             showTips: true,
             state: 0,
-        },
-        {
-            img: "./assets/img/sanguo.png",
-            title: "超零三国-无限穿越",
-            desc: "",
-            author: "盘古",
-            url: "",
-            showTips: true,
-            state: 0,
-        },
+        }
     ],
     dapps_zh_CN: [
         {
@@ -133,19 +132,19 @@ var DApps = {
             "state": 1
         },
         {
+            img: "./assets/img/sanguo.png",
+            title: "超零三国-无限穿越",
+            desc: "抽卡功能已上线！人物全服唯一，是属于你的数字资产，可交易，可赚钱！ 后续马上推出游历闯关、红颜约会、武将养成、养马、三国杀等丰富玩法！  超零平台第一款真正意义上的游戏",
+            author: "盘古",
+            url: "http://122.112.190.100/www/slg/slg.html",
+            showTips: true,
+            state: 1,
+        },
+        {
             img: "./assets/img/bluna.jpeg",
             title: "Bluna",
             desc: "Bluna是由BlunaLabs发起的分布式超清流媒体项目，主要服务于今后4k,8k在分布式领域的传输协议。目前Bluna已经于多家媒体公司达成协议，工作室人数达到至2000人。",
             author: "bluna",
-            url: "",
-            showTips: true,
-            state: 0,
-        },
-        {
-            img: "./assets/img/sanguo.png",
-            title: "超零三国-无限穿越",
-            desc: "",
-            author: "盘古",
             url: "",
             showTips: true,
             state: 0,

@@ -206,12 +206,16 @@ func (self *SEROLight) SyncOut() {
 
 func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start, end uint64) (rtn fetchReturn, err error) {
 
-	logex.Info(account.pk,start,end)
+	logex.Info(account.pk, start, end)
 	pkrTypeMap, currentPkrsMap, pkrs := self.genPkrs(pkrIndex, account)
 
 	param := []interface{}{pkrs, start}
 	if end != 0 {
-		param = append(param, end)
+		currentPkr := []string{}
+		for pkr := range currentPkrsMap {
+			currentPkr = append(currentPkr, base58.Encode(pkr[:]))
+		}
+		param = []interface{}{currentPkr, start, end}
 	} else {
 		param = []interface{}{pkrs, start, nil}
 	}
@@ -496,12 +500,12 @@ func (self *SEROLight) CheckNil() {
 			continue
 		}
 	}
-	if len(Nils) >0 {
+	if len(Nils) > 0 {
 		self.rpcCheckNil(Nils)
 	}
 }
 
-func (self *SEROLight) rpcCheckNil(Nils []string)  {
+func (self *SEROLight) rpcCheckNil(Nils []string) {
 	sync := Sync{RpcHost: GetRpcHost(), Method: "light_checkNil", Params: []interface{}{Nils}}
 	jsonResp, err := sync.Do()
 	if err != nil {
@@ -797,6 +801,9 @@ func (self *SEROLight) needSzk(param *txtool.GTxParam) {
 	data, err := self.db.Get(remoteNumKey)
 	if err == nil {
 		num := decodeNumber(data[:])
+		if IsDev {
+			useZNum = uint64(100)
+		}
 		if num >= useZNum {
 			param.Z = &need_szk
 		}
@@ -828,9 +835,9 @@ func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string,
 		batch.Put(indexTxKey(*pk, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
 		batch.Put(txHashKey(txInfo.TxHash[:]), txData)
 		batch.Write()
-	}else{
-		fmt.Println("storePeddingUtxo err1: ",err1)
-		fmt.Println("storePeddingUtxo err2: ",err1)
+	} else {
+		fmt.Println("storePeddingUtxo err1: ", err1)
+		fmt.Println("storePeddingUtxo err2: ", err1)
 	}
 }
 
@@ -1129,7 +1136,7 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	}
 
 	utxoIn := Utxo{Pkr: votePkr, Root: hash, TxHash: hash, Fee: *fee}
-	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk,25000,*gasprice)
+	self.storePeddingUtxo(param, "SERO", amount, utxoIn, ac.pk, 25000, *gasprice)
 	ac.isChanged = true
 
 	return hash, nil
