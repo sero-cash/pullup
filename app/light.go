@@ -772,11 +772,11 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	preTxParam.Receptions = []prepare.Reception{reception}
 
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
 
 	if err != nil {
 		return hash, err
 	}
+	self.needSzk(param)
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 
 	gtx, err := flight.SignTx(&sk, param)
@@ -905,12 +905,11 @@ func (self *SEROLight) registerStakePool(from, vote, passwd string, feeRate uint
 	preTxParam.Cmds = prepare.Cmds{RegistPool: &registerPool}
 
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
 
 	if err != nil {
 		return hash, err
 	}
-
+	self.needSzk(param)
 	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 
@@ -986,12 +985,11 @@ func (self *SEROLight) modifyStakePool(from, vote, passwd, idPkrStr string, feeR
 	preTxParam.Cmds = prepare.Cmds{RegistPool: &registerPool}
 
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
 
 	if err != nil {
 		return hash, err
 	}
-
+	self.needSzk(param)
 	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 
@@ -1116,11 +1114,11 @@ func (self *SEROLight) buyShare(from, vote, passwd, pool string, amount, gaspric
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
 	preTxParam.Cmds = prepare.Cmds{BuyShare: &buyShareCmd}
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
 
 	if err != nil {
 		return hash, err
 	}
+	self.needSzk(param)
 	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 
@@ -1263,11 +1261,10 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	}
 
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
-
 	if err != nil {
 		return txHash, err
 	}
+	self.needSzk(param)
 	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 	gtx, err := flight.SignTx(&sk, param)
@@ -1380,10 +1377,11 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	}
 
 	param, err := self.GenTx(preTxParam)
-	self.needSzk(param)
+
 	if err != nil {
 		return txHash, err
 	}
+	self.needSzk(param)
 	//sk := c_superzk.Seed2Sk(seed.SeedToUint256())
 	sk := superzk.Seed2Sk(seed.SeedToUint256(), ac.version)
 	gtx, err := flight.SignTx(&sk, param)
