@@ -285,7 +285,7 @@ func (self *SEROLight) createPkrHash(tk *c_type.Tk, index uint64) (*c_type.PKr, 
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Println("hashPkr: ", base58.Encode(pkr[:]))
+	logex.Infof("createPkrHash , index = %d , hashPkr: %s",index, base58.Encode(pkr[:]))
 
 	return &pkr, nil
 }

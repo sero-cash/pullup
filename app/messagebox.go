@@ -13,8 +13,9 @@ import (
 )
 
 func enterPassword(title string) (password string) {
-	password,err :=executeWebview("password", "-t", title, "-b", "Confirm")
-	if err !=nil{
+	password, err := executeWebview("password", "-t", title, "-b", "Confirm")
+	if err != nil {
+		logex.Error("executeWebview err: ", err.Error())
 		return ""
 	}
 	return password
@@ -23,7 +24,7 @@ func enterPassword(title string) (password string) {
 func executeWebview(method string, args ...string) (string, error) {
 	var err error
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if CmdPath != ""{
+	if CmdPath != "" {
 		dir = CmdPath
 	}
 	if err != nil {
@@ -55,8 +56,8 @@ func executeWebview(method string, args ...string) (string, error) {
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			fmt.Println("exec popu window err: ",err)
-			return "",err
+			fmt.Println("exec popu window err: ", err)
+			return "", err
 		}
 		cmd.Start()
 		reader := bufio.NewReader(stdout)
