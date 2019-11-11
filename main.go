@@ -28,9 +28,9 @@ var (
 
 var (
 	// for Asia
-	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.9/node.json"
+	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.10/node.json"
 	// for global
-	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.9/node-global.json"
+	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.10/node-global.json"
 
 	//crossOrigin
 	crossOrigin = "http://pullup.sero.cash"
