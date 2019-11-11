@@ -8,6 +8,10 @@ var DApps = {
 
     },
 
+    goBrowser(url){
+        window.location.href = "./browser.html?dapp_url="+encodeURIComponent(url);
+    },
+
     loadProperties: function (lang) {
         jQuery.i18n.properties({
             name: 'lang', // 资源文件名称
@@ -17,10 +21,10 @@ var DApps = {
             cache: false,
             encoding: 'UTF-8',
             callback: function () {
-                $('.navbar-nav li:eq(0) a').text($.i18n.prop('navbar_home'));
-                $('.navbar-nav li:eq(1) a').text($.i18n.prop('navbar_send'));
-                $('.navbar-nav li:eq(2) a').text($.i18n.prop('navbar_stake'));
-                $('.navbar-nav li:eq(3) a').text($.i18n.prop('navbar_dapps'));
+                $('.navbar-nav li:eq(0) a span').text($.i18n.prop('navbar_home'));
+                $('.navbar-nav li:eq(1) a span').text($.i18n.prop('navbar_send'));
+                $('.navbar-nav li:eq(2) a span').text($.i18n.prop('navbar_stake'));
+                $('.navbar-nav li:eq(3) a span').text($.i18n.prop('navbar_dapps'));
 
                 $('#myModal .modal-title').text($.i18n.prop('dapps_modal_title'));
                 $('#myModal .modal-body p').text($.i18n.prop('dapps_modal_body'));
@@ -285,7 +289,7 @@ var DApps = {
             $('.dapp-name').text(dappName);
             $('#myModal').modal('show');
             $('.modal-footer button:eq(1)').unbind('click').bind('click', function () {
-                window.location.href = dappUrl;
+                that.goBrowser(dappUrl);
             });
         });
 

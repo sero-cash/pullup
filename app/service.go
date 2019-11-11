@@ -41,7 +41,7 @@ type Service interface {
 	TXNum(pkStr string) map[string]uint64
 	TXList(pkStr string, request transport.PageRequest) (utxosResp, error)
 
-	Transfer(from, to, currency, amount, gasPrice, pwd string) (hash c_type.Uint256, err error)
+	Transfer(tx transferReq, pwd string) (hash string, err error)
 	GetDecimal(currency string) uint64
 
 	registerStakePool(from, vote, passwd string, feeRate uint32) (txHash string, err error)
@@ -283,33 +283,50 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 	return
 }
 
-func (s *ServiceApi) Transfer(from, to, currency, amountStr, gasPriceStr, password string) (hash c_type.Uint256, err error) {
+func (s *ServiceApi) Transfer(tx transferReq , password string) (hash string ,err error) {
 
-	amount, err := NewBigIntFromString(amountStr, 10)
-	if err != nil {
-		return hash, err
-	} else {
-		if amount.Sign() < 0 {
-			return hash, fmt.Errorf("amount < 0")
+	//contract execute
+	if tx.Data != ""{
+		hashStr, err := s.SL.ExecuteContractTx(ContractTxReq{
+			From:tx.From,
+			To :tx.To,
+			Value:tx.Amount,
+			GasPrice:tx.GasPrice,
+			Gas:tx.Gas,
+			Currency:tx.Currency,
+			Data:tx.Data,
+		},password)
+		if err != nil {
+			return hash, err
 		}
-	}
+		return hashStr, nil
+	}else{
+		amount, err := NewBigIntFromString(tx.Amount, 10)
+		if err != nil {
+			return hash, err
+		} else {
+			if amount.Sign() < 0 {
+				return hash, fmt.Errorf("amount < 0")
+			}
+		}
+		gasPrice, err := NewBigIntFromString(tx.GasPrice, 10)
+		if err != nil {
+			return hash, err
+		} else {
+			if gasPrice.Sign() < 0 {
+				return hash, fmt.Errorf("gasPrice < 0")
+			}
+		}
+		if toBytes := base58.Decode(tx.To); len(toBytes) != 96 {
+			return hash, fmt.Errorf("Invalid colleaction address ")
+		}
+		h, err := s.SL.commitTx(tx.From,tx.To,tx.Currency, password, amount, gasPrice)
 
-	gasPrice, err := NewBigIntFromString(gasPriceStr, 10)
-	if err != nil {
-		return hash, err
-	} else {
-		if gasPrice.Sign() < 0 {
-			return hash, fmt.Errorf("gasPrice < 0")
+		if err != nil {
+			return hash, err
 		}
+		return hexutil.Encode(h[:]), nil
 	}
-	if toBytes := base58.Decode(to); len(toBytes) != 96 {
-		return hash, fmt.Errorf("Invalid colleaction address ")
-	}
-	h, err := s.SL.commitTx(from, to, currency, password, amount, gasPrice)
-	if err != nil {
-		return hash, err
-	}
-	return h, nil
 }
 
 func (s *ServiceApi) TXNum(pkStr string) map[string]uint64 {

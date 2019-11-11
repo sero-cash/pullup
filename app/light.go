@@ -1247,6 +1247,7 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	if err != nil {
 		return txHash, err
 	}
+	data,_ := hexutil.Decode(ctq.Data)
 
 	fee := big.NewInt(0).Mul(gas, gasPrice)
 	preTxParam := prepare.PreTxParam{}
@@ -1256,7 +1257,7 @@ func (self *SEROLight) DeployContractTx(ctq ContractTxReq, password string) (txH
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
 	preTxParam.Cmds = prepare.Cmds{
 		Contract: &stx.ContractCmd{
-			Data: ctq.Data,
+			Data: data,
 			Asset: assets.Asset{
 				Tkn: &assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*amount)},
 			},
@@ -1363,15 +1364,18 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	if ctq.Currency != "" {
 		cy = ctq.Currency
 	}
+	data,_ := hexutil.Decode(ctq.Data)
+
 	fee := big.NewInt(0).Mul(gas, gasPrice)
 	preTxParam := prepare.PreTxParam{}
 	preTxParam.From = *ac.pk
 	preTxParam.RefundTo = RefundTo
 	preTxParam.GasPrice = gasPrice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
+
 	preTxParam.Cmds = prepare.Cmds{
 		Contract: &stx.ContractCmd{
-			Data: ctq.Data,
+			Data: data,
 			To:   &toPkr,
 			Asset: assets.Asset{
 				Tkn: &assets.Token{Currency: utils.CurrencyToUint256(cy), Value: utils.U256(*amount)},
@@ -1446,7 +1450,7 @@ type ContractTxReq struct {
 	GasPrice string        `json:"gas_price"`
 	Gas      string        `json:"gas"`
 	Currency string        `json:"cy"`
-	Data     hexutil.Bytes `json:"data"`
+	Data     string `json:"data"`
 	Token    TokenReq      `json:"token"`
 }
 

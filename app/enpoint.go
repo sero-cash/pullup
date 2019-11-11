@@ -276,13 +276,13 @@ func MakeTxSendEndpoint(service Service) endpoint.Endpoint {
 		transferReq := transferReq{}
 		utils.Convert(req.Biz, &transferReq)
 
-		password := enterPassword("Send Transfer")
-		if password == "" {
-			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
-			return response, nil
-		}
+		//password := enterPassword("Send Transfer")
+		//if password == "" {
+		//	response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
+		//	return response, nil
+		//}
 
-		hash, err := service.Transfer(transferReq.From, transferReq.To, transferReq.Currency, transferReq.Amount, transferReq.GasPrice, password)
+		hash, err := service.Transfer(transferReq, transferReq.Password)
 		if err != nil {
 			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
 			return response, nil
@@ -297,8 +297,10 @@ type transferReq struct {
 	To       string
 	Currency string
 	Amount   string
+	Gas      string
 	GasPrice string
 	Password string
+	Data     string
 }
 
 func MakeDataPathEndpoint(service Service) endpoint.Endpoint {
@@ -397,7 +399,8 @@ func MakeCloseShareEndpoint(service Service) endpoint.Endpoint {
 		regO := closeStakeReq{}
 		utils.Convert(req.Biz, &regO)
 
-		password := enterPassword("Close Stake Node")
+		//password := enterPassword("Close Stake Node")
+		password := regO.Password
 		if password == "" {
 			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
 			return response, nil
@@ -428,7 +431,9 @@ func MakeRegisterShareEndpoint(service Service) endpoint.Endpoint {
 
 		regO := registerReq{}
 		utils.Convert(req.Biz, &regO)
-		password := enterPassword("Register or Update Stake Node")
+
+		//password := enterPassword("Register or Update Stake Node")
+		password := regO.Password
 		if password == "" {
 			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
 			return response, nil
@@ -485,7 +490,8 @@ func MakeBuyShareEndpoint(service Service) endpoint.Endpoint {
 
 		regO := buyShareReq{}
 		utils.Convert(req.Biz, &regO)
-		password := enterPassword("Buy Share")
+		//password := enterPassword("Buy Share")
+		password := regO.Password
 		if password == "" {
 			response.SetBaseResponse(errorcode.FAIL_CODE, "Please Enter account password.")
 			return response, nil

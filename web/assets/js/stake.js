@@ -149,7 +149,7 @@ var StakeHome = {
                 $('#modifyModal label:eq(0)').text($.i18n.prop('stake_register_from'));
                 $('#modifyModal label:eq(1)').text($.i18n.prop('stake_register_address'));
                 $('#modifyModal label:eq(2)').text($.i18n.prop('stake_register_fee'));
-                // $('#modifyModal label:eq(3)').text($.i18n.prop('stake_register_password'));
+                $('#modifyModal label:eq(3)').text($.i18n.prop('stake_register_password'));
 
                 $('#modifyModal button:eq(1)').text($.i18n.prop('send_tx_cancel'));
                 $('#modifyModal button:eq(2)').text($.i18n.prop('send_tx_confirm'));
@@ -167,34 +167,32 @@ var StakeHome = {
 
         $('#myModal button:eq(2)').unbind('click').bind('click',function(){
             $(this).attr('disabled',true).text($.i18n.prop('send_tx_sending'));
-            // var password = $('#password').val();
-            // if (!password){
-            //     $('#toast2 div').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
-            //     $('#toast2').toast('show');
-            //     $(this).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
-            // }else{
-            //
-            // }
+            var password = $('#password').val();
+            if (!password){
+                $('#toast2 div').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
+                $('#toast2').toast('show');
+                $(this).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+            }else{
+                var biz = {};
+                biz.From = pk;
+                biz.IdPkr = idPkr;
+                var that = this;
+                Common.postAsync('stake/close',biz,{},function (res) {
+                    if(res.base.code === 'SUCCESS'){
+                        $(that).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+                        $('#toast2 div').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                        $('#toast2').toast('show');
+                        setTimeout(function () {
+                            window.location.href = 'account-detail.html?pk='+pk;
+                        }, 1500);
+                    }else{
+                        $('#toast2 div').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
+                        $('#toast2').toast('show');
+                        $(that).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+                    }
 
-            var biz = {};
-            biz.From = pk;
-            biz.IdPkr = idPkr;
-            var that = this;
-            Common.postAsync('stake/close',biz,{},function (res) {
-                if(res.base.code === 'SUCCESS'){
-                    $(that).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
-                    $('#toast2 div').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
-                    $('#toast2').toast('show');
-                    setTimeout(function () {
-                        window.location.href = 'account-detail.html?pk='+pk;
-                    }, 1500);
-                }else{
-                    $('#toast2 div').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
-                    $('#toast2').toast('show');
-                    $(that).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
-                }
-
-            })
+                })
+            }
         });
     },
 
@@ -215,39 +213,37 @@ var StakeHome = {
         var idPkr = $('#idPkr').val();
         var feeRate = $("#feeRate").val();
 
-        // var password = $('#passwordModify').val();
-        // if (!password){
-        //     $('#toastModifyStake div').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
-        //     $('#toastModifyStake').toast('show');
-        //     $(this).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
-        // }else {
-        //
-        // }
-
-        var biz = {
-            From: from,
-            Vote: vote,
-            FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
-            Type: "modify",
-            IdPkr: idPkr,
-        }
-        Common.postAsync('stake/register', biz, {}, function (res) {
-            if (res.base.code === 'SUCCESS') {
-                $('#toastModifyStake div').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
-                $('#toastModifyStake').toast('show');
-
-                $('#toastModifyStake button:eq(2)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                $('#sub1').attr('disabled', false);
-                setTimeout(function () {
-                    window.location.href = 'account-detail.html?pk='+from;
-                }, 1500);
-            } else {
-                $('#toastModifyStake div').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
-                $('#toastModifyStake').toast('show');
-                $('#toastModifyStake button:eq(2)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+        var password = $('#passwordModify').val();
+        if (!password){
+            $('#toastModifyStake div').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
+            $('#toastModifyStake').toast('show');
+            $(this).attr('disabled',false).text($.i18n.prop('send_tx_confirm'));
+        }else {
+            var biz = {
+                From: from,
+                Vote: vote,
+                FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
+                Type: "modify",
+                IdPkr: idPkr,
             }
-            $('#sub1').attr('disabled', false);
-        })
+            Common.postAsync('stake/register', biz, {}, function (res) {
+                if (res.base.code === 'SUCCESS') {
+                    $('#toastModifyStake div').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                    $('#toastModifyStake').toast('show');
+
+                    $('#toastModifyStake button:eq(2)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                    $('#sub1').attr('disabled', false);
+                    setTimeout(function () {
+                        window.location.href = 'account-detail.html?pk='+from;
+                    }, 1500);
+                } else {
+                    $('#toastModifyStake div').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
+                    $('#toastModifyStake').toast('show');
+                    $('#toastModifyStake button:eq(2)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                }
+                $('#sub1').attr('disabled', false);
+            })
+        }
     },
 
     getAccountlist: function () {
@@ -469,8 +465,8 @@ var StakeRegister = {
                 $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('stake_register_address'));
                 $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('stake_register_fee'));
                 $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_amount'));
-                // $('.modal-body ul li:eq(4) div div:eq(0)').text($.i18n.prop('stake_register_password'));
-                // $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
+                $('.modal-body ul li:eq(4) div div:eq(0)').text($.i18n.prop('stake_register_password'));
+                $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
                 $('#sub1').text($.i18n.prop('stake_register_next'));
                 $('#address').attr('placeholder', $.i18n.prop('stake_register_address_tips'));
                 $('#feeRate').attr('placeholder', $.i18n.prop('stake_register_fee_tips'));
@@ -532,33 +528,42 @@ var StakeRegister = {
         $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
-            if(vote === ''){
-                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_register_address_tips'));
+            var password = $('#password').val();
+            if (!password){
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
                 $('.toast').toast('show');
+                $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
             }else{
-                $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
-                var biz = {
-                    From: from,
-                    Vote: vote,
-                    FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
-                }
-                Common.postAsync('stake/register', biz, {}, function (res) {
-                    if (res.base.code === 'SUCCESS') {
-                        $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
-                        $('.toast').toast('show');
-
-                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                        $('#sub1').attr('disabled', false);
-                        setTimeout(function () {
-                            window.location.href = 'account-detail.html?pk='+from;
-                        }, 1500);
-                    } else {
-                        $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
-                        $('.toast').toast('show');
-                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                if(vote === ''){
+                    $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_register_address_tips'));
+                    $('.toast').toast('show');
+                }else{
+                    $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
+                    var biz = {
+                        From: from,
+                        Vote: vote,
+                        FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
+                        Password:password,
                     }
-                })
+                    Common.postAsync('stake/register', biz, {}, function (res) {
+                        if (res.base.code === 'SUCCESS') {
+                            $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                            $('.toast').toast('show');
+
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                            $('#sub1').attr('disabled', false);
+                            setTimeout(function () {
+                                window.location.href = 'account-detail.html?pk='+from;
+                            }, 1500);
+                        } else {
+                            $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
+                            $('.toast').toast('show');
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                        }
+                    })
+                }
             }
+
 
         });
     }
@@ -627,8 +632,8 @@ var StakeBuyer = {
                 $('.modal-body ul li:eq(1) div div:eq(0)').text($.i18n.prop('share_buy_from'));
                 // $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('share_buy_address'));
                 $('.modal-body ul li:eq(2) div div:eq(0)').text($.i18n.prop('share_buy_amount'));
-                // $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_password'));
-                // $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
+                $('.modal-body ul li:eq(3) div div:eq(0)').text($.i18n.prop('stake_register_password'));
+                $('#password').attr('placeholder', $.i18n.prop('stake_register_password_place'));
                 $('#sub1').text($.i18n.prop('stake_register_next'));
 
                 $('.modal-footer button:eq(0)').text($.i18n.prop('stake_register_cancel'));
@@ -728,36 +733,45 @@ var StakeBuyer = {
         $('#myModal').modal({backdrop: 'static', keyboard: false});
 
         $('.modal-footer button:eq(1)').bind('click', function () {
-            var estimateShares = parseInt($('.estimateShares strong:eq(1)').text());
-
-            if(estimateShares === 0){
-                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('share_buy_amount_fail'));
+            var password = $('#password').val();
+            if (!password){
+                $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('stake_pool_password_place'));
                 $('.toast').toast('show');
+                $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
             }else{
-                $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
-                var biz = {
-                    From: from,
-                    Vote: vote,
-                    Amount: new BigNumber(amount).multipliedBy(Common.baseDecimal).toString(10),
-                    Pool: poolId,
-                    GasPrice: new BigNumber(1000000000).toString(10),
-                }
-                Common.postAsync('stake/buyShare', biz, {}, function (res) {
-                    if (res.base.code === 'SUCCESS') {
-                        $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
-                        $('.toast').toast('show');
-                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
-                        $('#sub1').attr('disabled', false);
-                        setTimeout(function () {
-                            window.location.href = 'account-detail.html?pk='+from;
-                        }, 1500);
-                    } else {
-                        $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
-                        $('.toast').toast('show');
-                        $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                var estimateShares = parseInt($('.estimateShares strong:eq(1)').text());
+
+                if(estimateShares === 0){
+                    $('.toast-body').removeClass('alert-success').addClass('alert-danger').text($.i18n.prop('share_buy_amount_fail'));
+                    $('.toast').toast('show');
+                }else{
+                    $('.modal-footer button:eq(1)').attr('disabled', true).text($.i18n.prop('send_tx_sending'));
+                    var biz = {
+                        From: from,
+                        Vote: vote,
+                        Amount: new BigNumber(amount).multipliedBy(Common.baseDecimal).toString(10),
+                        Pool: poolId,
+                        GasPrice: new BigNumber(1000000000).toString(10),
+                        Password:password,
                     }
-                })
+                    Common.postAsync('stake/buyShare', biz, {}, function (res) {
+                        if (res.base.code === 'SUCCESS') {
+                            $('.toast-body').removeClass('alert-danger').addClass('alert-success').text($.i18n.prop('send_tx_success'));
+                            $('.toast').toast('show');
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                            $('#sub1').attr('disabled', false);
+                            setTimeout(function () {
+                                window.location.href = 'account-detail.html?pk='+from;
+                            }, 1500);
+                        } else {
+                            $('.toast-body').removeClass('alert-success').addClass('alert-danger').text(Common.convertErrors(res.base.desc));
+                            $('.toast').toast('show');
+                            $('.modal-footer button:eq(1)').attr('disabled', false).text($.i18n.prop('send_tx_confirm'));
+                        }
+                    })
+                }
             }
+
         });
     }
 

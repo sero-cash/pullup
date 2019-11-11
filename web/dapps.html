@@ -9,19 +9,40 @@
     <title>DApps - SERO</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-
 </head>
 
 <body id="page-top">
 <div id="wrapper">
+    <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0 toggled">
+        <div class="container-fluid d-flex flex-column p-0">
+            <a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
+                <div class="sidebar-brand-icon rotate-n-15"><img src="icon.png" width="48px"></div>
+                <div class="sidebar-brand-text mx-3"><span>PULLUP</span></div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <ul class="nav navbar-nav text-light" id="accordionSidebar">
+                <li class="nav-item" role="presentation"><a class="nav-link" href="index.html"><i class="fas fa-home"></i><span>Home</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="transfer.html"><i class="fas fa-exchange-alt"></i><span>Send</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="stake.html"><i class="fab fa-stack-exchange"></i><span>Stake</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="dapps.html"><i class="fab fa-app-store"></i><span>DApps</span></a></li>
+            </ul>
+        </div>
+    </nav>
     <div class="d-flex flex-column" id="content-wrapper">
         <div id="content">
-            <div class="header">
-            </div>
-            <div class="container-fluid" style="margin-top: 100px;">
-                <div class="d-sm-flex justify-content-between align-items-center mb-4 add-dapp">
-                    <h3 class="text-dark mb-0">Dapps</h3><button class="btn btn-primary" onclick="DApps.showAddModal()"><i class="fas fa-plus text-uppercase"></i></button>
+            <nav class="navbar navbar-light navbar-expand bg-white shadow mb-4 topbar static-top">
+                <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
+                    <form id="form3" class="form-inline d-none d-sm-inline-block mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                        <div class="input-group"><input type="text" class="bg-light form-control border-0 small" id="dappUrl" placeholder="http://" />
+                            <div class="input-group-append"><button class="btn btn-primary py-0" type="button" onclick="goDApp()"><i class="fas fa-search"></i></button></div>
+                        </div>
+                    </form>
+                    <div class="d-none d-sm-block topbar-divider"></div>
+                    <div class="d-none d-lg-inline text-dark mr-2 language" style="padding: 5px;">English</div>
                 </div>
+            </nav>
+
+            <div class="container-fluid">
                 <div class="row small dapp-data">
                 </div>
             </div>
@@ -79,13 +100,11 @@
     </div>
 </div>
 
-
 <script src="assets/plugin/jquery.min.js"></script>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
 <script src="assets/js/theme.js"></script>
 <script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
 <script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
-
 <script src="assets/js/bignumber.js"></script>
 <script src="assets/js/common.js"></script>
 <script src="assets/js/dapps.js?v0.1.8"></script>
@@ -98,21 +117,26 @@
     },5);
 
     Common.app = DApps;
-
     Common.init();
 
-    $("#form1").submit(function (event) {
-        const f = $(this);
-        event.preventDefault()
-        event.stopPropagation()
-        f.addClass("was-validated")
-        if (f[0].checkValidity() === true) {
-            $('#sub1').attr('disabled', true);
-            setTimeout(function () {
-                DApps.addDapp();
-            }, 10);
-        }
+    function goDApp() {
+        var dappUrl = $("#dappUrl").val();
+        DApps.goBrowser(dappUrl);
+    }
+
+    $('#form3').submit(function (event) {
+        event.preventDefault();
+        event.stopPropagation();
     })
+    //
+    $('#dappUrl').unbind('keyup').bind('keyup', function(event) {
+        console.log("event.keyCode: ",event.keyCode);
+        if (event.keyCode == "13") {
+            goDApp();
+        }
+    });
+
+
 </script>
 
 </body>

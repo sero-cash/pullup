@@ -98,6 +98,10 @@ func main() {
 	}else {
 		logex.Fatal("location not set")
 	}
+
+	if app.IsDev{
+		crossOrigin = "*"
+	}
 	// init sero light client
 	app.NewSeroLight()
 	logex.Info("NewSeroLight successful! ")
