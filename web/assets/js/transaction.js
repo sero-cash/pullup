@@ -290,6 +290,7 @@ var Transaction = {
                         Currency: currency,
                         Amount: amount.toString(10),
                         GasPrice: gasprice.toString(10),
+                        Password:password,
                     }
                     Common.postAsync('tx/transfer', biz, {}, function (res) {
                         if (res.base.code === 'SUCCESS') {

@@ -156,6 +156,7 @@ var StakeHome = {
 
                 $('.closeNode').text($.i18n.prop('stake_pool_close'));
                 $('.modifyNode').text($.i18n.prop('stake_pool_modify'));
+
             }
         });
     },
@@ -176,6 +177,8 @@ var StakeHome = {
                 var biz = {};
                 biz.From = pk;
                 biz.IdPkr = idPkr;
+                biz.Password=password;
+
                 var that = this;
                 Common.postAsync('stake/close',biz,{},function (res) {
                     if(res.base.code === 'SUCCESS'){
@@ -225,6 +228,7 @@ var StakeHome = {
                 FeeRate: new BigNumber(feeRate).multipliedBy(100).toString(10),
                 Type: "modify",
                 IdPkr: idPkr,
+                Password:password,
             }
             Common.postAsync('stake/register', biz, {}, function (res) {
                 if (res.base.code === 'SUCCESS') {

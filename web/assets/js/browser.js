@@ -15,6 +15,7 @@ var Browser = {
 
     init: function () {
         var that = this;
+
         window.addEventListener("message", function () {
             if (event !== undefined && event.data) {
                 var msg = event.data;
@@ -271,6 +272,16 @@ var Browser = {
                 $('.navbar-nav li:eq(1) a span').text($.i18n.prop('navbar_send'));
                 $('.navbar-nav li:eq(2) a span').text($.i18n.prop('navbar_stake'));
                 $('.navbar-nav li:eq(3) a span').text($.i18n.prop('navbar_dapps'));
+
+                $('.modal-title').text($.i18n.prop('send_tx_titlem'));
+                $('.col-lg-3:eq(0)').text($.i18n.prop('send_tx_from'));
+                $('.col-lg-3:eq(1)').text($.i18n.prop('send_tx_to'));
+                $('.col-lg-3:eq(2)').text($.i18n.prop('send_tx_amount'));
+                $('.col-lg-3:eq(4)').text($.i18n.prop('send_tx_fee'));
+                $('#password').attr('placeholder',$.i18n.prop('send_tx_pwdtips'));
+                $('.modal-footer button:eq(0)').text($.i18n.prop('send_tx_cancel'));
+                $('.modal-footer button:eq(1)').text($.i18n.prop('send_tx_confirm'));
+
             }
         });
     },
