@@ -43,9 +43,9 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 	prefix := append(txHashPrefix, pk[:]...)
 	iterator := self.db.NewIteratorWithPrefix(prefix)
 	txMap := map[string]Transaction{}
-	i := uint64(0)
+	//i := uint64(0)
 	for iterator.Next() {
-		i++
+		//i++
 		key := iterator.Key()
 		value := iterator.Value()
 		doutroot := c_type.Uint256{}
@@ -106,7 +106,7 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 					tx.Receipt.BlockHash = txInfo.BlockHash.String()
 					tx.Receipt.BlockNumber = txInfo.Num
 					tx.Receipt.GasUsed=txInfo.GasUsed
-					tx.Timestamp = txInfo.Time.Uint64() + i
+					tx.Timestamp = txInfo.Time.Uint64()
 					tx.Fee = big.NewInt(0).Mul(big.NewInt(int64(txInfo.GasUsed)),&txInfo.GasPrice)
 				}
 				txMap[ukey] = tx
