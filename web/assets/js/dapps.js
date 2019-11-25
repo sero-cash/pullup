@@ -90,6 +90,15 @@ var DApps = {
             state: 1,
         },
         {
+            "img": "http://39.98.58.15/logo.png",
+            "title": "ACES",
+            "desc": "AIPP로 ACES게임에 참여하는것을 환영합니다.",
+            "author": "Tokencan",
+            "url": "http://39.98.58.15",
+            showTips: true,
+            "state": 1
+        },
+        {
             img: "./assets/img/bluna.jpeg",
             title: "Bluna",
             desc: "Bluna is a distributed ultra-clear streaming media project initiated by BlunaLabs, which mainly serves the transmission protocols of 4k and 8k in the distributed field in the future. At present, Bluna has reached an agreement with a number of media companies, the number of studios reached 2,000.",
@@ -143,6 +152,15 @@ var DApps = {
             url: "http://122.112.190.100/www/slg/slg.html",
             showTips: true,
             state: 1,
+        },
+        {
+            "img": "http://39.98.58.15/logo.png",
+            "title": "ACES",
+            "desc": "AIPP로 ACES게임에 참여하는것을 환영합니다.",
+            "author": "Tokencan",
+            "url": "http://39.98.58.15",
+            showTips: true,
+            "state": 1
         },
         {
             img: "./assets/img/bluna.jpeg",
