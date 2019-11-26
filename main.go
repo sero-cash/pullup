@@ -28,9 +28,9 @@ var (
 
 var (
 	// for Asia
-	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.11/node.json"
+	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.12/node.json"
 	// for global
-	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.11/node-global.json"
+	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.12/node-global.json"
 
 	//crossOrigin
 	crossOrigin = "http://pullup.sero.cash"
@@ -42,7 +42,7 @@ func init() {
 	flag.StringVar(&w, "w", "", "set `web url`")
 	flag.BoolVar(&d, "d", false, "set `dev env`")
 	flag.StringVar(&c, "c", "", "set `component path`")
-	flag.StringVar(&l, "l", "zh", "set `location`")
+	flag.StringVar(&l, "l", "en", "set `location`")
 	flag.Usage = usage
 }
 func usage() {
