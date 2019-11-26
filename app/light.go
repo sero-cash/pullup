@@ -798,19 +798,14 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 
 func (self *SEROLight) needSzk(param *txtool.GTxParam) {
 	var need_szk = true
+	var num = uint64(2123559)
+	if IsDev {
+		num = uint64(0)
+	}
 	if param !=nil {
 		param.Z = &need_szk
+		param.Num = &num
 	}
-	//data, err := self.db.Get(remoteNumKey)
-	//if err == nil {
-	//	num := decodeNumber(data[:])
-	//	if IsDev {
-	//		useZNum = uint64(100)
-	//	}
-	//	if num >= useZNum {
-	//		param.Z = &need_szk
-	//	}
-	//}
 }
 
 func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string, amount *big.Int, utxoIn Utxo, pk *c_type.Uint512, gas uint64, gasPrice big.Int) {
@@ -1384,7 +1379,6 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	}
 
 	param, err := self.GenTx(preTxParam)
-
 	if err != nil {
 		return txHash, err
 	}
