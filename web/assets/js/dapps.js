@@ -119,11 +119,11 @@ var DApps = {
             state: 1,
         },
         {
-            img: "./assets/img/asnow.jpeg",
+            img: "http://asnowhero.gitee.io/asnow-pullup/logo.png",
             title: "ASNOW",
             desc: "",
             author: "asnow.com",
-            url: "http://134.175.161.78:8088/v2",
+            url: "http://asnowhero.gitee.io/asnow-pullup/",
             showTips: true,
             state: 1,
         },{

@@ -342,8 +342,8 @@ var Detail = {
                                     `
                                     <tr>
                                         <td>${i + 1}</td>
-                                        <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                        <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
+                                        <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
+                                        <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
                                         <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
@@ -373,8 +373,8 @@ var Detail = {
                                 `
                             <tr>
                                 <td>${i + 1}</td>
-                                <td class="text-info text-break"><a target="_blank" href="https://explorer.web.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                <td><a target="_blank" href="https://explorer.web.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
+                                <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
+                                <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
                                 <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                 <td>${tx.Currency}</td>
                                 <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
