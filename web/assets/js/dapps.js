@@ -58,7 +58,7 @@ var DApps = {
             title: "ASNOW",
             desc: "",
             author: "asnow.com",
-            url: "http://134.175.161.78:8088/v2",
+            url: "http://asnowhero.gitee.io/asnow-pullup/",
             showTips: true,
             state: 1,
         },
@@ -99,6 +99,15 @@ var DApps = {
             "state": 1
         },
         {
+            "img": "./assets/img/TableName.png",
+            "title": "TableGame",
+            "desc": "TableGame是由舍得社区基于SERO开发的智能合约游戏。用户可自行质押SERO创建游戏桌并邀请朋友加入，每局游戏根据大家的幸运数开奖，中奖者可实时提现！祝大家好运！",
+            "author": "TableGame",
+            "url": "http://58.64.184.143:3000/#/",
+            showTips: true,
+            "state": 1
+        },
+        {
             img: "./assets/img/bluna.jpeg",
             title: "Bluna",
             desc: "Bluna is a distributed ultra-clear streaming media project initiated by BlunaLabs, which mainly serves the transmission protocols of 4k and 8k in the distributed field in the future. At present, Bluna has reached an agreement with a number of media companies, the number of studios reached 2,000.",
@@ -119,7 +128,7 @@ var DApps = {
             state: 1,
         },
         {
-            img: "http://asnowhero.gitee.io/asnow-pullup/logo.png",
+            img: "./assets/img/asnow.jpeg",
             title: "ASNOW",
             desc: "",
             author: "asnow.com",
@@ -159,6 +168,15 @@ var DApps = {
             "desc": "AIPP로 ACES게임에 참여하는것을 환영합니다.",
             "author": "Tokencan",
             "url": "http://39.98.58.15",
+            showTips: true,
+            "state": 1
+        },
+        {
+            "img": "./assets/img/TableName.png",
+            "title": "TableGame",
+            "desc": "TableGame是由舍得社区基于SERO开发的智能合约游戏。用户可自行质押SERO创建游戏桌并邀请朋友加入，每局游戏根据大家的幸运数开奖，中奖者可实时提现！祝大家好运！",
+            "author": "TableGame",
+            "url": "http://58.64.184.143:3000/#/",
             showTips: true,
             "state": 1
         },
