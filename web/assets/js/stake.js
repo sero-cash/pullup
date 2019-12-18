@@ -30,6 +30,7 @@ var StakeHome = {
             "0x16a800063ef8345f8441de438d97c8a49bc3373778e45a2f2cd25699be8d2c2b":"抹茶节点",
             "0xfd703f582147e4725a9b3567635dde7e442182c1f28e315360e07692a968183b":"超级节点",
             "0xb688861cf4b0f74509a4a4a0bdcdbe80ec0b5647bfcc41973498c9b8152fce41":"OKEx Pool",
+            "0xce85c13d0942c3118873facf99669d193711bdca77b3de36668fdf29429bd8e5":"追日节点",
         },
         en_US:{
             "0x388b2c9ba68a96bf697602fef9219f64e4ff8aef49815d0aeb56afd2a1276942":"SERO Node (sero.im)",
@@ -56,6 +57,7 @@ var StakeHome = {
             "0x16a800063ef8345f8441de438d97c8a49bc3373778e45a2f2cd25699be8d2c2b":"MXC Node",
             "0xfd703f582147e4725a9b3567635dde7e442182c1f28e315360e07692a968183b":"Super Node",
             "0xb688861cf4b0f74509a4a4a0bdcdbe80ec0b5647bfcc41973498c9b8152fce41":"OKEx Pool",
+            "0xce85c13d0942c3118873facf99669d193711bdca77b3de36668fdf29429bd8e5":"Sun Chase Node",
         }
     },
 
