@@ -523,7 +523,7 @@ func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
 func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
 
 	defaultRpcHost := "http://140.143.83.98:8545"
-	defaultWebHost := "http://129.211.98.114:3006/web/v0_1_6/"
+	defaultWebHost := "http://pullup-github.sero.cash"
 
 	//get remote rpc host
 	resp, err := http.Get(GetRemoteConfig())

@@ -28,12 +28,12 @@ var (
 
 var (
 	// for Asia
-	remoteConfigAsia  = "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.12/node.json"
+	remoteConfigAsia  = "http://sero-cash.gitee.io/pullup/node-asia.json"
 	// for global
-	remoteConfigGlobal  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/pullup/v0.1.12/node-global.json"
+	remoteConfigGlobal  = "http://pullup-github.sero.cash/node-global.json"
 
 	//crossOrigin
-	crossOrigin = "http://pullup.sero.cash"
+	crossOrigin = "http://pullup-github.sero.cash"
 )
 
 func init() {
@@ -91,10 +91,10 @@ func main() {
 
 	if l == "zh"{
 		app.SetRemoteConfig(remoteConfigAsia)
-		crossOrigin = "http://129.211.98.114:3006"
+		crossOrigin = "http://sero-cash.gitee.io/pullup"
 	}else if l == "en"{
 		app.SetRemoteConfig(remoteConfigGlobal)
-		crossOrigin = "http://pullup.sero.cash"
+		crossOrigin = "http://pullup-github.sero.cash"
 	}else {
 		logex.Fatal("location not set")
 	}
