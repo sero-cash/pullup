@@ -89,7 +89,7 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 			} else {
 				tx = Transaction{Type: outType, Hash: douthash, Block: utxo.Num, PK: pk, To: utxo.Pkr, Amount: amount, Currency: utxo.Asset.Tkn.Currency}
 
-				rData, err := self.db.Get(txHashKey(douthash[:]))
+				rData, err := self.db.Get(txHashKey(douthash[:],utxo.Num))
 				if err != nil {
 					if *powReward.HashToUint256() == douthash || *posReward.HashToUint256() == douthash || *posMiner.HashToUint256() == douthash {
 					}else{

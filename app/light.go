@@ -292,7 +292,7 @@ func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start,
 			// index base tx info
 			txInfo := data.TxInfo
 			txData, _ := rlp.EncodeToBytes(txInfo)
-			self.db.Put(txHashKey(txInfo.TxHash[:]), txData)
+			self.db.Put(txHashKey(txInfo.TxHash[:],txInfo.Num), txData)
 		}
 
 		// getBlock RPC
@@ -560,7 +560,7 @@ func (self *SEROLight) rpcCheckNil(Nils []string) {
 
 					txInfo := nilv.TxInfo
 					txData, _ := rlp.EncodeToBytes(txInfo)
-					batch.Put(txHashKey(nilv.TxHash[:]), txData)
+					batch.Put(txHashKey(nilv.TxHash[:],txInfo.Num), txData)
 
 					self.usedFlag.Delete(root)
 				}
@@ -831,7 +831,7 @@ func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string,
 	if err1 == nil && err2 == nil {
 		batch := self.db.NewBatch()
 		batch.Put(indexTxKey(*pk, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
-		batch.Put(txHashKey(txInfo.TxHash[:]), txData)
+		batch.Put(txHashKey(txInfo.TxHash[:],txInfo.Num), txData)
 		batch.Write()
 	} else {
 		fmt.Println("storePeddingUtxo err1: ", err1)

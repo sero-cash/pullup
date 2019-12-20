@@ -63,11 +63,11 @@ var DApps = {
             state: 1,
         },
         {
-            "img": "http://111.231.62.4:8089/vote/v1/vote.jpg",
+            "img": "https://sero-cash.github.io/voter/vote.jpg",
             "title": "Vote",
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
-            "url": "http://111.231.62.4:8089/vote/v1",
+            "url": "https://sero-cash.github.io/voter/",
             showTips: true,
             "state": 1
         },
@@ -136,11 +136,11 @@ var DApps = {
             showTips: true,
             state: 1,
         },{
-            "img": "http://111.231.62.4:8089/vote/v1/vote.jpg",
+            "img": "http://sero-cash.gitee.io/voter/vote.jpg",
             "title": "Vote",
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
-            "url": "http://111.231.62.4:8089/vote/v1",
+            "url": "http://sero-cash.gitee.io/voter/",
             showTips: true,
             "state": 1
         },

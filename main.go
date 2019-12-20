@@ -91,7 +91,7 @@ func main() {
 
 	if l == "zh"{
 		app.SetRemoteConfig(remoteConfigAsia)
-		crossOrigin = "http://sero-cash.gitee.io/pullup"
+		crossOrigin = "http://sero-cash.gitee.io"
 	}else if l == "en"{
 		app.SetRemoteConfig(remoteConfigGlobal)
 		crossOrigin = "http://pullup-github.sero.cash"

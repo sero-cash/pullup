@@ -36,8 +36,9 @@ const (
 	PKR_TYPE_NUM  int8 = 1
 )
 
-func txHashKey(hash []byte) []byte  {
-	return append(hashPrefix,hash[:]...)
+func txHashKey(hash []byte,num uint64) []byte  {
+	var key = append(hashPrefix,hash[:]...);
+	return append(key,encodeNumber(num)...)
 }
 func dappKey(dappId string) []byte {
 	key := append(dappPrefix, dappId[:]...)
