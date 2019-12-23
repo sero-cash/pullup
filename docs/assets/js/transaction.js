@@ -216,14 +216,11 @@ var Transaction = {
             gasprice = new BigNumber(gasprice).multipliedBy(new BigNumber(10).pow(9));
             var fee = gasprice.multipliedBy(25000).dividedBy(Common.baseDecimal);
             var total = amount;
+            // $("#amount").val(amount.dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]))
+            total = total.dividedBy(decimal);
             if (currency === 'SERO'){
                 total = fee.plus(amount)
             }
-
-            // $("#amount").val(amount.dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]))
-
-            total = total.dividedBy(decimal);
-            total = total.plus(fee);
             $('.calculate span:eq(0)').text(fee.toFixed(8));
             $('.calculate span:eq(1)').text(total.toFixed(that.currencyDecimalFix[currency]) + ' ' + currency);
         } else {
