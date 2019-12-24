@@ -67,7 +67,7 @@ var DApps = {
             "title": "Vote",
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
-            "url": "https://sero-cash.github.io/voter/",
+            "url": "https://sero-cash.github.io/voter/v1/",
             showTips: true,
             "state": 1
         },
@@ -140,7 +140,7 @@ var DApps = {
             "title": "Vote",
             "desc": "Support or Oppose, Who can win?",
             "author": "nobody",
-            "url": "http://sero-cash.gitee.io/voter/",
+            "url": "http://sero-cash.gitee.io/voter/v1/",
             showTips: true,
             "state": 1
         },
