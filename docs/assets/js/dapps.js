@@ -108,13 +108,14 @@ var DApps = {
             "state": 1
         },
         {
-            img: "./assets/img/bluna.jpeg",
-            title: "Bluna",
-            desc: "Bluna is a distributed ultra-clear streaming media project initiated by BlunaLabs, which mainly serves the transmission protocols of 4k and 8k in the distributed field in the future. At present, Bluna has reached an agreement with a number of media companies, the number of studios reached 2,000.",
-            author: "bluna",
-            url: "",
+            img: "https://fpsc2019.github.io/fpsc-pullup/logo.png",
+            title: "HAPY",
+            desc: "HAPY는 해피쉐어링 플랫폼내에서 사용할 수 있는 토큰으로서 물품을 구매하거나 투자 상품에 참여하기 위해서 필요한 암호화폐입니다.\n" +
+                "해피쉐어링은 글로벌 공유 커뮤니티입니다. 현재 일본을 주축으로 이미 10만명 규모의 유저들이 활동 중이며 더 많은 유저를 확보하기 위해 중국 베트남 등 글로벌 시장 진출을 준비하고 있습니다.",
+            author: "HAPY",
+            url: "https://fpsc2019.github.io/fpsc-pullup/",
             showTips: true,
-            state: 0,
+            state: 1,
         }
     ],
     dapps_zh_CN: [
@@ -181,13 +182,14 @@ var DApps = {
             "state": 1
         },
         {
-            img: "./assets/img/bluna.jpeg",
-            title: "Bluna",
-            desc: "Bluna是由BlunaLabs发起的分布式超清流媒体项目，主要服务于今后4k,8k在分布式领域的传输协议。目前Bluna已经于多家媒体公司达成协议，工作室人数达到至2000人。",
-            author: "bluna",
-            url: "",
+            img: "https://fpsc2019.gitee.io/fpsc-pullup/logo.png",
+            title: "HAPY",
+            desc: "HAPY는 해피쉐어링 플랫폼내에서 사용할 수 있는 토큰으로서 물품을 구매하거나 투자 상품에 참여하기 위해서 필요한 암호화폐입니다.\n" +
+                "해피쉐어링은 글로벌 공유 커뮤니티입니다. 현재 일본을 주축으로 이미 10만명 규모의 유저들이 활동 중이며 더 많은 유저를 확보하기 위해 중국 베트남 등 글로벌 시장 진출을 준비하고 있습니다.",
+            author: "HAPY",
+            url: "https://fpsc2019.gitee.io/fpsc-pullup/",
             showTips: true,
-            state: 0,
+            state: 1,
         }
     ],
 
