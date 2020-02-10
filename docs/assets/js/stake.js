@@ -32,6 +32,7 @@ var StakeHome = {
             "0xb688861cf4b0f74509a4a4a0bdcdbe80ec0b5647bfcc41973498c9b8152fce41":"OKEx Pool",
             "0xce85c13d0942c3118873facf99669d193711bdca77b3de36668fdf29429bd8e5":"追日节点",
             "0x92af05b6d6c27a73eb8489f100c859cf3167298915cbae7262345e17aee6aa2c":"Bilaxy 节点",
+            "0x7fbbc2f11ac02255b48c8ab534d08a0e2fa134d483794ca9294ad296f8e71df7":"HCOIN",
 
         },
         en_US:{
@@ -61,6 +62,7 @@ var StakeHome = {
             "0xb688861cf4b0f74509a4a4a0bdcdbe80ec0b5647bfcc41973498c9b8152fce41":"OKEx Pool",
             "0xce85c13d0942c3118873facf99669d193711bdca77b3de36668fdf29429bd8e5":"Sun Chase Node",
             "0x92af05b6d6c27a73eb8489f100c859cf3167298915cbae7262345e17aee6aa2c":"Bilaxy Node",
+            "0x7fbbc2f11ac02255b48c8ab534d08a0e2fa134d483794ca9294ad296f8e71df7":"HCOIN",
         }
     },
 

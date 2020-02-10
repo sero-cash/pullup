@@ -155,7 +155,13 @@ var Browser = {
     executeContract: function (data, cb) {
         var that = this;
         if (data) {
-            var fee = new BigNumber(data.gas).multipliedBy(data.gas_price).dividedBy(Common.baseDecimal);
+            var gasPrice = 1000000000;
+            if(data.gas_price){
+                gasPrice = data.gas_price;
+            }else if(data.gasPrice){
+                gasPrice = data.gasPrice;
+            }
+            var fee = new BigNumber(data.gas).multipliedBy(gasPrice).dividedBy(Common.baseDecimal);
             if (data.cy && data.cy !== "SERO") {
                 var biz = {
                     Currency: data.cy,
@@ -189,6 +195,12 @@ var Browser = {
         $(".modal-footer button:eq(1)").text($.i18n.prop('send_tx_sending')).attr('disabled',true);
 
         var password = $('#password').val();
+        var gasPrice = 1000000000;
+        if(data.gas_price){
+            gasPrice = data.gas_price;
+        }else if(data.gasPrice){
+            gasPrice = data.gasPrice;
+        }
         if(!password){
             $('.toast div:eq(0)').text($.i18n.prop('send_tx_pwdtips'));
             $('.toast').toast('show');
@@ -198,7 +210,7 @@ var Browser = {
                 From: data.from,
                 To: data.to,
                 Amount: data.value,
-                GasPrice: data.gas_price,
+                GasPrice: gasPrice,
                 Gas: data.gas,
                 Currency: data.cy,
                 Data: data.data,
