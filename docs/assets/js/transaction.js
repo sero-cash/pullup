@@ -219,7 +219,7 @@ var Transaction = {
             // $("#amount").val(amount.dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]))
             total = total.dividedBy(decimal);
             if (currency === 'SERO'){
-                total = fee.plus(amount)
+                total = fee.plus(total)
             }
             $('.calculate span:eq(0)').text(fee.toFixed(8));
             $('.calculate span:eq(1)').text(total.toFixed(that.currencyDecimalFix[currency]) + ' ' + currency);
