@@ -101,6 +101,13 @@ var Transaction = {
                             var balanceObj = data.Balance;
                             var balanceMap = Object.keys(balanceObj);
                             for (var currency of balanceMap) {
+                                if(that.currencyDecimal && that.currencyDecimal[currency]){
+                                    continue
+                                }
+                                if(currency === 'SERO'){
+                                    that.currencyDecimal[currency]= new BigNumber(10).pow(new BigNumber(18));
+                                    continue
+                                }
                                 Common.post('decimal', {Currency: currency}, {}, function (res) {
                                     var dcm = res.biz;
                                     if(currency === 'SERO'){ dcm = 18}
