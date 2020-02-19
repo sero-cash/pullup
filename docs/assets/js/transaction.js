@@ -143,8 +143,12 @@ var Transaction = {
                         var decimal = that.currencyDecimal[currency];
                         var fix = that.currencyDecimalFix[currency];
                         var balance = new BigNumber(balanceObj[currency]).dividedBy(decimal).toFixed(fix);
-                        $('.currency').append(`<option value="${balance}"} ${j === 0?"selected":""}>${currency} ${balance}</option>`);
+                        $('.currency').append(`<option value="${balance}" ${currency === 'SERO'?"selected":""}>${currency} ${balance}</option>`);
                         if(j === 0 ){
+                            $('.currencyp').text(balance);
+                            $('.currencys').text(currency);
+                        }
+                        if(currency === 'SERO'){
                             $('.currencyp').text(balance);
                             $('.currencys').text(currency);
                         }
@@ -152,7 +156,7 @@ var Transaction = {
                     }
                     hasSet = true
                 }
-                $('.address').append(`<option value="${PK}" ${i === 0 ? 'selected' : ''}>${ acName + ": " + PK.substring(0, 20) + ' ... ' + PK.substring(PK.length - 20) }</option>`);
+                $('.address').append(`<option value="${PK}" ${currency === 'SERO' ? 'selected' : ''}>${ acName + ": " + PK.substring(0, 20) + ' ... ' + PK.substring(PK.length - 20) }</option>`);
                 i++;
             }
 
@@ -182,8 +186,13 @@ var Transaction = {
                         for (var currency of Object.keys(balanceObj)) {
                             var decimal =  that.currencyDecimal[currency];
                             balance = new BigNumber(balanceObj[currency]).dividedBy(decimal).toFixed(that.currencyDecimalFix[currency]);
-                            $('.currency').append(`<option value="${balance}" selected}>${currency} ${balance}</option>`);
+                            $('.currency').append(`<option value="${balance}" ${currency === 'SERO' ? 'selected' : ''}>${currency} ${balance}</option>`);
                             if (!hasSet){
+                                $('.currencyp').text(balance);
+                                $('.currencys').text(currency);
+                                hasSet = true;
+                            }
+                            if (currency === 'SERO'){
                                 $('.currencyp').text(balance);
                                 $('.currencys').text(currency);
                                 hasSet = true;
@@ -249,7 +258,7 @@ var Transaction = {
 
         gasprice = new BigNumber(gasprice).multipliedBy(new BigNumber(10).pow(9));
         var fee = gasprice.multipliedBy(25000);
-        var total = amount
+        var total = amount;
         if (currency === 'SERO'){
             total = fee.plus(amount);
         }

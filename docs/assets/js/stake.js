@@ -290,8 +290,8 @@ var StakeHome = {
 
 
                         Common.post('share/my', data.MainPKr, {}, function (res2) {
-                            if (res2.base.code === 'SUCCESS') {
-                                if (res2.biz.length > 0) {
+                            if (res2.biz && res2.base.code === 'SUCCESS') {
+                                if (res2.biz && res2.biz.length > 0) {
                                     var data = res2.biz[0];
 
                                     totalAmount = totalAmount.plus(new BigNumber(data.totalAmount?data.totalAmount:"0x0",16));
@@ -322,8 +322,8 @@ var StakeHome = {
                         });
 
                         Common.post('share/my', data.MainOldPKr, {}, function (res2) {
-                            if (res2.base.code === 'SUCCESS') {
-                                if (res2.biz.length > 0) {
+                            if (res2.biz && res2.base.code === 'SUCCESS') {
+                                if (res2.biz && res2.biz.length > 0) {
                                     var data = res2.biz[0];
                                     totalAmount = totalAmount.plus(new BigNumber(data.totalAmount?data.totalAmount:"0x0",16));
                                     var _totalProfit = new BigNumber(data.profit, 16).dividedBy(Common.baseDecimal);
