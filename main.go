@@ -276,8 +276,15 @@ func main() {
 	)
 	http.Handle("/dapp/set", accessControl(dappHandler))
 
-	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, r.URL.Path[1:])
+	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		if r.Method == "OPTIONS" {
+			return
+		}
+		json.NewEncoder(w).Encode(app.GetVersion())
+		return
 	})
 
 	http.HandleFunc("/rpc", func(w http.ResponseWriter, r *http.Request) {
