@@ -797,15 +797,25 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 }
 
 func (self *SEROLight) needSzk(param *txtool.GTxParam) {
-	var need_szk = true
+	var trueValue = true
 	var num = uint64(2123559)
 	if IsDev {
 		num = uint64(0)
 	}
 	if param !=nil {
-		param.Z = &need_szk
+		param.Z = &trueValue
 		param.Num = &num
 	}
+
+	err,nowNumber :=getRemoteBlockNumber()
+	if err !=nil {
+	}else{
+		var sip7 = uint64(2764851)
+		if uint64(nowNumber) >= sip7{
+			param.IsExt=&trueValue
+		}
+	}
+
 }
 
 func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string, amount *big.Int, utxoIn Utxo, pk *c_type.Uint512, gas uint64, gasPrice big.Int) {

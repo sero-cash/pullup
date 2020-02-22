@@ -42,7 +42,7 @@ func init() {
 	flag.StringVar(&w, "w", "", "set `web url`")
 	flag.BoolVar(&d, "d", false, "set `dev env`")
 	flag.StringVar(&c, "c", "", "set `component path`")
-	flag.StringVar(&l, "l", "en", "set `location`")
+	flag.StringVar(&l, "l", "zh", "set `location`")
 	flag.Usage = usage
 }
 func usage() {
