@@ -47,7 +47,7 @@ func init() {
 }
 func usage() {
 	fmt.Fprintf(os.Stderr, `pullup
-Usage: pullup [-g gero] [-w web] [-d dev] [-c component] [-l local]
+Usage: pullup [-g gero] [-w web]   [-d dev] [-c component] [-l local]
 
 Options:
 `)

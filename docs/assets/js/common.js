@@ -47,7 +47,8 @@ var Common = {
                 if("EOF"===serverVersion || forceUpdateVersions.indexOf(serverVersion)>-1){
                     var localUtc = new Date().getTimezoneOffset() / 60;
                     if (localUtc === -8){
-                        $('.update-ul').empty().append(`
+                        $('.update-body').empty().append(`
+                            <ul class="list-group text-left">
                                 <li class="list-group-item">SERO Pullup钱包已升级至${latestVersion}版本，之前的版本将停止使用。请下载最新的钱包：</li>
                                 <li class="list-group-item">
                                     MacOS x64: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/${latestVersion}/pullup-mac-${latestVersion}-zh_CN.tar.gz" target="_blank">pullup-mac-${latestVersion}-zh_CN.tar.gz</a>
@@ -55,15 +56,18 @@ var Common = {
                                 <li class="list-group-item">
                                     Windows(PC): <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/${latestVersion}/pullup-windows-${latestVersion}-zh_CN.zip" target="_blank">pullup-windows-${latestVersion}.zip</a>
                                 </li>
+                            </ul>
                             `);
                     }else{
-                        $('.update-ul').empty().append(`
+                        $('.update-body').empty().append(`
+                            <ul class="list-group text-left">
                                 <li class="list-group-item">The SERO Pullup wallet has been upgraded to version ${latestVersion} and the previous version will be discontinued. Please download the latest wallet:</li>
                                 <li class="list-group-item">
                                     MacOS x64: <a href="https://github.com/sero-cash/pullup/releases/download/${latestVersion}/pullup-mac-${latestVersion}.tar.gz">pullup-mac-${latestVersion}.tar.gz</a></li>
                                 <li class="list-group-item">
                                     Windows(PC): <a href="https://github.com/sero-cash/pullup/releases/download/${latestVersion}/pullup-windows-${latestVersion}.zip" target="_blank">pullup-windows-${latestVersion}.tar.gz</a>
                                 </li>
+                            </ul>
                         `);
                     }
                     $('#updateModal').modal({backdrop: 'static', keyboard: false});
