@@ -120,13 +120,14 @@ var Transaction = {
                         }
                     }
                     that.pkBalance = _pkBalance;
+                    setTimeout(function () {
+                        that.setCurrency();
+                    },200);
                 }
             }
         });
 
-        setTimeout(function () {
-            that.setCurrency();
-        },50);
+
     },
 
     setCurrency:function () {
