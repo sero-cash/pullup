@@ -662,10 +662,10 @@ func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
 func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
-		// if account.isChanged {
-		// } else {
-		//	return account.balances
-		// }
+		if account.isChanged {
+		} else {
+			return account.balances
+		}
 
 		prefix := append(pkPrefix, pk[:]...)
 		iterator := self.db.NewIteratorWithPrefix(prefix)
