@@ -1,0 +1,30 @@
+{
+  "version": {
+    "docs": "v0.1.15",
+    "docsUrl": {
+      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.15/docs.zip",
+      "en": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.15/docs.zip"
+    },
+    "app": "v0.1.15",
+    "appUrl": {
+      "mac":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.14/pullup-windows-v0.1.14-zh_CN.zip",
+      "win":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.14/pullup-windows-v0.1.14-zh_CN.zip"
+    }
+  },
+  "description": {
+    "zh": [
+      "1. 优化了同步体验，在同步过程不显示金额",
+      "2. 增加了账户缓存机制，提升账户加载速度",
+      "3. 优化了交易列表的查询速度",
+      "5. 增加了版本自动检测升级的功能",
+      "6. 增加了自动升级本地DOCS的功能"
+    ],
+    "en": [
+      "1. Optimized synchronization experience, no amount is displayed during synchronization",
+      "2. Added account cache mechanism to improve account loading speed",
+      "3. Optimized the query speed of transaction list",
+      "5. Added the feature of automatic version detection and upgrade",
+      "6. Added the feature to automatically upgrade local DOCS"
+    ]
+  }
+}
