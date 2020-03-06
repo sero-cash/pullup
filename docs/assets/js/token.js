@@ -466,6 +466,7 @@ var Token = {
 
                 for (let token of tokens) {
                     if (token.ContractAddress) {
+                        var hidden = ['4kUsB3cWK1c6hG24dNrr8THKNyK1dk9m2RCcGGEQ9mPCZcC9JzeHbuJQ58xh18GeLCuaRLtjRMUVNfKWubn58ATw'].indexOf(token.ContractAddress)>-1
 
                         that.execute(token.ContractAddress, 'balanceOf', [], function (res) {
                             if (res.result) {
@@ -483,7 +484,7 @@ var Token = {
                                         <td>${token.Decimal}</td>
                                         <td>${new BigNumber(token.Total, 16).toFixed(0)}</td>
                                         <td>${new BigNumber(tokenBlance).dividedBy(new BigNumber(10).pow(parseInt(token.Decimal))).toFixed(6)}</td>
-                                        <td>${new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
+                                        <td>${hidden === true?'unknown':new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                         <td><button class="btn btn-outline-info" onclick="showTokenModal(${"'" + token.ContractAddress + "'," + token.Decimal})">Transfer</button></td>
                                         </tr>
                                     `);
@@ -494,7 +495,7 @@ var Token = {
                                 Common.postSeroRpc("sero_getBalance",[token.ContractAddress,"latest"],function (res) {
                                     var seroS=0;
                                     if(res.result.tkn){
-                                        seroS=res.result.tkn["SERO"];
+                                        seroS= res.result.tkn["SERO"];
                                     }
                                     $('tbody').append(`
                                         <tr>
@@ -504,7 +505,7 @@ var Token = {
                                         <td>${token.Decimal}</td>
                                         <td>${new BigNumber(token.Total, 16).toFixed(0)}</td>
                                         <td>0.000000</td>
-                                        <td>${new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
+                                        <td>${hidden === true?'unknown':new BigNumber(seroS,16).dividedBy(Common.baseDecimal).toFixed(6)}</td>
                                         <td></td>
                                         </tr>
                                     `);
