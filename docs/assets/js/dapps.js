@@ -44,15 +44,15 @@ var DApps = {
     },
 
     dapps_en_US: [
-        {
-            img: "./assets/img/token.png",
-            title: "SRC20 Token Tracker",
-            desc: "SRC20 is a standard interface for anonymous tokens. This standard provides basic functionality to transfer tokens.",
-            author: "sero.cash",
-            url: "./views/contract/token.html",
-            showTips: false,
-            state: 1,
-        },
+        // {
+        //     img: "./assets/img/token.png",
+        //     title: "SRC20 Token Tracker",
+        //     desc: "SRC20 is a standard interface for anonymous tokens. This standard provides basic functionality to transfer tokens.",
+        //     author: "sero.cash",
+        //     url: "./views/contract/token.html",
+        //     showTips: false,
+        //     state: 1,
+        // },
         {
             img: "./assets/img/asnow.jpeg",
             title: "ASNOW",
@@ -119,15 +119,15 @@ var DApps = {
         }
     ],
     dapps_zh_CN: [
-        {
-            img: "./assets/img/token.png",
-            title: "SRC20 Token Tracker",
-            desc: "SRC20是匿名Token的标准接口, 该标准提供了转移Token的基本功能。",
-            author: "sero.cash",
-            url: "./views/contract/token.html",
-            showTips: false,
-            state: 1,
-        },
+        // {
+        //     img: "./assets/img/token.png",
+        //     title: "SRC20 Token Tracker",
+        //     desc: "SRC20是匿名Token的标准接口, 该标准提供了转移Token的基本功能。",
+        //     author: "sero.cash",
+        //     url: "./views/contract/token.html",
+        //     showTips: false,
+        //     state: 1,
+        // },
         {
             img: "./assets/img/asnow.jpeg",
             title: "ASNOW",
