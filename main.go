@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 )
 
 var (
@@ -148,15 +147,13 @@ func setCmdPath() {
 	logex.Info("Cmd Path >>> ", app.CmdPath)
 }
 
-func isZH() bool {
-	location := time.Now().String()
-	return strings.Index(location, "+0800") > -1
-}
+
 
 func registerHttpHandler() {
-	if isZH() {
+	if app.IsZH() {
 		app.SetRemoteConfig("http://sero-cash.gitee.io/pullup/node-asia.json")
-		app.SetVersionUrl("http://sero-cash.gitee.io/pullup/version.json")
+		//app.SetVersionUrl("http://sero-cash.gitee.io/pullup/version.json")
+		app.SetVersionUrl("https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/version.json")
 	} else {
 		app.SetRemoteConfig("http://pullup-github.sero.cash/node-global.json")
 		app.SetVersionUrl("http://pullup-github.sero.cash/version.json")

@@ -87,11 +87,11 @@ var Common = {
                                     var desc = [];
                                     if (localUtc === -8){
                                         title = `版本${remoteVersion.version.app}更新内容：`;
-                                        desc = remoteVersion.Description.zh;
+                                        desc = remoteVersion.description.zh;
 
                                     }else{
                                         title = `${remoteVersion.version.app} updated features：`;
-                                        desc = `${remoteVersion.Description.en}`
+                                        desc = `${remoteVersion.description.en}`
                                     }
                                     var content = '';
                                     for(var i=0;i<desc.length;i++){

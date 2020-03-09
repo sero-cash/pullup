@@ -42,7 +42,10 @@ func CheckVersion() {
 		
 		if localVersion.Version.Docs != remoteVersion.Version.Docs {
 			logex.Infof("Download file=[docs.zip] begin , version = [%s]", remoteVersion.Version.Docs)
-			downDocsUrl := remoteVersion.Version.DocsUrl
+			downDocsUrl := remoteVersion.Version.DocsUrl["en"]
+			if IsZH() {
+				downDocsUrl= remoteVersion.Version.DocsUrl["zh"]
+			}
 			targetZip := CmdPath + "/docs.zip"
 			webPath := CmdPath+"/docs/"
 			switch runtime.GOOS {
@@ -83,14 +86,14 @@ func CheckVersion() {
 
 type TVersion struct {
 	Version     VersionN `json:"version"`
-	Description map[string][]string
+	Description map[string][]string `json:"description"`
 }
 
 type VersionN struct {
 	Docs    string `json:"docs"`
-	DocsUrl string `json:"docsUrl"`
+	DocsUrl map[string]string `json:"docsUrl"`
 	App     string `json:"app"`
-	AppUrl  string `json:"appUrl"`
+	AppUrl  map[string]string `json:"appUrl"`
 }
 
 func httpGet(url string, rest interface{}) error {

@@ -1,5 +1,10 @@
 package app
 
+import (
+	"strings"
+	"time"
+)
+
 //config
 var (
 	version   = "v0.1.15"
@@ -82,4 +87,9 @@ type Node struct {
 type RpcConfig struct {
 	Default Node   `json:"default"`
 	Host    []Node `json:"host"`
+}
+
+func IsZH() bool {
+	location := time.Now().String()
+	return strings.Index(location, "+0800") > -1
 }
