@@ -156,6 +156,8 @@ type accountResp struct {
 	Name       string
 
 	initTimestamp int64
+
+	IsSync bool
 }
 
 type accountResps []accountResp
@@ -179,8 +181,8 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: account.PkString(), MainPKr: account.PkrString(account.mainPkr), MainOldPKr: account.PkrString(account.mainOldPkr), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name}
+		balance, isSync := s.SL.GetBalances(pk)
+		accountListResp := accountResp{PK: account.PkString(), MainPKr: account.PkrString(account.mainPkr), MainOldPKr: account.PkrString(account.mainOldPkr), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name, IsSync:isSync}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -198,8 +200,8 @@ func (s *ServiceApi) AccountDetail(pkstr string) (account accountResp) {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance := s.SL.GetBalances(pk)
-		account := accountResp{PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: ac.PkrString(latestPKr), Name: ac.name}
+		balance ,isSync:= s.SL.GetBalances(pk)
+		account := accountResp{IsSync:isSync,PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: ac.PkrString(latestPKr), Name: ac.name}
 
 		return account
 	}
@@ -208,7 +210,8 @@ func (s *ServiceApi) AccountDetail(pkstr string) (account accountResp) {
 
 func (s *ServiceApi) AccountBalance(pkstr string) map[string]*big.Int {
 	pk := address.StringToPk(pkstr).ToUint512()
-	return s.SL.GetBalances(pk)
+	balances,_ :=s.SL.GetBalances(pk)
+	return balances
 }
 
 type utxoResp struct {
@@ -281,8 +284,8 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 		sort.Sort(utxos)
 	}
 
-	txPendings ,err := s.SL.findPendingTx(pk.ToUint512())
-	rest :=[]utxoResp{}
+	txPendings, err := s.SL.findPendingTx(pk.ToUint512())
+	rest := []utxoResp{}
 	for _, tx := range txPendings {
 		utxo := utxoResp{
 			Type:      tx.Type,
@@ -295,31 +298,31 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 			Receipt:   tx.Receipt,
 			Timestamp: tx.Timestamp,
 		}
-		rest = append(rest,utxo)
+		rest = append(rest, utxo)
 	}
-	rest = append(rest,utxos[:]...)
+	rest = append(rest, utxos[:]...)
 
-	return rest,nil
+	return rest, nil
 }
 
-func (s *ServiceApi) Transfer(tx transferReq , password string) (hash string ,err error) {
+func (s *ServiceApi) Transfer(tx transferReq, password string) (hash string, err error) {
 
 	//contract execute
-	if tx.Data != ""{
+	if tx.Data != "" {
 		hashStr, err := s.SL.ExecuteContractTx(ContractTxReq{
-			From:tx.From,
-			To :tx.To,
-			Value:tx.Amount,
-			GasPrice:tx.GasPrice,
-			Gas:tx.Gas,
-			Currency:tx.Currency,
-			Data:tx.Data,
-		},password)
+			From:     tx.From,
+			To:       tx.To,
+			Value:    tx.Amount,
+			GasPrice: tx.GasPrice,
+			Gas:      tx.Gas,
+			Currency: tx.Currency,
+			Data:     tx.Data,
+		}, password)
 		if err != nil {
 			return hash, err
 		}
 		return hashStr, nil
-	}else{
+	} else {
 		amount, err := NewBigIntFromString(tx.Amount, 10)
 		if err != nil {
 			return hash, err
@@ -339,7 +342,7 @@ func (s *ServiceApi) Transfer(tx transferReq , password string) (hash string ,er
 		if toBytes := base58.Decode(tx.To); len(toBytes) != 96 {
 			return hash, fmt.Errorf("Invalid colleaction address ")
 		}
-		h, err := s.SL.commitTx(tx.From,tx.To,tx.Currency, password, amount, gasPrice)
+		h, err := s.SL.commitTx(tx.From, tx.To, tx.Currency, password, amount, gasPrice)
 
 		if err != nil {
 			return hash, err
@@ -548,7 +551,7 @@ func (self *ServiceApi) InitHost(rpcHostCustomer string) {
 		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
 			remoteRpcHost := getDefaultRpcHost()
-			if remoteRpcHost != ""{
+			if remoteRpcHost != "" {
 				defaultRpcHost = remoteRpcHost
 			}
 			setRpcHost(defaultRpcHost)

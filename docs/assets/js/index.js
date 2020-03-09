@@ -8,11 +8,11 @@ var Index = {
         that.getBlockHeight();
         setInterval(function () {
             that.getAccountList();
-        }, 10000);
+        }, 5000);
 
         setInterval(function () {
             that.getBlockHeight();
-        }, 10000);
+        }, 5000);
 
         $('.select-net').bind('click', function () {
             that.selectNetwork();
@@ -154,13 +154,18 @@ var Index = {
                     var dataArray = res.biz;
                     var balance = new BigNumber(0);
 
+                    var loading = false;
                     for (var i = 0; i < dataArray.length; i++) {
+
                         var data = dataArray[i];
                         var _balance = new BigNumber(0);
                         if (data.Balance && data.Balance.SERO) {
                             _balance = new BigNumber(data.Balance.SERO);
                             _balance = _balance.dividedBy(Common.baseDecimal);
                             balance = balance.plus(_balance)
+                        }
+                        if(data.IsSync && data.IsSync ===true && loading === false){
+                            loading = true;
                         }
                         var acName = "Account"+(i + 1);
                         if (data.Name){
@@ -175,7 +180,7 @@ var Index = {
                                             <p class="m-0">${acName}(<small>${data.PK.substring(0, 8) + " ... " + data.PK.substring(data.PK.length - 8, data.PK.length)}</small>)</p>
                                             <p class="text-white-50 small m-0 pkr">
                                             ${data.PkrBase58}&nbsp;&nbsp &nbsp;</p>
-                                            <p class="text-right text-warning m-0"><strong>${_balance.toFixed(6)}</strong> SERO</p>
+                                            <p class="text-right text-warning m-0"><strong>${_balance.toFixed(6)}</strong> <span class="text-success">SERO</span> </p>
                                          </a>
                                     </div>
                                 </div>
@@ -184,7 +189,16 @@ var Index = {
                         `);
                     }
 
-                    $('.dashboard span:eq(0)').text(balance.toFixed(6));
+                    if(loading){
+                        $('.dashboard span:eq(0)').empty().append(`
+                             <div class="spinner-border text-danger" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            ${balance.toFixed(6)}
+                        `);
+                    }else{
+                        $('.dashboard span:eq(0)').text(balance.toFixed(6))
+                    }
                 }
             }
         })

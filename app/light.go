@@ -679,7 +679,7 @@ func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
 	return map[string]uint64{}
 }
 
-func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int) {
+func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int ,isSync bool) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
 		balanceReturn := account.balances
@@ -712,7 +712,7 @@ func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.
 				account.isChanged = false
 			}()
 		}
-		return balanceReturn
+		return balanceReturn,self.syncing
 	}
 	return
 }
