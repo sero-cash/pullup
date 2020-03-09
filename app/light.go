@@ -59,7 +59,7 @@ var currentLight *SEROLight
 
 func NewSeroLight() {
 
-	logex.Info("App start ,version: ", version)
+	logex.Info("App start ,version: ", GetVersion())
 	// new AccountManage
 	accountManager, err := makeAccountManager()
 	if err != nil {
@@ -76,6 +76,7 @@ func NewSeroLight() {
 	if cleanData {
 		versionByte, err := configdb.Get(VersonKey[:])
 		if err != nil {
+			logex.Error(err.Error())
 			configdb.Put(VersonKey[:], []byte(GetVersion()))
 			// clean data
 			CleanData()
@@ -88,6 +89,8 @@ func NewSeroLight() {
 				CleanData()
 			}
 		}
+	}else{
+		configdb.Put(VersonKey[:], []byte(GetVersion()))
 	}
 
 	db, err := serodb.NewLDBDatabase(GetDataPath(), 1024, 1024)
