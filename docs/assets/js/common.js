@@ -35,8 +35,8 @@ var Common = {
     },
 
     checkVersion :function(){
-        var forceUpdateVersions = ["v0.1.13"];
-        var latestVersion = "v0.1.14";
+        var forceUpdateVersions = ["v0.1.13","v0.1.14"];
+        var latestVersion = "v0.1.15";
         var that = this;
         $.ajax({
             url: that.host + '/version',
@@ -44,6 +44,7 @@ var Common = {
             dataType: 'json',
             async: false,
             success: function (serverVersion) {
+                $('.version').text(serverVersion)
                 if("EOF"===serverVersion || forceUpdateVersions.indexOf(serverVersion)>-1){
                     var localUtc = new Date().getTimezoneOffset() / 60;
                     if (localUtc === -8){
@@ -71,6 +72,51 @@ var Common = {
                         `);
                     }
                     $('#updateModal').modal({backdrop: 'static', keyboard: false});
+                }else{
+                    //check remote version.json
+                    if (serverVersion!="v0.1.14"){
+                        $.ajax({
+                            url: that.host + '/remoteVersion',
+                            type: 'get',
+                            dataType: 'json',
+                            async: false,
+                            success: function (remoteVersion) {
+                                if(serverVersion !== remoteVersion.version.app){
+                                    var localUtc = new Date().getTimezoneOffset() / 60;
+                                    var title = '';
+                                    var desc = [];
+                                    if (localUtc === -8){
+                                        title = `版本${remoteVersion.version.app}更新内容：`;
+                                        desc = remoteVersion.Description.zh;
+
+                                    }else{
+                                        title = `${remoteVersion.version.app} updated features：`;
+                                        desc = `${remoteVersion.Description.en}`
+                                    }
+                                    var content = '';
+                                    for(var i=0;i<desc.length;i++){
+                                        content += `<p class="text-info">${desc[i]}</p>`
+                                    }
+
+                                    $('.update-body').empty().append(`
+                                            <ul class="list-group text-left">
+                                                <li class="list-group-item">${title}</li>
+                                                <li class="list-group-item">
+                                                    ${content}
+                                                </li>
+                                                <li class="list-group-item">
+                                                    MacOS x64: <a href="${remoteVersion.version.appUrl.mac}" target="_blank">pullup-mac-${remoteVersion.version.app}-zh_CN.tar.gz</a>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    Windows(PC): <a href="${remoteVersion.version.appUrl.win}" target="_blank">pullup-windows-${remoteVersion.version.app}.zip</a>
+                                                </li>
+                                            </ul>
+                                        `);
+                                    $('#updateModal').modal({backdrop: 'static', keyboard: false});
+                                }
+                            }
+                        })
+                    }
                 }
             }
         })

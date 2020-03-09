@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/binary"
 	"github.com/sero-cash/go-czero-import/c_type"
 )
 
@@ -29,12 +30,39 @@ var (
 	dappPrefix = []byte("DAPPS")
 	hashPrefix = []byte("HASH")
 	remoteNumKey= []byte("REMOTENUM")
+	txHashPrefix = []byte("TXHASH")
+
+	txPendingHashPrefix = []byte("TXPENDINGHASH")
 )
 
 const (
 	PRK_TYPE_HASH int8 = 2
 	PKR_TYPE_NUM  int8 = 1
 )
+
+//"TXHASH"+PK+hash+root+outType = utxo
+func indexTxKey(pk c_type.Uint512,num uint64, hash c_type.Uint256, root c_type.Uint256, outType uint64) []byte {
+	maxNum := uint64(9999999999) - num
+	key := append(txHashPrefix, pk[:]...)
+	key = append(key, encodeNumber(maxNum)...)
+	key = append(key, hash[:]...)
+	key = append(key, root[:]...)
+	return append(key, encodeNumber(outType)...)
+}
+
+func txPendingHashKey(pk c_type.Uint512,hash c_type.Uint256, now uint64) []byte {
+	key := append(txPendingHashPrefix, pk[:]...)
+	key = append(key, hash[:]...)
+	enc := make([]byte, 16)
+	binary.BigEndian.PutUint64(enc, now)
+	return append(key, enc...)
+}
+
+func txPendingHashKey2(pk c_type.Uint512,hash c_type.Uint256) []byte {
+	key := append(txPendingHashPrefix, pk[:]...)
+	key = append(key, hash[:]...)
+	return key
+}
 
 func txHashKey(hash []byte,num uint64) []byte  {
 	var key = append(hashPrefix,hash[:]...);
@@ -80,9 +108,4 @@ type pkrAndIndex struct {
 
 func nilToRootKey(nil c_type.Uint256) []byte {
 	return append(nilRootPrefix, nil[:]...)
-}
-
-func penddingTxKey(pk c_type.Uint512, hash c_type.Uint256) []byte {
-	key := append(peddingTxPrefix, pk[:]...)
-	return append(key, hash[:]...)
 }

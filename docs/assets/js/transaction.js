@@ -122,7 +122,7 @@ var Transaction = {
                     that.pkBalance = _pkBalance;
                     setTimeout(function () {
                         that.setCurrency();
-                    },200);
+                    },150);
                 }
             }
         });

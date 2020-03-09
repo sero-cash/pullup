@@ -51,6 +51,8 @@ type SEROLight struct {
 	quit       chan chan error
 	lock       sync.RWMutex
 	useHashPkr sync.Map
+
+	syncing bool
 }
 
 var currentLight *SEROLight
@@ -113,7 +115,16 @@ func NewSeroLight() {
 		light.initWallet(w)
 	}
 
-	AddJob("0/20 * * * * ?", light.SyncOut)
+	//AddJob("0/20 * * * * ?", light.SyncOut)
+	go func() {
+		for  {
+			light.syncing = true
+			light.SyncOut()
+			light.syncing = false
+			time.Sleep(time.Second * 20)
+		}
+	}()
+
 	go light.keystoreListener()
 }
 
@@ -418,7 +429,7 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			batch.Put(rootKey(utxo.Root), data)
 
 			// "TXHASH" + PK + hash + root + outType
-			batch.Put(indexTxKey(key.Pk, utxo.TxHash, utxo.Root, uint64(1)), data)
+			batch.Put(indexTxKey(key.Pk,utxo.Num, utxo.TxHash, utxo.Root, uint64(1)), data)
 
 			// nil => root
 			for _, Nil := range utxo.Nils {
@@ -535,7 +546,7 @@ func (self *SEROLight) rpcCheckNil(Nils []string) {
 					copy(root[:], value[98:130])
 					utxo, err := self.getUtxo(root)
 					if err == nil {
-						batch.Delete(penddingTxKey(pk, utxo.TxHash))
+						self.deletePendingTx(batch, pk, utxo.TxHash)
 					}
 
 					if len(value) == 130 {
@@ -547,26 +558,35 @@ func (self *SEROLight) rpcCheckNil(Nils []string) {
 					batch.Delete(nilKey(Nil))
 					batch.Delete(nilKey(root))
 
-					//TODO remove pending tx
-					//fmt.Println("batch indexTxKey:",string(pk[:]), string(nilv.TxHash[:]), string(nilv.TxHash[:]),2)
-					batch.Delete(indexTxKey(pk, nilv.TxHash, nilv.TxHash, uint64(2)))
+					self.deletePendingTx(batch, pk, nilv.TxHash)
+
 					utxoI := Utxo{Root: root, TxHash: nilv.TxHash, Num: nilv.Num, Nils: []c_type.Uint256{nilv.Nil}, Asset: utxo.Asset, Pkr: utxo.Pkr}
 					data, err := rlp.EncodeToBytes(&utxoI)
 					if err != nil {
 						fmt.Println("EncodeToBytes err:", err)
 						continue
 					}
-					batch.Put(indexTxKey(pk, nilv.TxHash, root, uint64(2)), data)
+					batch.Put(indexTxKey(pk, nilv.Num, nilv.TxHash, root, uint64(2)), data)
 
 					txInfo := nilv.TxInfo
 					txData, _ := rlp.EncodeToBytes(txInfo)
-					batch.Put(txHashKey(nilv.TxHash[:],txInfo.Num), txData)
+					batch.Put(txHashKey(nilv.TxHash[:], txInfo.Num), txData)
 
 					self.usedFlag.Delete(root)
 				}
 			}
 			batch.Write()
 		}
+	}
+}
+
+func (self *SEROLight) deletePendingTx(batch serodb.Batch, pk c_type.Uint512, txHash c_type.Uint256) {
+	prefix := append(txPendingHashPrefix, pk[:]...)
+	prefix = append(prefix, txHash[:]...)
+	iterator := self.db.NewIteratorWithPrefix(prefix)
+	for iterator.Next() {
+		key := iterator.Key()
+		batch.Delete(key)
 	}
 }
 
@@ -662,37 +682,37 @@ func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
 func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
-		if account.isChanged {
-		} else {
-			return account.balances
-		}
+		balanceReturn := account.balances
+		if account.isChanged && !self.syncing{
+			go func() {
+				prefix := append(pkPrefix, pk[:]...)
+				iterator := self.db.NewIteratorWithPrefix(prefix)
+				balances = map[string]*big.Int{}
+				utxoNums := map[string]uint64{}
+				for iterator.Next() {
+					key := iterator.Key()
+					var root c_type.Uint256
+					copy(root[:], key[98:130])
 
-		prefix := append(pkPrefix, pk[:]...)
-		iterator := self.db.NewIteratorWithPrefix(prefix)
-		balances = map[string]*big.Int{}
-		utxoNums := map[string]uint64{}
-		for iterator.Next() {
-			key := iterator.Key()
-			var root c_type.Uint256
-			copy(root[:], key[98:130])
-
-			if utxo, err := self.getUtxo(root); err == nil {
-				if utxo.Asset.Tkn != nil {
-					currency := common.BytesToString(utxo.Asset.Tkn.Currency[:])
-					if amount, ok := balances[currency]; ok {
-						amount.Add(amount, utxo.Asset.Tkn.Value.ToIntRef())
-						utxoNums[currency] += 1
-					} else {
-						balances[currency] = new(big.Int).Set(utxo.Asset.Tkn.Value.ToIntRef())
-						utxoNums[currency] = 1
+					if utxo, err := self.getUtxo(root); err == nil {
+						if utxo.Asset.Tkn != nil {
+							currency := common.BytesToString(utxo.Asset.Tkn.Currency[:])
+							if amount, ok := balances[currency]; ok {
+								amount.Add(amount, utxo.Asset.Tkn.Value.ToIntRef())
+								utxoNums[currency] += 1
+							} else {
+								balances[currency] = new(big.Int).Set(utxo.Asset.Tkn.Value.ToIntRef())
+								utxoNums[currency] = 1
+							}
+						}
 					}
 				}
-			}
+				account.balances = balances
+				account.utxoNums = utxoNums
+				account.isChanged = false
+			}()
 		}
-
-		account.balances = balances
-		account.utxoNums = utxoNums
-		account.isChanged = false
+		return balanceReturn
 	}
 	return
 }
@@ -836,16 +856,28 @@ func (self *SEROLight) storePeddingUtxo(param *txtool.GTxParam, currency string,
 	txInfo.TxHash = utxoIn.TxHash
 	txInfo.GasPrice = gasPrice
 
-	dataIn, err1 := rlp.EncodeToBytes(&utxoIn)
+	tx:=Transaction{
+		Type:uint64(2),
+		Hash :utxoIn.TxHash,
+		Block:uint64(0),
+		PK :*pk,
+		Currency:utils.CurrencyToUint256(currency),
+		Amount   :big.NewInt(0).Mul(amount, big.NewInt(-1)),
+		Fee       :gasPrice.Mul(&gasPrice,big.NewInt(int64(gas))),
+		Timestamp :uint64(time.Now().Unix()),
+	}
+
+	dataIn, err1 := json.Marshal(&tx)
 	txData, err2 := rlp.EncodeToBytes(&txInfo)
-	if err1 == nil && err2 == nil {
+	if err1 ==nil && err2 == nil {
 		batch := self.db.NewBatch()
-		batch.Put(indexTxKey(*pk, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
+		//batch.Put(indexTxKey(*pk, utxoIn.TxHash, utxoIn.TxHash, uint64(2)), dataIn)
+		batch.Put(txPendingHashKey(*pk, utxoIn.TxHash,uint64(time.Now().Unix())), dataIn)
 		batch.Put(txHashKey(txInfo.TxHash[:],txInfo.Num), txData)
 		batch.Write()
 	} else {
 		fmt.Println("storePeddingUtxo err1: ", err1)
-		fmt.Println("storePeddingUtxo err2: ", err1)
+		fmt.Println("txHashKey err2: ", err2)
 	}
 }
 

@@ -44,14 +44,14 @@ type Service interface {
 	Transfer(tx transferReq, pwd string) (hash string, err error)
 	GetDecimal(currency string) uint64
 
-	registerStakePool(from, vote, passwd string, feeRate uint32) (txHash string, err error)
-	modifyStakePool(from, vote, passwd, idPkr string, feeRate uint32) (txHash string, err error)
-	buyStake(from, vote, passwd, pool, amountStr, gaspriceStr string) (txHash string, err error)
-	closeStake(from, idPkr, passwd string) (txHash string, err error)
+	registerStakePool(from, vote, password string, feeRate uint32) (txHash string, err error)
+	modifyStakePool(from, vote, password, idPkr string, feeRate uint32) (txHash string, err error)
+	buyStake(from, vote, password, pool, amountStr, gasPriceStr string) (txHash string, err error)
+	closeStake(from, idPkr, password string) (txHash string, err error)
 
 	getSetNetwork(host string) string
 
-	InitHost(rpcHostCustomer, webHostCustomer string)
+	InitHost(rpcHostCustomer string)
 
 	setDapps(dapp Dapp) (interface{}, error)
 }
@@ -254,7 +254,7 @@ func (u utxosResp) Swap(i, j int) {
 func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos utxosResp, err error) {
 	pk := address.StringToPk(pkStr)
 
-	if txs, err := s.SL.findTx(pk.ToUint512(), uint64(request.PageSize)); err == nil {
+	if txs, err := s.SL.findTx(pk.ToUint512(), uint64(request.PageSize*request.PageNo)); err == nil {
 		pendingBlockNumber := uint64(1000000000)
 		for _, tx := range txs {
 			if tx.Block == 0 {
@@ -280,7 +280,26 @@ func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos 
 		}
 		sort.Sort(utxos)
 	}
-	return
+
+	txPendings ,err := s.SL.findPendingTx(pk.ToUint512())
+	rest :=[]utxoResp{}
+	for _, tx := range txPendings {
+		utxo := utxoResp{
+			Type:      tx.Type,
+			To:        base58.Encode(tx.To[:]),
+			Currency:  common.BytesToString(tx.Currency[:]),
+			Amount:    tx.Amount,
+			Fee:       tx.Fee,
+			Hash:      tx.Hash,
+			Block:     tx.Block,
+			Receipt:   tx.Receipt,
+			Timestamp: tx.Timestamp,
+		}
+		rest = append(rest,utxo)
+	}
+	rest = append(rest,utxos[:]...)
+
+	return rest,nil
 }
 
 func (s *ServiceApi) Transfer(tx transferReq , password string) (hash string ,err error) {
@@ -520,55 +539,47 @@ func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
 	return nil, nil
 }
 
-func (self *ServiceApi) InitHost(rpcHostCustomer, webHostCustomer string) {
-
+func (self *ServiceApi) InitHost(rpcHostCustomer string) {
 	defaultRpcHost := "http://140.143.83.98:8545"
-	defaultWebHost := "http://pullup-github.sero.cash"
-
-	//get remote rpc host
-	resp, err := http.Get(GetRemoteConfig())
-	if err != nil {
-		logex.Error("get remoteRpcHost Get err: ", err.Error())
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logex.Error("get remoteRpcHost ReadAll err: ", err.Error())
-		return
-	}
-	fmt.Println("get remote config success : ", string(body[:]))
-	config := RpcConfig{}
-	err = json.Unmarshal(body, &config)
-	if err != nil {
-		logex.Error("get remoteRpcHost Unmarshal err: ", err.Error())
-		return
-	}
-
-	if config.Default.Rpc != "" {
-		defaultRpcHost = config.Default.Rpc
-	}
-	if config.Default.Web != "" {
-		defaultWebHost = config.Default.Web
-	}
-	fmt.Println("defaultRpcHoGst : ", defaultRpcHost)
-	fmt.Println("defaultWebHost : ", defaultWebHost)
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)
 		self.SL.dbConfig.Put(hostKey, []byte(rpcHostCustomer))
 	} else {
 		hostByte, err := self.SL.dbConfig.Get(hostKey)
 		if err != nil {
+			remoteRpcHost := getDefaultRpcHost()
+			if remoteRpcHost != ""{
+				defaultRpcHost = remoteRpcHost
+			}
 			setRpcHost(defaultRpcHost)
 		} else {
 			setRpcHost(string(hostByte[:]))
 		}
 	}
+}
 
-	if webHostCustomer != "" {
-		setWebHost(webHostCustomer)
-	} else {
-		setWebHost(defaultWebHost)
+func getDefaultRpcHost() string {
+	//get remote rpc host
+	resp, err := http.Get(GetRemoteConfig())
+	if err != nil {
+		logex.Error("get remoteRpcHost Get err: ", err.Error())
+		return ""
 	}
-
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logex.Error("get remoteRpcHost ReadAll err: ", err.Error())
+		return ""
+	}
+	fmt.Println("get remote config success : ", string(body[:]))
+	config := RpcConfig{}
+	err = json.Unmarshal(body, &config)
+	if err != nil {
+		logex.Error("get remoteRpcHost Unmarshal err: ", err.Error())
+		return ""
+	}
+	if config.Default.Rpc != "" {
+		return config.Default.Rpc
+	}
+	return ""
 }

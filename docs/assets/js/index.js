@@ -157,7 +157,7 @@ var Index = {
                     for (var i = 0; i < dataArray.length; i++) {
                         var data = dataArray[i];
                         var _balance = new BigNumber(0);
-                        if (data.Balance.SERO) {
+                        if (data.Balance && data.Balance.SERO) {
                             _balance = new BigNumber(data.Balance.SERO);
                             _balance = _balance.dividedBy(Common.baseDecimal);
                             balance = balance.plus(_balance)

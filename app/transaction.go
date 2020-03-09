@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/sero-cash/go-czero-import/c_type"
 	"github.com/sero-cash/go-sero/common"
 	"github.com/sero-cash/go-sero/common/hexutil"
@@ -23,39 +24,50 @@ type Transaction struct {
 	Timestamp uint64
 }
 
-var txHashPrefix = []byte("TXHASH")
-
-//"TXHASH"+PK+hash+root+outType = utxo
-func indexTxKey(pk c_type.Uint512, hash c_type.Uint256, root c_type.Uint256, outType uint64) []byte {
-	key := append(txHashPrefix, pk[:]...)
-	key = append(key, hash[:]...)
-	key = append(key, root[:]...)
-	return append(key, encodeNumber(outType)...)
-}
-
 var (
 	powReward = common.BytesToHash([]byte{1})
 	posReward = common.BytesToHash([]byte{2})
 	posMiner  = common.BytesToHash([]byte{3})
 )
 
+
+func (self *SEROLight) findPendingTx(pk c_type.Uint512) ([]Transaction, error) {
+	txs := []Transaction{}
+	prefix := append(txPendingHashPrefix, pk[:]...)
+	iterator := self.db.NewIteratorWithPrefix(prefix)
+	for iterator.Next() {
+		value := iterator.Value()
+		tx := Transaction{}
+		err := json.Unmarshal(value, &tx)
+		if err != nil{
+			return txs,err
+		}
+		txs = append(txs,tx)
+	}
+	return txs,nil
+}
+
+
 func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]Transaction, error) {
 	prefix := append(txHashPrefix, pk[:]...)
 	iterator := self.db.NewIteratorWithPrefix(prefix)
 	txMap := map[string]Transaction{}
 	//i := uint64(0)
+	latestNum  := uint64(0)
+
 	for iterator.Next() {
 		//i++
 		key := iterator.Key()
 		value := iterator.Value()
 		doutroot := c_type.Uint256{}
 		douthash := c_type.Uint256{}
-		copy(douthash[:], key[70:102])
-		copy(doutroot[:], key[102:134])
-		outType := decodeNumber(key[134:142])
-
-		//fmt.Println(hexutil.Encode(doutroot[:]),"-----",hexutil.Encode(douthash[:]))
-
+		copy(douthash[:], key[78:110])
+		copy(doutroot[:], key[110:142])
+		outType := decodeNumber(key[142:150])
+		currentNum := decodeNumber(key[70:78])
+		if len(txMap)>=int(pageCount) && latestNum != currentNum{
+			break
+		}
 		utxo := Utxo{}
 		rlp.DecodeBytes(value, &utxo)
 		ukeyb := douthash[:]
@@ -112,6 +124,8 @@ func (self *SEROLight) findTx(pk c_type.Uint512, pageCount uint64) (map[string]T
 				txMap[ukey] = tx
 			}
 		}
+
+		latestNum = currentNum
 	}
 	return txMap, nil
 }

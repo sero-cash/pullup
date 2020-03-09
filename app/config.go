@@ -2,13 +2,15 @@ package app
 
 //config
 var (
-	version   = "v0.1.14"
-	cleanData = false
+	version   = "v0.1.15"
+	cleanData = true
 
 	maxUint64  = ^uint64(0)
 	fetchCount = uint64(500000)
 
 	remoteConfig = ""
+
+	versionUrl = ""
 
 	//remoteRpcHost  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/clients/node-global.json"
 	//defaultRpcHost = "http://52.199.145.159:8545"
@@ -29,7 +31,17 @@ var (
 
 	//default setting
 	useZNum = uint64(1958696)
+
+	RemoteVersion = TVersion{}
 )
+
+func SetVersionUrl(url string)  {
+	versionUrl = url
+}
+
+func GetVersionUrl() string  {
+	return versionUrl
+}
 
 func SetRemoteConfig(config string)  {
 	remoteConfig = config
@@ -53,7 +65,7 @@ func setWebHost(s string) {
 	webHost = s
 }
 func GetWebHost() string {
-	return webHost
+	return localDocs
 }
 func GetOsType() string {
 	return osType
