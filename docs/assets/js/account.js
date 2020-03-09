@@ -127,7 +127,6 @@ var Detail = {
 
     init: function () {
         var that = this;
-
         that.getAccountDetail();
         that.getTxList();
 
@@ -145,26 +144,7 @@ var Detail = {
             that.getAccountDetail();
             that.getTxList();
         }, 20000);
-
-        that.setDataTable();
     },
-
-    setDataTable(){
-        var that = this;
-        $('#dataTable').dataTable({
-            "bLengthChange": false, //开关，是否显示每页显示多少条数据的下拉框
-            'iDisplayLength': 10, //每页初始显示5条记录
-            'bFilter': false,  //是否使用内置的过滤功能（是否去掉搜索框）
-            "bInfo": false, //开关，是否显示表格的一些信息(当前显示XX-XX条数据，共XX条)
-            "bPaginate": false, //开关，是否显示分页器
-            "bSort": false, //是否可排序 
-
-            pageNum: that.txPageNo,            // 显示第几页数据，默认1
-            pageSize: that.txPageSize,        // 每页数据数量，默认10
-            pagination: true,    // 是否启用分页组件，默认启用
-        })
-    },
-
 
     bindExport: function () {
         var that = this;
@@ -203,7 +183,7 @@ var Detail = {
                 $('.main-address').text(res.biz.MainPKr);
 
 
-                $('.mainqrcode').unbind().bind('click', function () {
+                $('.mainqrcode').bind('click', function () {
                     $('.modal-title').empty().text("Qrcode");
                     $('.modal-body div:eq(1)').empty().text(res.biz.MainPKr);
                     $('#qrcode').empty().qrcode({
@@ -219,7 +199,7 @@ var Detail = {
                     $('#myModal').modal({backdrop: 'static', keyboard: false});
                 });
 
-                $('.secondqrcode').unbind().bind('click', function () {
+                $('.secondqrcode').bind('click', function () {
                     $('.modal-title').empty().text("Qrcode");
                     $('.modal-body div:eq(1)').empty().text(pkr);
                     $('#qrcode').empty().qrcode({
@@ -243,58 +223,73 @@ var Detail = {
                 for (var k of Object.keys(balanceObj)) {
                     strMap.set(k, balanceObj[k]);
                     if (k !== 'SERO') {
-                        if(that.currencyDecimal[k]){
-                            var cDecimal = new BigNumber(10).pow(new BigNumber(that.currencyDecimal[k]));
-                            var amount = new BigNumber(balanceObj[k]).dividedBy(cDecimal);
-                            if (that.currencyDecimal[k] > 6) {
-                                amount = amount.toFixed(6);
-                            }else{
-                                amount = amount.toFixed(that.currencyDecimal[k]);
-                            }
-                            that.appendCurrency(k,amount);
-                        }else{
-                            var biz = {
-                                Currency: k,
-                            }
-                            Common.post('decimal', biz, {}, function (res) {
-                                var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
-                                that.currencyDecimal[k]= res.biz;
-                                var amount = new BigNumber(balanceObj[k]).dividedBy(cDecimal);
-                                if (res.biz > 6) {
-                                    amount = amount.toFixed(6);
-                                } else {
-                                    amount = amount.toFixed(res.biz);
-                                }
-                                that.appendCurrency(k,amount);
-                            });
+                        var biz = {
+                            Currency: k,
                         }
+                        Common.post('decimal', biz, {}, function (res) {
+                            var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
+                            var amount = new BigNumber(balanceObj[k]).dividedBy(cDecimal);
+                            if (res.biz > 6) {
+                                amount = amount.toFixed(6);
+                            } else {
+                                amount = amount.toFixed(res.biz);
+                            }
+                            $('.currency').append(`
+                                <div class="col-md-3 col-xl-3 mb-4">
+                                    <div class="card shadow border-left-success py-2">
+                                        <div class="card-body">
+                                            <div class="row align-items-center no-gutters">
+                                                <div class="col mr-2">
+                                                    <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>${k}</span></div>
+                                                    <div class="text-dark font-weight-bold h5 mb-0"><span>${amount}</span></div>
+                                                </div>
+                                                <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        });
                     } else {
-                        that.appendCurrency(k,new BigNumber(balanceObj[k]).dividedBy(Common.baseDecimal).toFixed(6));
+                        $('.currency').append(`
+                        <div class="col-md-3 col-xl-3 mb-4">
+                            <div class="card shadow border-left-success py-2">
+                                <div class="card-body">
+                                    <div class="row align-items-center no-gutters">
+                                        <div class="col mr-2">
+                                            <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>${k}</span></div>
+                                            <div class="text-dark font-weight-bold h5 mb-0"><span>${new BigNumber(balanceObj[k]).dividedBy(Common.baseDecimal).toFixed(6)}</span></div>
+                                        </div>
+                                        <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
                     }
                 }
+
                 if (strMap.size === 0) {
-                    that.appendCurrency('SERO','0.000000');
+
+                    $('.currency').append(`
+                        <div class="col-md-3 col-xl-3 mb-4">
+                            <div class="card shadow border-left-success py-2">
+                                <div class="card-body">
+                                    <div class="row align-items-center no-gutters">
+                                        <div class="col mr-2">
+                                            <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>SERO</span></div>
+                                            <div class="text-dark font-weight-bold h5 mb-0"><span>0.000000</span></div>
+                                        </div>
+                                        <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
                 }
+
             }
         });
-    },
-
-    appendCurrency:function(k,amount){
-        $('.currency').append(`
-            <div class="col-md-3 col-xl-3 mb-4">
-                <div class="card shadow border-left-success py-2">
-                    <div class="card-body">
-                        <div class="row align-items-center no-gutters">
-                            <div class="col mr-2">
-                                <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>${k}</span></div>
-                                <div class="text-dark font-weight-bold h5 mb-0"><span>${amount}</span></div>
-                            </div>
-                            <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `);
     },
 
     txPageNo: 1,
@@ -304,7 +299,7 @@ var Detail = {
     txCount: 0,
 
 
-    getTxList: function () {
+    getTxList: function (callback) {
         var that = this;
 
         var pk = GetQueryString("pk");
@@ -322,21 +317,24 @@ var Detail = {
                 if (res.biz) {
                     var data = res.biz;
                     for (var i = 0; i < data.length; i++) {
+
                         var tx = data[i];
                         var amount = new BigNumber(tx.Amount);
 
-                        var pending = `<span class="text-warning">PENDING</span>`;
-                        var completed = `<span class="text-success">COMPLETED</span>`;
+
                         if (tx.Currency !== 'SERO') {
-                            if(that.currencyDecimal[tx.Currency]){
-                                var cDecimal = new BigNumber(10).pow(new BigNumber(that.currencyDecimal[tx.Currency]));
-                                if (that.currencyDecimal[tx.Currency] > 6) {
+                            var biz = {
+                                Currency: tx.Currency,
+                            }
+                            Common.post('decimal', biz, {}, function (res) {
+                                var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
+                                if (res.biz > 6) {
                                     amount = amount.dividedBy(cDecimal).toFixed(6);
-                                }else{
-                                    amojnt = amount.dividedBy(cDecimal).toFixed(that.currencyDecimal[tx.Currency])
+                                } else {
+                                    amount = amount.dividedBy(cDecimal).toFixed(res.biz);
                                 }
-                                var fee = new BigNumber(tx.Fee);
-                                if (tx.Receipt && tx.Receipt.GasUsed>0) {
+                                var fee = 0;
+                                if (tx.Receipt) {
                                     var receipt = tx.Receipt;
                                     fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
                                 }
@@ -345,95 +343,54 @@ var Detail = {
                                     <tr>
                                         <td>${i + 1}</td>
                                         <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                        <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block}</a></td>
+                                        <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
                                         <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
                                         <td>${tx.Currency}</td>
-                                        <td><span class="text-success">${tx.Block === 0 ? pending : completed}</span></td>
+                                        <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
                                         <td>${amount}</td>
                                         <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
                                         <td>${convertUTCDate(tx.Timestamp)}</td>
                                     </tr>
                                     `
                                 );
-                            }else{
-                                var biz = {
-                                    Currency: tx.Currency,
-                                }
-                                Common.post('decimal', biz, {}, function (res) {
-                                    var cDecimal = new BigNumber(10).pow(new BigNumber(res.biz));
-                                    that.currencyDecimal[tx.Currency]= res.biz;
-                                    if (res.biz > 6) {
-                                        amount = amount.dividedBy(cDecimal).toFixed(6);
-                                    } else {
-                                        amount = amount.dividedBy(cDecimal).toFixed(res.biz);
-                                    }
-                                    var fee = new BigNumber(tx.Fee);
-                                    if (tx.Receipt && tx.Receipt.GasUsed>0) {
-                                        var receipt = tx.Receipt;
-                                        fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
-                                    }
-                                    $('tbody').append(
-                                        `
-                                    <tr>
-                                        <td>${i + 1}</td>
-                                        <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                        <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.BlockHash}">${tx.Block}</a></td>
-                                        <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
-                                        <td>${tx.Currency}</td>
-                                        <td><span class="text-success">${tx.Block === 0 ? pending : completed}</span></td>
-                                        <td>${amount}</td>
-                                        <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
-                                        <td>${convertUTCDate(tx.Timestamp)}</td>
-                                    </tr>
-                                    `
-                                    );
-                                });
-                            }
+                            });
                         } else {
                             var fee = new BigNumber(tx.Fee);
-                            if (tx.Receipt && tx.Receipt.GasUsed > 0) {
+                            if (tx.Receipt) {
                                 var receipt = tx.Receipt;
                                 fee = new BigNumber(receipt.GasUsed).multipliedBy(new BigNumber(10).pow(9));
                             }
-                            if (amount.comparedTo(new BigNumber(0)) < 0 && tx.Block !== 0) {
+
+                            if (amount.comparedTo(new BigNumber(0)) < 0 && tx.Block < 1000000000) {
                                 if (amount.plus(fee) < 0) {
                                     amount = amount.plus(fee)
+                                } else {
+                                    fee = 0;
                                 }
                             }
                             amount = amount.dividedBy(Common.baseDecimal).toFixed(6);
                             $('tbody').append(
                                 `
-                                <tr>
-                                    <td>${i + 1}</td>
-                                    <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
-                                    <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block}</a></td>
-                                    <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
-                                    <td>${tx.Currency}</td>
-                                    <td><span class="text-success">${tx.Block === 0 ? pending : completed}</span></td>
-                                    <td>${amount}</td>
-                                    <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
-                                    <td>${convertUTCDate(tx.Timestamp)}</td>
-                                </tr>
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td class="text-info text-break"><a target="_blank" href="https://explorer.sero.cash/txsInfo.html?hash=${tx.Hash}">${tx.Hash}</a></td>
+                                <td><a target="_blank" href="https://explorer.sero.cash/blockInfo.html?hash=${tx.Receipt.BlockHash}">${tx.Block >= 1000000000 ? 0 : tx.Block}</a></td>
+                                <!--<td title="${tx.To}">${tx.To.substring(0, 5) + " ... " + tx.To.substring(tx.To.length - 5)}</td>-->
+                                <td>${tx.Currency}</td>
+                                <td><span class="text-success">${tx.Block >= 1000000000 ? 'Pending' : 'Completed'}</span></td>
+                                <td>${amount}</td>
+                                <td>${new BigNumber(fee).dividedBy(Common.baseDecimal).toFixed(8)}</td>
+                                <td>${convertUTCDate(tx.Timestamp)}</td>
+                            </tr>
                             `
                             );
                         }
 
                     }
-                    $('.pagination').empty().append(`
-                        <li class="page-item ${res.page.count<=10?'disabled':''}"><a class="page-link page-prev" href="javascript:void(0)" aria-label="Previous"><span aria-hidden="true">Prev</span></a></li>
-                        <li class="page-item ${res.page.count===0?'disabled':''}"><a class="page-link page-next" href="javascript:void(0)" aria-label="Next"><span aria-hidden="true">Next</span></a></li>
-                    `)
-
-                    $('.page-prev').unbind().bind('click',function () {
-                        that.txPageNo = that.txPageNo - 1
-                        that.getTxList()
-                    })
-                    $('.page-next').unbind().bind('click',function () {
-                        that.txPageNo = that.txPageNo + 1
-                        that.getTxList()
-                    })
+                    ;
                 }
 
+                $('#dataTable').DataTable();
             }
         });
     }
@@ -598,15 +555,10 @@ function GetQueryString(name) {
     return null;
 }
 
-function convertUTCDate(timestamp) {
-    if(typeof timestamp === "string"){
-        const d = new Date(parseInt(timestamp)*1000);
-        return d.toLocaleDateString() + " " + d.toTimeString();
-    }else{
-        if (timestamp && timestamp > 0) {
-            const d = new Date(timestamp*1000);
-            return d.toLocaleDateString() + " " + d.toTimeString();
-        }
+function convertUTCDate(dateTimestamp) {
+    if (dateTimestamp && dateTimestamp > 0) {
+        let cDate = new Date(dateTimestamp * 1000);
+        return (cDate.getMonth() + 1) + "/" + cDate.getDate() + " " + appendZero(cDate.getHours()) + ":" + appendZero(cDate.getMinutes());
     }
     return ""
 }
