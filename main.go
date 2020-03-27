@@ -117,7 +117,8 @@ func main() {
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 1400, 768, args...)
+
+	ui, err := lorca.New("", app.GetCachePath(), 1400, 768, args...)
 	if err != nil {
 		logex.Fatal(err)
 	}

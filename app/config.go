@@ -30,6 +30,7 @@ var (
 	app_log_path      string
 	app_config_path   string
 	app_data_path     string
+	app_cache_path    string
 
 	IsDev = false
 	CmdPath = ""

@@ -62,6 +62,7 @@ func initDataPath() (err error) {
 			app_data_path = app_home_path + "/data/"
 			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"
+			app_cache_path = app_home_path + "/cache"
 			osType = "mac"
 			break
 		case "windows":
@@ -70,6 +71,7 @@ func initDataPath() (err error) {
 			app_data_path = app_home_path + "\\data\\"
 			app_log_path = app_home_path + "\\log\\"
 			app_config_path = app_home_path + "\\config"
+			app_cache_path = app_home_path + "\\cache"
 			osType = "win"
 			break
 		case "linux":
@@ -78,6 +80,7 @@ func initDataPath() (err error) {
 			app_data_path = app_home_path + "/data/"
 			app_log_path = app_home_path + "/log/"
 			app_config_path = app_home_path + "/config"
+			app_cache_path = app_home_path + "\\cache"
 			osType = "linux"
 			break
 		}
@@ -114,6 +117,10 @@ func GetPath(folder string) string {
 
 func GetLogPath() string {
 	return app_log_path
+}
+
+func GetCachePath() string {
+	return app_cache_path
 }
 
 func GetKeystorePath() string {
