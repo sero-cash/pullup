@@ -52,10 +52,10 @@ var Common = {
                             <ul class="list-group text-left">
                                 <li class="list-group-item">SERO Pullup钱包已升级至${latestVersion}版本，之前的版本将停止使用。请下载最新的钱包：</li>
                                 <li class="list-group-item">
-                                    MacOS x64: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/${latestVersion}/pullup-mac-${latestVersion}-zh_CN.tar.gz" target="_blank">pullup-mac-${latestVersion}-zh_CN.tar.gz</a>
+                                    MacOS x64: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/${latestVersion}/pullup-mac-${latestVersion}.tar.gz" target="_blank">pullup-mac-${latestVersion}.tar.gz</a>
                                 </li>
                                 <li class="list-group-item">
-                                    Windows(PC): <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/${latestVersion}/pullup-windows-${latestVersion}-zh_CN.zip" target="_blank">pullup-windows-${latestVersion}.zip</a>
+                                    Windows(PC): <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/${latestVersion}/pullup-windows-${latestVersion}.zip" target="_blank">pullup-windows-${latestVersion}.zip</a>
                                 </li>
                             </ul>
                             `);
