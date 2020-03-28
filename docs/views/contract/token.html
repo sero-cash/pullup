@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Contract - SERO</title>
+    <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/fonts/fontawesome-all.min.css">
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <nav class="navbar navbar-light navbar-expand fixed-top bg-info shadow mb-4 topbar static-top">
+                <div class="container-fluid">
+                    <button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i
+                            class="fas fa-bars"></i></button>
+                    <ul class="nav navbar-nav">
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="../../index.html">Home</a>
+                        </li>
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="../../transfer.html">Send</a>
+                        </li>
+                        <li class="nav-item" role="presentation"><a class="nav-link" href="../../stake.html">Stake</a>
+                        </li>
+                        <li class="nav-item" role="presentation"><a class="nav-link text-light" href="../../dapps.html">DApps</a>
+                        </li>
+                    </ul>
+                    <span class="d-none d-lg-inline text-light mr-2 language">English</span>
+                </div>
+            </nav>
+        </div>
+        <nav aria-label="breadcrumb" style="margin-top: 80px;">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../../dapps.html"></a></li>
+                <li class="breadcrumb-item active" aria-current="page"></li>
+            </ol>
+        </nav>
+
+        <div class="container-fluid">
+<!--            <div class="d-sm-flex justify-content-between align-items-center mb-4">-->
+<!--                <h5 class="text-dark mb-0">CUSTOM TOKENS</h5>-->
+<!--            </div>-->
+<!--            <div class="row">-->
+<!--                <div class="col-md-12 col-xl-12 mb-12">-->
+<!--                    <button class="btn btn-outline-info btn-block issue"><i-->
+<!--                            class="fa fa-plus"></i> <span class="btn-issue">Issue Token</span></button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <p></p>-->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <p class="text-primary m-0 font-weight-bold tx-his shareDetail">Token List</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+                                <table class="table dataTable my-0 small" id="dataTable">
+                                    <thead>
+                                    <tr>
+                                        <td width="30%"><strong>Contract Address</strong></td>
+                                        <td width="10%"><strong>Name</strong></td>
+                                        <td width="10%"><strong>Symbol</strong></td>
+                                        <td width="10%"><strong>Decimal</strong></td>
+                                        <td width="10%"><strong>Total Supply</strong></td>
+                                        <td width="10%"><strong>Balance</strong></td>
+                                        <td width="10%"><strong>Account</strong></td>
+                                        <td width="10%"><strong>Operation</strong></td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <td colspan="7" class="text-center">No Data</td>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p></p>
+            <div class="row">
+                <div class="col-md-12 col-xl-12 mb-12">
+                    <button class="btn btn-outline-info btn-block watch"><i class="fa fa-plus"></i> <span class="btn-watch">Watch Token</span></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+</div>
+<!-- Modal issue token-->
+<div class="modal fade modal-deploy" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="form1" novalidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLongTitle">Issue Token</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="toast deploy" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);" id="toast1">
+                        <div class="toast-body alert-danger">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="from" class="text-dark">FROM</label>
+                        <select class="form-control" id="from" required>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="tokenName" class="text-dark">Token Name</label>
+                            <input id="tokenName" type="text" class="form-control" required placeholder="SUPER ZERO"
+                                   autocomplete="off"/>
+                            <div class="invalid-feedback">Please Enter Token Name.</div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="tokenSymbol" class="text-dark">Token Symbol</label>
+                            <input id="tokenSymbol" type="text" class="form-control text-uppercase"
+                                   pattern="^[a-zA-Z]([a-zA-Z0-9]{3,33})$" required placeholder="SERO"
+                                   autocomplete="off"/>
+                            <div class="invalid-feedback">4-32 bit and start with a letter.</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="totalSupply" class="text-dark">Total Supply</label>
+                            <input id="totalSupply" type="number" class="form-control" required placeholder="10000"
+                                   autocomplete="off"/>
+                            <div class="invalid-feedback">Please Enter Total Supply.</div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="tokenDecimals" class="text-dark">Token Decimals</label>
+                            <input id="tokenDecimals" type="number" class="form-control" required placeholder="18"
+                                   autocomplete="off"/>
+                            <div class="invalid-feedback">Please Enter Token Decimals.</div>
+                        </div>
+                    </div>
+<!--                    <div class="form-group">-->
+<!--                        <label for="tokenDecimals" class="text-dark">Password</label>-->
+<!--                        <input id="password" type="password" class="form-control" required-->
+<!--                               placeholder="Enter Your Password" autocomplete="off"/>-->
+<!--                        <div class="invalid-feedback">Please Enter Your Password.</div>-->
+<!--                    </div>-->
+                    <div class="form-group">
+                        <small class="coin-fee">Coin Fee</small>: <small class="text-info coinFee">0.00</small> <small>SERO</small><br/>
+                        <small class="gas-fee">Gas Fee</small>: <small class="text-info gasFee">0.00</small> <small>SERO</small><br/>
+                        <small class="is-total">Total</small>: <small class="text-info total">0.00</small> <small>SERO</small><br/>
+                        <small class="text-warning is-tips"></small><br/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="sub1" class="btn btn-primary">Confirm</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal watch token-->
+<div class="modal fade modal-watch" id="myModa2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="form2" novalidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Watch Token</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="toast watch" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);" id="toast2">
+                        <div class="toast-body alert-danger">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contractAddress" class="text-dark ct-addr">Contract Address</label>
+                        <input id="contractAddress" type="text" style="width: 450px" class="form-control" required autocomplete="off"/>
+                        <div class="invalid-feedback">Please Enter Contract Address.</div>
+                    </div>
+                    <div class="form-group w-st">
+                        <small>Name</small>: <small class="text-info w_t_name">SERO</small><br/>
+                        <small>Symbol</small>: <small class="text-info w_t_symbol"></small><br/>
+                        <small>Decimal</small>: <small class="text-info w_t_decimal">0.00</small><br/>
+                        <small>Total Supply</small>: <small class="text-info w_t_total">0.00</small><br/>
+                        <small>Balance</small>: <small class="text-info w_t_balance">0.00</small><br/>
+                        <small>Account(SERO)</small>: <small class="text-info account_sero">0.00</small><br/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="sub2" class="btn btn-primary">Watch</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal execute token-->
+<div class="modal fade modal-execute" id="myModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="form3" novalidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Transfer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="toast execute" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);" id="toast3">
+                        <div class="toast-body alert-danger">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="e_c_from" class="text-dark">FROM</label>
+                        <select class="form-control" id="e_c_from" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="e_c_from" class="text-dark">Collection Address</label>
+                        <input class="form-control" id="e_c_to" required />
+                        <div class="invalid-feedback">Please Enter Collection Address.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="e_c_amount" class="text-dark">Amount</label>
+                        <input id="e_c_amount" type="text" class="form-control" required placeholder="0" autocomplete="off"/>
+                        <div class="invalid-feedback">Please Enter Amount.</div>
+                    </div>
+<!--                    <div class="form-group">-->
+<!--                        <label for="e_c_password" class="text-dark">Password</label>-->
+<!--                        <input id="e_c_password" type="password" class="form-control" required autocomplete="off"/>-->
+<!--                        <div class="invalid-feedback">Please Enter Your Password.</div>-->
+<!--                    </div>-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="sub3" class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../../assets/plugin/jquery.min.js"></script>
+<script src="../../assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="../../assets/js/theme.js"></script>
+<script type="text/javascript" src="../../assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="../../assets/plugin/jquery.cookie.js"></script>
+<script type="text/javascript" src="../../assets/plugin/datatables.min.js"></script>
+<script src="../../assets/plugin/jquery.qrcode.min.js"></script>
+<script src="../../assets/plugin/clipboard.min.js"></script>
+<script src="../../assets/plugin/bignumber.js"></script>
+<script src="../../assets/js/common.js"></script>
+<script src="../../assets/js/token.js?v1"></script>
+
+<script>
+
+    Common.app = Token;
+
+    Common.init();
+
+    $(function () {
+        $("#form1").submit(function (event) {
+            const f = $(this)
+            event.preventDefault()
+            event.stopPropagation()
+            f.addClass("was-validated")
+            console.log("submit2")
+            if (f[0].checkValidity() === true) {
+                $('#sub1').attr('disabled', true);
+                setTimeout(function () {
+                    Token.deploy();
+                }, 10);
+            }
+        })
+
+        $("#form2").submit(function (event) {
+            const f = $(this)
+            event.preventDefault()
+            event.stopPropagation()
+            f.addClass("was-validated")
+            if (f[0].checkValidity() === true) {
+                $('#sub2').attr('disabled', true);
+                setTimeout(function () {
+                    Token.addToken();
+                }, 10);
+            }
+        })
+
+        $("#form3").submit(function (event) {
+            const f = $(this)
+            event.preventDefault()
+            event.stopPropagation()
+            f.addClass("was-validated")
+            console.log("submit2")
+            if (f[0].checkValidity() === true) {
+                $('#sub3').attr('disabled', true);
+                setTimeout(function () {
+                    Token.transfer();
+                }, 10);
+            }
+        })
+    });
+
+
+    function showTokenModal(address,decimal) {
+        Token.showTransferModal(address,decimal);
+    }
+
+</script>
+
+</body>
+
+</html>

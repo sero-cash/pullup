@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>pullup security component</title>
+    <style>
+        p{
+            text-align: left;
+            text-indent: 2em;
+            line-height:25px;
+            font-size:medium;
+        }
+
+        button {
+            background-color: #139abf;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .text-center{
+            padding: 5px 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="col-12">
+    <div class="p-5">
+        <div class="text-center">
+            <h2 style="text-align: center">`+title+`</h2>
+            <p class="mb-4">`+context+`</p>
+            <button class="btn btn-primary btn-block text-white" type="button" onclick="external.invoke('close')">`+btn+`</button>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

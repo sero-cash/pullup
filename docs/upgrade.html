@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Home - SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <div class="header">
+            </div>
+            <div class="container-fluid" style="margin-top: 100px;">
+                <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-dark mb-0">Account</h3><button class="btn btn-primary"><i class="fas fa-folder"></i> <span class="backup">Backup</span></button>
+                </div>
+                <div class="row">
+                    <div class="col-md-5 col-xl-5 mb-4">
+                        <div class="card shadow border-left-primary py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <div class="text-uppercase text-primary font-weight-bold text-xs mb-1 total"><span>Total</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0 dashboard"><span>0</span> SERO</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-xl-3 mb-4">
+                        <div class="card shadow border-left-warning py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <div class="text-uppercase text-warning font-weight-bold text-xs mb-1 blockHeight"><span>Block height</span></div>
+                                        <div class="text-dark font-weight-bold h5 mb-0 dashboard"><span></span></div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-cubes fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4 mb-4">
+                        <div class="card shadow border-left-info py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <div class="text-uppercase text-info font-weight-bold text-xs mb-1 network"><span>Network</span></div>
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-auto">
+                                                <div class="text-dark font-weight-bold h5 mb-0 mr-3 dashboard select-net">
+                                                    <a href="javascript:void(0);"><i class="fa fa-exchange-alt text-secondary"></i> <span>0.0.0.0</span></a></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-network-wired fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="row pkrs">
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 mb-4">
+                                <button class="btn btn-outline-primary btn-block addAcount" type="button" onclick="window.location.href='account-new.html'">Add Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" >
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="toast" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);" id="toast2">
+                                <div class="toast-body alert-danger">
+                                </div>
+                            </div>
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalLongTitle">Upgrade!!!</h5>
+                            </div>
+                            <div class="modal-body ">
+                                <ul class="list-group">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="bg-white sticky-footer">
+            <div class="container my-auto">
+                <div class="text-center my-auto copyright"><span>Copyright © SERO</span></div>
+            </div>
+        </footer>
+    </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+<script src="assets/plugin/jquery.min.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/theme.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+
+<script src="assets/plugin/bignumber.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/index.js"></script>
+
+<script>
+    $(function () {
+        Common.app = Index;
+        Common.init();
+    })
+
+    if (jQuery.i18n.normaliseLanguageCode({})) {
+        if (jQuery.i18n.normaliseLanguageCode({}) === 'zh_CN'){
+            $('.modal-body').empty().append(`
+                <li class="list-group-item">SERO Pullup钱包已升级至0.1.12版本，之前的版本将停止使用。请下载最新的钱包程序：</li>
+                <li class="list-group-item">
+                    Mac系统: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.12/pullup-mac-0.1.12_zh_CN.tar.gz" target="_blank">pullup-mac-0.1.12.tar.gz</a>
+                </li>
+                <li class="list-group-item">
+                    Windows: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.12/pullup-windows-0.1.12-zh_CN.zip" target="_blank">pullup-windows-0.1.12.zip</a>
+                </li>
+            `);
+        }else{
+            $('.modal-body').empty().append(`
+                <li class="list-group-item">The SERO Pullup wallet has been upgraded to version 0.1.12 and the previous version will be discontinued. Please download the latest wallet program:</li>
+                <li class="list-group-item">
+                    For Mac: <a href="https://github.com/sero-cash/pullup/releases/download/v0.1.12/pullup-mac-0.1.12.tar.gz">pullup-mac-0.1.12.tar.gz</a></li>
+                <li class="list-group-item">
+                    For Windows: <a href="https://github.com/sero-cash/pullup/releases/download/v0.1.12/pullup-windows-0.1.12.zip" target="_blank">pullup-windows-0.1.12.tar.gz</a>
+                </li>
+            `);
+        }
+    }else{
+        $('.modal-body').empty().append(`
+                <li class="list-group-item">The SERO Pullup wallet has been upgraded to version 0.1.12 and the previous version will be discontinued. Please download the latest wallet program:</li>
+                <li class="list-group-item">
+                    For Mac: <a href="https://github.com/sero-cash/pullup/releases/download/v0.1.12/pullup-mac-0.1.12.tar.gz">pullup-mac-0.1.12.tar.gz</a></li>
+                <li class="list-group-item">
+                    For Windows: <a href="https://github.com/sero-cash/pullup/releases/download/v0.1.12/pullup-windows-0.1.12.zip" target="_blank">pullup-windows-0.1.12.tar.gz</a>
+                </li>
+            `);
+    }
+
+    $('#myModal').modal({backdrop: 'static', keyboard: false});
+</script>
+
+</body>
+
+</html>

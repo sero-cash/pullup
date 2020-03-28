@@ -1,0 +1,32 @@
+{
+  "default": {
+    "id": "3",
+    "network": "main",
+    "name": "JAPAN",
+    "rpc": "http://52.199.145.159:8545",
+    "web": "http://pullup.sero.cash/v0_1_6/"
+  },
+  "host": [
+    {
+      "id": "1",
+      "network": "main",
+      "name": "华南(成都)",
+      "rpc": "http://140.143.83.98:8545",
+      "web": "http://pullup.sero.cash/v0_1_6/"
+    },
+    {
+      "id": "2",
+      "network": "main",
+      "name": "华南(广州)",
+      "rpc": "http://129.204.197.105:8545",
+      "web": "http://pullup.sero.cash/v0_1_6/"
+    },
+    {
+      "id": "3",
+      "network": "main",
+      "name": "JAPAN",
+      "rpc": "http://52.199.145.159:8545",
+      "web": "http://pullup.sero.cash/v0_1_6/"
+    }
+  ]
+}

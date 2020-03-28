@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Account Detail - SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css"/>
+
+
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content">
+                <div class="header">
+                </div>
+                <nav aria-label="breadcrumb" style="margin-top: 80px;">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Account Detail</li>
+                    </ol>
+                </nav>
+
+                <div class="container-fluid">
+                    <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                        <h3 class="text-dark mb-0">Account Detail</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col-lg-12 mb-4">
+                                    <div class="card text-white bg-primary shadow">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-6 mb-4"><span class="a_span">Account</span> (<small class="pk"></small>)</div>
+                                                <div class="col-lg-6 mb-4 backup" style="text-align: right;">
+                                                    <a><i class="far fa-file-code"></i>&nbsp;<span class="exportPhrase">Export Mnemonic Phrase</span></a>
+                                                </div>
+                                            </div>
+                                            <span class="mainPkr">Main Address</span> (<i class="fas fa-question-circle text-warning"></i><small class="text-warning main-pkr-warning">This is a collection address that can be used for frequent collections such as mining.</small>)
+                                            <p class="text-white-50 small m-0 main-address"></p>
+                                            <p><i class="fas fa-copy mainCopy" data-clipboard-text=""></i> &nbsp;&nbsp;<i class="fas fa-qrcode mainqrcode"></i></p>
+                                            <span class="c_a">Collection Address</span> (<i class="fas fa-question-circle text-warning"></i><small class="text-warning pkr-warning">The collection address will change after each successful transaction.</small>)
+                                            <p class="text-white-50 small m-0 address"></p>
+                                            <p><i class="fas fa-copy secondeCopy" data-clipboard-text=""></i> &nbsp;&nbsp;<i class="fas fa-qrcode secondqrcode"></i></p>
+                                            <div class="toast" id="toast1" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);">
+                                                <div class="toast-body alert-success">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                        <h3 class="text-dark mb-0">Balance</h3>
+                    </div>
+                    <div class="row currency">
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <p class="text-primary m-0 font-weight-bold tx-his">Transaction History</p>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+                                        <table class="table small dataTable my-0" id="dataTable">
+                                            <thead>
+                                            <tr>
+                                                <td width="5%"></td>
+                                                <td width="35%"><strong>Hash</strong></td>
+                                                <td width="5%"><strong>Block</strong></td>
+<!--                                                <td><strong>To</strong></td>-->
+                                                <td width="5%"><strong>Currency</strong></td>
+                                                <td width="10%"><strong>State</strong></td>
+                                                <td width="10%"><strong>Amount</strong></td>
+                                                <td width="10%"><strong>Fee</strong></td>
+                                                <td width="20%"><strong>Time</strong></td>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-md-6 align-self-center">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                                                    <ul class="pagination">
+
+                                                    </ul>
+                                                </nav>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="footer"></div>
+        </div>
+        <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLongTitle">Address</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrcode"></div>
+                    <div class="text-break"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="assets/plugin/bootstrap.bundle.min.js"></script>
+    <script src="assets/plugin/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+    <script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+    <script type="text/javascript" src="assets/plugin/datatables.min.js"></script>
+    <script src="assets/plugin/jquery.qrcode.min.js"></script>
+    <script src="assets/plugin/clipboard.min.js"></script>
+    <script src="assets/plugin/bignumber.js"></script>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/account.js"></script>
+    <script>
+
+        $('.header').load('header.html');
+        $('.footer').load('footer.html');
+
+        setTimeout(function () {
+            $("nav div ul li:eq(0) a").addClass('text-light');
+        },5);
+
+        Common.app = Detail;
+        Common.init();
+
+    </script>
+
+</body>
+
+</html>

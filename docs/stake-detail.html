@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Stake Detail- SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css"/>
+
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <div class="header">
+            </div>
+            <nav aria-label="breadcrumb" style="margin-top: 80px;">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="stake.html">Stake</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Share Detail</li>
+                </ol>
+            </nav>
+            <div class="container-fluid" >
+
+                <!--<div class="d-sm-flex justify-content-between align-items-center mb-4">-->
+                    <!--<h3 class="text-dark mb-0">Share Detail</h3>-->
+                <!--</div>-->
+                <div class="row currency">
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <p class="text-primary m-0 font-weight-bold tx-his shareDetail">Share Detail</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive table mt-2" role="grid" aria-describedby="dataTable_info">
+                                    <table class="table dataTable my-0 small" id="dataTable">
+                                        <thead>
+                                        <tr>
+                                            <td width="15%"><strong>Share Id</strong></td>
+                                            <td width="15%"><strong>Pool Id</strong></td>
+                                            <td width="25%"><strong>Address</strong></td>
+                                            <td width="5%"><strong>Price</strong></td>
+                                            <td width="5%"><strong>Fee</strong></td>
+                                            <td width="5%"><strong>Profit</strong></td>
+                                            <td width="10%"><strong>Returned Profit</strong></td>
+                                            <td width="10%"><strong>Share Count</strong></td>
+                                            <td width="10%"><strong>Time</strong></td>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td width="20%"><strong>Summary</strong></td>
+                                            <td width="20%"><strong></strong></td>
+                                            <td width="15%"><strong></strong></td>
+                                            <td width="5%"><strong></strong></td>
+                                            <td width="5%"><strong></strong></td>
+                                            <td width="5%"><strong></strong></td>
+                                            <td width="10%"><strong></strong></td>
+                                            <td width="10%"><strong></strong></td>
+                                            <td width="10%"><strong></strong></td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="footer"></div>
+    </div>
+    <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+</div>
+
+<script src="assets/plugin/jquery.min.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/theme.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+<script type="text/javascript" src="assets/plugin/datatables.min.js"></script>
+<script src="assets/plugin/jquery.qrcode.min.js"></script>
+<script src="assets/plugin/clipboard.min.js"></script>
+<script src="assets/plugin/bignumber.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/stake.js?v0.1.5_bk"></script>
+
+<script>
+    $('.header').load('header.html');
+    $('.footer').load('footer.html');
+    setTimeout(function () {
+        $("nav div ul li:eq(2) a").addClass('text-light');
+    },5);
+
+
+    Common.app = StakeDetail;
+
+    Common.init();
+
+</script>
+
+</body>
+
+</html>

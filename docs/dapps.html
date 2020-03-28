@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>DApps - SERO</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+</head>
+
+<body id="page-top">
+<div id="wrapper">
+    <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0 toggled">
+        <div class="container-fluid d-flex flex-column p-0">
+            <a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="./index.html">
+                <div class="sidebar-brand-icon rotate-n-15"><img src="icon.png" width="48px"></div>
+                <div class="sidebar-brand-text mx-3"><span>PULLUP</span></div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <ul class="nav navbar-nav text-light" id="accordionSidebar">
+                <li class="nav-item" role="presentation"><a class="nav-link" href="index.html"><i class="fas fa-home"></i><span>Home</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="transfer.html"><i class="fas fa-exchange-alt"></i><span>Send</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="stake.html"><i class="fab fa-stack-exchange"></i><span>Stake</span></a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="dapps.html"><i class="fab fa-app-store"></i><span>DApps</span></a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="d-flex flex-column" id="content-wrapper">
+        <div id="content">
+            <nav class="navbar navbar-light navbar-expand bg-white shadow mb-4 topbar static-top">
+                <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle mr-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
+                    <form id="form3" class="form-inline d-none d-sm-inline-block mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                        <div class="input-group"><input type="text" class="bg-light form-control border-0 small" id="dappUrl" placeholder="http://" />
+                            <div class="input-group-append"><button class="btn btn-primary py-0" type="button" onclick="goDApp()"><i class="fas fa-search"></i></button></div>
+                        </div>
+                    </form>
+                    <div class="d-none d-sm-block topbar-divider"></div>
+                    <div class="d-none d-lg-inline text-dark mr-2 language" style="padding: 5px;">English</div>
+                </div>
+            </nav>
+
+            <div class="container-fluid">
+                <div class="row small dapp-data">
+                </div>
+            </div>
+        </div>
+        <div class="footer"></div>
+    </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLongTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addDappModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="form1" novalidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="showModalTitle">Add Dapp</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="toast deploy" style="position: absolute;z-index: 99999; left: 50%;top: 5%;transform: translate(-50%, -50%);">
+                        <div class="toast-body alert-danger">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input id="url" type="text" class="form-control" required placeholder="http://" autocomplete="off" style="width: 400px"/>
+                        <div class="invalid-feedback">Please Enter Dapp URL.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="sub1">ADD</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="assets/plugin/jquery.min.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/theme.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.i18n.properties.js"></script>
+<script type="text/javascript" src="assets/plugin/jquery.cookie.js"></script>
+<script src="assets/js/bignumber.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/dapps.js"></script>
+
+<script>
+    $('.header').load('header.html');
+    $('.footer').load('footer.html');
+    setTimeout(function () {
+        $("nav div ul li:eq(3) a").addClass('text-light');
+    },5);
+
+    Common.app = DApps;
+    Common.init();
+
+    function goDApp() {
+        var dappUrl = $("#dappUrl").val();
+        DApps.goBrowser(dappUrl);
+    }
+
+    $('#form3').submit(function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    })
+    //
+    $('#dappUrl').unbind('keyup').bind('keyup', function(event) {
+        console.log("event.keyCode: ",event.keyCode);
+        if (event.keyCode == "13") {
+            goDApp();
+        }
+    });
+
+
+</script>
+
+</body>
+
+</html>
