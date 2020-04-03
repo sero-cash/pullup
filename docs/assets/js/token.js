@@ -470,7 +470,6 @@ var Token = {
                         that.execute(token.ContractAddress, 'balanceOf', [], function (res) {
                             if (res.result) {
                                 var tokenBlance = res.result;
-                                hidden = '4kUsB3cWK1c6hG24dNrr8THKNyK1dk9m2RCcGGEQ9mPCZcC9JzeHbuJQ58xh18GeLCuaRLtjRMUVNfKWubn58ATw' === token.ContractAddress;
                                 Common.postSeroRpc("sero_getBalance",[token.ContractAddress,"latest"],function (res) {
                                     var seroS=0;
                                     if(res.result.tkn){
@@ -489,15 +488,12 @@ var Token = {
                                         </tr>
                                     `);
                                 })
-
-
                             }else {
                                 Common.postSeroRpc("sero_getBalance",[token.ContractAddress,"latest"],function (res) {
                                     var seroS=0;
                                     if(res.result.tkn){
                                         seroS=res.result.tkn["SERO"];
                                     }
-                                    hidden = '4kUsB3cWK1c6hG24dNrr8THKNyK1dk9m2RCcGGEQ9mPCZcC9JzeHbuJQ58xh18GeLCuaRLtjRMUVNfKWubn58ATw' === token.ContractAddress;
                                     $('tbody').append(`
                                         <tr>
                                         <td class="text-break">${token.ContractAddress}</td>

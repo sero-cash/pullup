@@ -257,7 +257,7 @@ func (u utxosResp) Swap(i, j int) {
 func (s *ServiceApi) TXList(pkStr string, request transport.PageRequest) (utxos utxosResp, err error) {
 	pk := address.StringToPk(pkStr)
 
-	if txs, err := s.SL.findTx(pk.ToUint512(), uint64(request.PageSize*request.PageNo)); err == nil {
+	if txs, err := s.SL.findTx(pk.ToUint512(), uint64(request.PageSize)*uint64(request.PageNo)); err == nil {
 		pendingBlockNumber := uint64(1000000000)
 		for _, tx := range txs {
 			if tx.Block == 0 {

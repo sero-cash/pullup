@@ -329,6 +329,9 @@ var DApps = {
             $('.modal-footer button:eq(1)').unbind('click').bind('click', function () {
                 that.goBrowser(dappUrl);
             });
+            $('.modal-footer button:eq(0)').unbind('click').bind('click', function () {
+                $('.dapp-name').text("");
+            });
         });
 
     }

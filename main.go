@@ -85,19 +85,19 @@ func main() {
 		crossOrigin = "*"
 	}
 
-	// init sero light client
-	app.NewSeroLight()
-	logex.Info("NewSeroLight successful! ")
-
 	setCmdPath()
-	registerHttpHandler()
-
 	go func() {
 		h := http.FileServer(http.Dir(app.CmdPath + "/docs"))
 		http.Handle("/docs/", http.StripPrefix("/docs/", h)) // 启动静态文件服务
 		//Header().Set("Expires", time.Now().Format("MON, 02 Jan 2006 15:04:05 GMT"))
 		http.ListenAndServe(":3646", nil)
 	}()
+	// init sero light client
+	app.NewSeroLight()
+	logex.Info("NewSeroLight successful! ")
+
+
+	registerHttpHandler()
 
 	// start up a http server
 	ln, err := net.Listen("tcp", "127.0.0.1:2345")
@@ -152,11 +152,10 @@ func setCmdPath() {
 
 func registerHttpHandler() {
 	if app.IsZH() {
-		app.SetRemoteConfig("http://sero-cash.gitee.io/pullup/node-asia.json")
-		//app.SetVersionUrl("http://sero-cash.gitee.io/pullup/version.json")
-		app.SetVersionUrl("https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/version.json")
+		app.SetRemoteConfig("http://127.0.0.1:3646/docs/node-asia.json")
+		app.SetVersionUrl("http://sero-cash.gitee.io/pullup/version.json")
 	} else {
-		app.SetRemoteConfig("http://pullup-github.sero.cash/node-global.json")
+		app.SetRemoteConfig("http://127.0.0.1:3646/docs/node-global.json")
 		app.SetVersionUrl("http://pullup-github.sero.cash/version.json")
 	}
 
