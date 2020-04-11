@@ -36,6 +36,7 @@ type Account struct {
 	mainPkr    c_type.PKr
 	mainOldPkr c_type.PKr
 	balances   map[string]*big.Int
+	tickets   map[string][]string
 	utxoNums   map[string]uint64
 	//use for map sort
 	at            uint64

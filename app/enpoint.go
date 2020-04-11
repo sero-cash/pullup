@@ -213,11 +213,13 @@ func MakeAccountBalanceEndpoint(service Service) endpoint.Endpoint {
 		}
 		pk := pk{}
 		utils.Convert(req.Biz, &pk)
-		balance := service.AccountBalance(pk.PK)
+		balance,tickets := service.AccountBalance(pk.PK)
 		//for key, v := range balance {
 		//}
-		response.SetBizResponse(balance)
-
+		resp := map[string]interface{}{}
+		resp["balance"] = balance
+		resp["tickets"] = tickets
+		response.SetBizResponse(resp)
 		return response, nil
 	}
 }
@@ -301,6 +303,7 @@ type transferReq struct {
 	GasPrice string
 	Password string
 	Data     string
+	AssetTktReq map[string]interface{} `json:"tkt"`
 }
 
 func MakeDataPathEndpoint(service Service) endpoint.Endpoint {
