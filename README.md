@@ -230,9 +230,3 @@ There are a few things to note when buying:
 * You can see the transaction confirmation after about 32 confirmation blocks, and you can see the updated data in the equity pool.
 * ![image.png](http://sero-media.s3-website-ap-southeast-1.amazonaws.com/images/jianshu/277023-f85093508acd185b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/600)
 
-## For Developer
-
-- use --rpcHost http://127.0.0.1:8545 set rpc host
-- use --webHost http://127.0.0.1:2345 set web host
-- use --dev true start dev-mode
-
