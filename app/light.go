@@ -440,16 +440,20 @@ func (self *SEROLight) indexUtxo(utxosMap map[PkKey][]Utxo, batch serodb.Batch) 
 			}
 
 			var pkKey []byte
+
 			if utxo.Asset.Tkn != nil {
 				// "PK" + PK + currency + root
 				pkKey = utxoPkKey(key.Pk, utxo.Asset.Tkn.Currency[:], &utxo.Root)
+				// "PK" + PK + currency + root => 0
+				ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
+			}
 
-			} else if utxo.Asset.Tkt != nil {
+			if utxo.Asset.Tkt != nil {
 				// "PK" + PK + tkt + root
 				pkKey = utxoPkKey(key.Pk, utxo.Asset.Tkt.Value[:], &utxo.Root)
+				// "PK" + PK + currency + root => 0
+				ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
 			}
-			// "PK" + PK + currency + root => 0
-			ops[common.Bytes2Hex(pkKey)] = common.Bytes2Hex([]byte{0})
 
 			// "NIL" + PK + tkt + root => "PK" + PK + currency + root
 			for _, Nil := range utxo.Nils {
@@ -682,21 +686,23 @@ func (self *SEROLight) GetUtxoNum(pk c_type.Uint512) map[string]uint64 {
 	return map[string]uint64{}
 }
 
-func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int ,isSync bool) {
+func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.Int ,tickets map[string][]string,isSync bool) {
 	if value, ok := self.accounts.Load(pk); ok {
 		account := value.(*Account)
 		balanceReturn := account.balances
+		ticketReturn := account.tickets
 		if account.isChanged && !self.syncing{
 			go func() {
 				prefix := append(pkPrefix, pk[:]...)
 				iterator := self.db.NewIteratorWithPrefix(prefix)
 				balances = map[string]*big.Int{}
+				tickets = map[string][]string{}
 				utxoNums := map[string]uint64{}
+				ticketsTmp := map[string]string{}
 				for iterator.Next() {
 					key := iterator.Key()
 					var root c_type.Uint256
 					copy(root[:], key[98:130])
-
 					if utxo, err := self.getUtxo(root); err == nil {
 						if utxo.Asset.Tkn != nil {
 							currency := common.BytesToString(utxo.Asset.Tkn.Currency[:])
@@ -708,14 +714,32 @@ func (self *SEROLight) GetBalances(pk c_type.Uint512) (balances map[string]*big.
 								utxoNums[currency] = 1
 							}
 						}
+						if utxo.Asset.Tkt != nil {
+							key := common.Bytes2Hex(utxo.Asset.Tkt.Value[:])
+							if _, ok := ticketsTmp[key]; ok {
+							} else {
+								ticketsTmp[key] = common.BytesToString(utxo.Asset.Tkt.Category[:])
+							}
+						}
 					}
 				}
+				if len(ticketsTmp)>0{
+					for tkt,catg := range ticketsTmp{
+						if ticket, ok := tickets[catg]; ok {
+							tickets[catg] = append(ticket,tkt)
+						} else {
+							tickets[catg] = []string{tkt}
+						}
+					}
+				}
+
 				account.balances = balances
+				account.tickets = tickets
 				account.utxoNums = utxoNums
 				account.isChanged = false
 			}()
 		}
-		return balanceReturn,self.syncing
+		return balanceReturn,ticketReturn,self.syncing
 	}
 	return
 }
@@ -753,7 +777,7 @@ func (self *SEROLight) setZ() bool {
 	}
 }
 
-func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gasprice *big.Int) (hash c_type.Uint256, err error) {
+func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gasprice *big.Int, tkt map[string]interface{}) (hash c_type.Uint256, err error) {
 
 	fee := new(big.Int).Mul(big.NewInt(25000), gasprice)
 	addr := address.StringToPk(from)
@@ -786,6 +810,13 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	var toPkr c_type.PKr
 	copy(toPkr[:], base58.Decode(to)[:])
 	reception := self.genReceiption(currency, amount, toPkr)
+	if tkt != nil{
+		v :=common.HexToHash(tkt["value"].(string))
+		reception.Asset.Tkt = &assets.Ticket{
+			Category: utils.CurrencyToUint256(tkt["catalog"].(string)),
+			Value: *v.HashToUint256()   ,
+		}
+	}
 
 	preTxParam := prepare.PreTxParam{}
 	preTxParam.From = addr.ToUint512()
@@ -793,6 +824,9 @@ func (self *SEROLight) commitTx(from, to, currency, passwd string, amount, gaspr
 	preTxParam.GasPrice = gasprice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
 	preTxParam.Receptions = []prepare.Reception{reception}
+
+	b,_ :=json.Marshal(preTxParam)
+	fmt.Println("commitTx preTxParam>>> ",string(b[:]))
 
 	param, err := self.GenTx(preTxParam)
 
@@ -830,14 +864,7 @@ func (self *SEROLight) needSzk(param *txtool.GTxParam) {
 		param.Num = &num
 	}
 
-	err,nowNumber :=getRemoteBlockNumber()
-	if err !=nil {
-	}else{
-		var sip7 = uint64(2764851)
-		if uint64(nowNumber) >= sip7{
-			param.IsExt=&trueValue
-		}
-	}
+	param.IsExt=&trueValue
 
 }
 
@@ -1413,6 +1440,8 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 	preTxParam.GasPrice = gasPrice
 	preTxParam.Fee = assets.Token{Currency: utils.CurrencyToUint256("SERO"), Value: utils.U256(*fee)}
 
+	//self.genReceipt(ctq, toPkr, preTxParam)
+
 	preTxParam.Cmds = prepare.Cmds{
 		Contract: &stx.ContractCmd{
 			Data: data,
@@ -1422,6 +1451,17 @@ func (self *SEROLight) ExecuteContractTx(ctq ContractTxReq, password string) (tx
 			},
 		},
 	}
+
+	if ctq.Catg != "nil" && ctq.Tkt != "" {
+		v :=common.HexToHash(ctq.Tkt)
+		preTxParam.Cmds.Contract.Asset.Tkt = &assets.Ticket{
+			Category: utils.CurrencyToUint256(ctq.Catg),
+			Value: *v.HashToUint256()   ,
+		}
+	}
+
+	b,_ := json.Marshal(preTxParam)
+	fmt.Println("ExecuteContractTx preTxParam>>> ", string(b[:]))
 
 	param, err := self.GenTx(preTxParam)
 	if err != nil {
@@ -1491,7 +1531,25 @@ type ContractTxReq struct {
 	Currency string        `json:"cy"`
 	Data     string `json:"data"`
 	Token    TokenReq      `json:"token"`
+	//AssetTktReq map[string]interface{} `json:"tkt"`
+	Catg string `json:"catg"`
+	Tkt string `json:"tkt"`
 }
+//
+//type AssetReq struct {
+//	Tkn *AssetTknReq `json:"tkn"`
+//	Tkt *AssetTktReq `json:"tkt"`
+//}
+//
+//type AssetTknReq struct {
+//	Currency string `json:"currency"`
+//	Value string `json:"value"`
+//}
+//
+//type AssetTktReq struct {
+//	Catalog string `json:"catalog"`
+//	Value string `json:"value"`
+//}
 
 type TokenReq struct {
 	TxHash          string

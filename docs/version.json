@@ -1,30 +1,28 @@
 {
   "version": {
-    "docs": "v0.1.19",
+    "docs": "v0.1.20",
     "docsUrl": {
-      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.19/docs.zip",
-      "en": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.19/docs.zip"
+      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.20/docs.zip",
+      "en": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.20/docs.zip"
     },
-    "app": "v0.1.15",
+    "app": "v0.1.16",
     "appUrl": {
-      "mac":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.14/pullup-windows-v0.1.14-zh_CN.zip",
-      "win":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/v0.1.14/pullup-windows-v0.1.14-zh_CN.zip"
+      "mac":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/v0.1.16/pullup-mac-v0.1.16.tar.gz",
+      "win":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/v0.1.16/pullup-windows-v0.1.16.zip"
     }
   },
   "description": {
     "zh": [
-      "1. 优化了同步体验，在同步过程不显示金额",
-      "2. 增加了账户缓存机制，提升账户加载速度",
-      "3. 优化了交易列表的查询速度",
-      "4. 增加了版本自动检测升级的功能",
-      "5. 增加了自动升级本地DOCS的功能"
+      "1. 新增功能：支持Ticket资产",
+      "2. 优化：节点使用HTTPS",
+      "3. 修复了发送交易重复发送的问题",
+      "4. 增加了第三方DApp使用协议"
     ],
     "en": [
-      "1. Optimized synchronization experience, no amount is displayed during synchronization",
-      "2. Added account cache mechanism to improve account loading speed",
-      "3. Optimized the query speed of transaction list",
-      "4. Added the feature of automatic version detection and upgrade",
-      "5. Added the feature to automatically upgrade local DOCS"
+      "1. Added: Support Ticket assets",
+      "2. Optimized: The Nodes use HTTPS",
+      "3. Fixed the issue of sending transactions repeatedly",
+      "4. Added third-party DApp usage agreement"
     ]
   }
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/sero-cash/go-sero/pullup/common/logex"
 	"github.com/sero-cash/go-sero/pullup/common/transport"
 	"github.com/sero-cash/go-sero/pullup/lorca"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -53,7 +54,10 @@ func main() {
 	flag.Parse()
 	if h {
 		usage()
+
+		return
 	}
+	log.Println("isDev",d)
 	//set start flag
 	app.IsDev = d
 	app.CmdPath = c
@@ -86,6 +90,9 @@ func main() {
 	}
 
 	setCmdPath()
+
+
+	fmt.Println("app.CmdPath:",app.CmdPath)
 	go func() {
 		h := http.FileServer(http.Dir(app.CmdPath + "/docs"))
 		http.Handle("/docs/", http.StripPrefix("/docs/", h)) // 启动静态文件服务
@@ -95,7 +102,6 @@ func main() {
 	// init sero light client
 	app.NewSeroLight()
 	logex.Info("NewSeroLight successful! ")
-
 
 	registerHttpHandler()
 
@@ -110,7 +116,10 @@ func main() {
 		logex.Fatal(http.Serve(ln, nil))
 	}()
 
-	go app.CheckVersion()
+	if !app.IsDev {
+		go app.CheckVersion()
+	}
+
 
 	// init ui
 	args := []string{"--disable-backgrounding-occluded-windows"}

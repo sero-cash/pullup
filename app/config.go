@@ -7,8 +7,8 @@ import (
 
 //config
 var (
-	version   = "v0.1.15"
-	cleanData = true
+	version   = "v0.1.16"
+	cleanData = false
 
 	maxUint64  = ^uint64(0)
 	fetchCount = uint64(500000)

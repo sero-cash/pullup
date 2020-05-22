@@ -37,7 +37,7 @@ type Service interface {
 	ExportMnemonic(addressStr, password string) (string, error)
 	AccountList() accountResps
 	AccountDetail(pkStr string) accountResp
-	AccountBalance(pkStr string) map[string]*big.Int
+	AccountBalance(pkStr string) (map[string]*big.Int,map[string][]string)
 	TXNum(pkStr string) map[string]uint64
 	TXList(pkStr string, request transport.PageRequest) (utxosResp, error)
 
@@ -150,6 +150,7 @@ type accountResp struct {
 	MainPKr    string
 	MainOldPKr string
 	Balance    map[string]*big.Int
+	Tickets map[string][]string
 	UtxoNums   map[string]uint64
 	PkrBase58  string
 	at         uint64
@@ -181,8 +182,19 @@ func (s *ServiceApi) AccountList() (accountListResps accountResps) {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance, isSync := s.SL.GetBalances(pk)
-		accountListResp := accountResp{PK: account.PkString(), MainPKr: account.PkrString(account.mainPkr), MainOldPKr: account.PkrString(account.mainOldPkr), Balance: balance, UtxoNums: account.utxoNums, PkrBase58: base58.Encode(latestPKr[:]), at: account.at, initTimestamp: account.initTimestamp, Name: account.name, IsSync:isSync}
+		balance,tickets, isSync := s.SL.GetBalances(pk)
+		accountListResp := accountResp{
+			PK: account.PkString(),
+			MainPKr: account.PkrString(account.mainPkr),
+			MainOldPKr: account.PkrString(account.mainOldPkr),
+			Balance: balance, UtxoNums: account.utxoNums,
+			Tickets:tickets,
+			PkrBase58: base58.Encode(latestPKr[:]),
+			at: account.at,
+			initTimestamp: account.initTimestamp,
+			Name: account.name,
+			IsSync:isSync,
+		}
 		accountListResps = append(accountListResps, accountListResp)
 		return true
 	})
@@ -200,18 +212,28 @@ func (s *ServiceApi) AccountDetail(pkstr string) (account accountResp) {
 			o := v.(outReq)
 			latestPKr = o.Pkr
 		}
-		balance ,isSync:= s.SL.GetBalances(pk)
-		account := accountResp{IsSync:isSync,PK: ac.PkString(), MainPKr: ac.PkrString(ac.mainPkr), MainOldPKr: ac.PkrString(ac.mainOldPkr), Balance: balance, UtxoNums: ac.utxoNums, PkrBase58: ac.PkrString(latestPKr), Name: ac.name}
+		balance ,ticket,isSync:= s.SL.GetBalances(pk)
+		account := accountResp{
+			IsSync:isSync,
+			PK: ac.PkString(),
+			MainPKr: ac.PkrString(ac.mainPkr),
+			MainOldPKr: ac.PkrString(ac.mainOldPkr),
+			Balance: balance,
+			UtxoNums: ac.utxoNums,
+			PkrBase58: ac.PkrString(latestPKr),
+			Name: ac.name,
+			Tickets:ticket,
+		}
 
 		return account
 	}
 	return account
 }
 
-func (s *ServiceApi) AccountBalance(pkstr string) map[string]*big.Int {
+func (s *ServiceApi) AccountBalance(pkstr string) (map[string]*big.Int,map[string][]string) {
 	pk := address.StringToPk(pkstr).ToUint512()
-	balances,_ :=s.SL.GetBalances(pk)
-	return balances
+	balances,tickets,_ :=s.SL.GetBalances(pk)
+	return balances,tickets
 }
 
 type utxoResp struct {
@@ -342,7 +364,7 @@ func (s *ServiceApi) Transfer(tx transferReq, password string) (hash string, err
 		if toBytes := base58.Decode(tx.To); len(toBytes) != 96 {
 			return hash, fmt.Errorf("Invalid colleaction address ")
 		}
-		h, err := s.SL.commitTx(tx.From, tx.To, tx.Currency, password, amount, gasPrice)
+		h, err := s.SL.commitTx(tx.From, tx.To, tx.Currency, password, amount, gasPrice,tx.AssetTktReq)
 
 		if err != nil {
 			return hash, err
