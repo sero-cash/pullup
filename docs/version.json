@@ -1,9 +1,9 @@
 {
   "version": {
-    "docs": "v0.1.21",
+    "docs": "v0.1.22",
     "docsUrl": {
-      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.21/docs.zip",
-      "en": "https://github.com/sero-cash/pullup-docs/releases/download/v0.1.21/docs.zip"
+      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.22/docs.zip",
+      "en": "https://github.com/sero-cash/pullup-docs/releases/download/v0.1.22/docs.zip"
     },
     "app": "v0.1.16",
     "appUrl": {
