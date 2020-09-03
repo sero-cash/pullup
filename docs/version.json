@@ -1,14 +1,14 @@
 {
   "version": {
-    "docs": "v0.1.22",
+    "docs": "v0.1.23",
     "docsUrl": {
-      "zh": "https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/docs/v0.1.22/docs.zip",
-      "en": "https://github.com/sero-cash/pullup-docs/releases/download/v0.1.22/docs.zip"
+      "zh": "https://sero-1259797294.cos.ap-guangzhou.myqcloud.com/pullup/docs/v0.1.23/docs.zip",
+      "en": "https://github.com/sero-cash/pullup-docs/releases/download/v0.1.23/docs.zip"
     },
     "app": "v0.1.16",
     "appUrl": {
-      "mac":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/v0.1.16/pullup-mac-v0.1.16.tar.gz",
-      "win":"https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/v0.1.16/pullup-windows-v0.1.16.zip"
+      "mac":"https://sero-media-1256272584.file.myqcloud.com/pullup/app/v0.1.16/pullup-mac-v0.1.16.tar.gz",
+      "win":"https://sero-media-1256272584.file.myqcloud.com/pullup/app/v0.1.16/pullup-windows-v0.1.16.zip"
     }
   },
   "description": {
