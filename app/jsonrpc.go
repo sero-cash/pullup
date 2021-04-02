@@ -27,7 +27,7 @@ type ErrorMsg struct {
 
 func (sync Sync) Do() (*JSONRpcResp, error) {
 	client := &http.Client{
-		Timeout: 900 * time.Second,
+		Timeout: 8 * 60 * 60 * time.Second,
 	}
 
 	jsonReq := map[string]interface{}{"jsonrpc": "2.0", "method": sync.Method, "params": sync.Params, "id": 0}
