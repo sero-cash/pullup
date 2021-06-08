@@ -81,6 +81,7 @@ func main() {
 		lorca.PromptDownload()
 		return
 	}
+
 	//init Zero import
 	superzk.ZeroInit_OnlyInOuts()
 	logex.Info("ZeroInit_OnlyInOuts successful! ")
@@ -127,7 +128,7 @@ func main() {
 		args = append(args, "--class=Lorca")
 	}
 
-	ui, err := lorca.New("", app.GetCachePath(), 1400, 768, args...)
+	ui, err := lorca.New(app.GetWebHost(), app.GetCachePath(), 1400, 768, args...)
 	if err != nil {
 		logex.Fatal(err)
 	}
