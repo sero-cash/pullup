@@ -218,6 +218,142 @@ func (self *SEROLight) SyncOut() {
 	self.CheckNil()
 }
 
+func getReceiptTx(txHash string) (r map[string]interface{}, err error)  {
+	sync := Sync{RpcHost: GetRpcHost(), Method: "sero_getTransactionReceipt", Params: []interface{}{txHash}}
+	resp, err := sync.Do()
+	if err != nil {
+		logex.Error("sero_getTransactionReceipt request.do err: ", err)
+		return
+	} else {
+		if resp.Result != nil {
+			err = json.Unmarshal(*resp.Result, &r)
+			if err != nil {
+				logex.Error("sero_getTransactionReceipt json Unmarshal  err: ", err)
+				return
+			}
+		}
+	}
+	return
+}
+
+// Customer add out by TxHash
+func (self *SEROLight) fetchOutByTxHash(from string, tx_Hash string) (err error) {
+	txReceipt ,err := getReceiptTx(tx_Hash)
+	if err != nil {
+		return
+	}
+	numStr := txReceipt["blockNumber"].(string)
+	num,_ := strconv.ParseUint(numStr[2:],16,64)
+	txHashByte := common.HexToHash(tx_Hash)
+	var txHash c_type.Uint256
+	//txHash.UnmarshalText(txHashByte)
+	copy(txHash[:],txHashByte[:])
+	param := []interface{}{num, 1}
+	req := Sync{RpcHost: GetRpcHost(), Method: "flight_getBlocksInfo", Params: param}
+
+
+	fromAddress := address.StringToPk(from)
+	fromPk := fromAddress.ToUint512()
+	account := self.getAccountByPk(fromPk)
+
+	jsonResp, err := req.Do()
+	if err != nil {
+		logex.Errorf("jsonRep err=[%s]", err.Error())
+		return
+	}
+	blocks :=[]txtool.Block{}
+	if err = json.Unmarshal(*jsonResp.Result, &blocks); err != nil {
+		logex.Errorf("json.Unmarshal err=[%s]", err.Error())
+		return
+	}
+	outs := []txtool.Out{}
+	for _,block := range blocks {
+		for _,o := range block.Outs {
+			if txHash == o.State.TxHash{
+				outs = append(outs,o)
+			}
+		}
+	}
+	usedOut := map[c_type.Uint256]bool{}
+	nils:=[]c_type.Uint256{}
+	for _,out := range outs {
+		_,err := self.db.Get(rootKey(out.Root))
+		if err != nil {
+			nils = append(nils, out.Root)
+		}else{
+			usedOut[out.Root] = true
+		}
+	}
+
+	sync := Sync{RpcHost: GetRpcHost(), Method: "light_checkNil", Params: []interface{}{nils}}
+	nilResp, err := sync.Do()
+	if err != nil {
+		logex.Errorf("jsonRep err=[%s]", err.Error())
+		return
+	}
+
+
+	if nilResp.Result != nil {
+		nilvs := []NilValue{}
+		if err = json.Unmarshal(*nilResp.Result, &nilvs); err != nil {
+			logex.Errorf("json.Unmarshal err=[%s]", err.Error())
+			return
+		}
+		for _,n := range nilvs{
+			usedOut[n.Nil]=true
+		}
+	}
+
+	convertOuts := []txtool.Out{}
+	for _,out := range outs {
+		if !usedOut[out.Root] {
+			convertOuts = append(convertOuts, out)
+		}
+	}
+
+	if len(convertOuts)>0 {
+		utxosMap := map[PkKey][]Utxo{}
+		for _, out := range convertOuts {
+			var pkr c_type.PKr
+
+			if out.State.OS.Out_C != nil {
+				pkr = out.State.OS.Out_C.PKr
+			} else if out.State.OS.Out_O != nil {
+				pkr = out.State.OS.Out_O.Addr
+			} else if out.State.OS.Out_P != nil {
+				pkr = out.State.OS.Out_P.PKr
+			} else if out.State.OS.Out_Z != nil {
+				pkr = out.State.OS.Out_Z.PKr
+			}
+			dout := flight.DecOut(account.tk, []txtool.Out{out})[0]
+
+			key := PkKey{Pk: *account.pk, Num: num}
+			utxo := Utxo{Pkr: pkr, Root: out.Root, Nils: dout.Nils, TxHash: out.State.TxHash, Num: out.State.Num, Asset: dout.Asset, IsZ: out.State.OS.Out_Z != nil, Out: out}
+
+			if list, ok := utxosMap[key]; ok {
+				utxosMap[key] = append(list, utxo)
+			} else {
+				utxosMap[key] = []Utxo{utxo}
+			}
+		}
+		account.isChanged = true
+		batch := self.db.NewBatch()
+		err = self.indexOuts(utxosMap, batch)
+		if err != nil {
+			logex.Errorf(err.Error())
+			return
+		}
+		err = batch.Write()
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+
+
 func (self *SEROLight) fetchAndDecOuts(account *Account, pkrIndex uint64, start, end uint64) (rtn fetchReturn, err error) {
 
 	logex.Info(account.pk, start, end)

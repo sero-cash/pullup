@@ -54,6 +54,8 @@ type Service interface {
 	InitHost(rpcHostCustomer string)
 
 	setDapps(dapp Dapp) (interface{}, error)
+
+	addOut(from string,txHash string) (err error)
 }
 
 func NewServiceAPI() Service {
@@ -64,6 +66,10 @@ func NewServiceAPI() Service {
 
 type ServiceApi struct {
 	SL *SEROLight
+}
+
+func (s *ServiceApi) addOut(from string,txHash string) (err error) {
+	return s.SL.fetchOutByTxHash(from,txHash)
 }
 
 func (s *ServiceApi) ExportMnemonic(addrStr string, password string) (string, error) {

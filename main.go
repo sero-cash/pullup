@@ -235,12 +235,21 @@ func registerHttpHandler() {
 		transport.EncodeResponse,
 	)
 	http.Handle("/tx/transfer", accessControl(txTransferHandler))
+
 	keyPathandler := httptransport.NewServer(
 		app.MakeDataPathEndpoint(privateAccountApi),
 		transport.DecodeRequest,
 		transport.EncodeResponse,
 	)
 	http.Handle("/path/keystore", accessControl(keyPathandler))
+
+	addOutHandler := httptransport.NewServer(
+		app.MakeAddOutEndpoint(privateAccountApi),
+		transport.DecodeRequest,
+		transport.EncodeResponse,
+	)
+	http.Handle("/tx/addOut", accessControl(addOutHandler))
+
 	decimalHandler := httptransport.NewServer(
 		app.MakeCurrencyDecimalEndpoint(privateAccountApi),
 		transport.DecodeRequest,

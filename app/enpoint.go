@@ -294,6 +294,36 @@ func MakeTxSendEndpoint(service Service) endpoint.Endpoint {
 	}
 }
 
+
+func MakeAddOutEndpoint(service Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(transport.Request)
+		response := transport.Response{}
+		response.SetBaseResponseSuccess()
+
+		if ok, err := validator.ValidateBaseRequestParam(req.Base); !ok {
+			response.SetBaseResponse(errorcode.InvalidBaseParameters, err.Error())
+			return response, nil
+		}
+
+		addOutReq := addOutReq{}
+		utils.Convert(req.Biz, &addOutReq)
+
+		err := service.addOut(addOutReq.From,addOutReq.TxHash)
+		if err != nil {
+			response.SetBaseResponse(errorcode.FAIL_CODE, err.Error())
+			return response, nil
+		}
+		response.SetBizResponse(true)
+		return response, nil
+	}
+}
+
+type addOutReq struct {
+	From string `json:"from"`
+	TxHash string `json:"tx_hash"`
+}
+
 type transferReq struct {
 	From     string
 	To       string
