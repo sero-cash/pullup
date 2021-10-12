@@ -248,6 +248,7 @@ func (self *SEROLight) fetchOutByTxHash(from string, tx_Hash string) (err error)
 	var txHash c_type.Uint256
 	//txHash.UnmarshalText(txHashByte)
 	copy(txHash[:],txHashByte[:])
+
 	param := []interface{}{num, 1}
 	req := Sync{RpcHost: GetRpcHost(), Method: "flight_getBlocksInfo", Params: param}
 
@@ -269,7 +270,19 @@ func (self *SEROLight) fetchOutByTxHash(from string, tx_Hash string) (err error)
 	outs := []txtool.Out{}
 	for _,block := range blocks {
 		for _,o := range block.Outs {
-			if txHash == o.State.TxHash{
+			var pkr c_type.PKr
+
+			if o.State.OS.Out_C != nil {
+				pkr = o.State.OS.Out_C.PKr
+			} else if o.State.OS.Out_O != nil {
+				pkr = o.State.OS.Out_O.Addr
+			} else if o.State.OS.Out_P != nil {
+				pkr = o.State.OS.Out_P.PKr
+			} else if o.State.OS.Out_Z != nil {
+				pkr = o.State.OS.Out_Z.PKr
+			}
+
+			if txHash == o.State.TxHash && account.IsMyPkr(pkr){
 				outs = append(outs,o)
 			}
 		}
@@ -336,19 +349,24 @@ func (self *SEROLight) fetchOutByTxHash(from string, tx_Hash string) (err error)
 				utxosMap[key] = []Utxo{utxo}
 			}
 		}
-		account.isChanged = true
-		batch := self.db.NewBatch()
-		err = self.indexOuts(utxosMap, batch)
-		if err != nil {
-			logex.Errorf(err.Error())
-			return
+		if len(utxosMap)>0{
+			account.isChanged = true
+			batch := self.db.NewBatch()
+			err = self.indexOuts(utxosMap, batch)
+			if err != nil {
+				logex.Errorf(err.Error())
+				return
+			}
+			err = batch.Write()
+			if err != nil {
+				return
+			}
+		}else{
+			err = fmt.Errorf("Failed to add, no Out available ! ")
 		}
-		err = batch.Write()
-		if err != nil {
-			return
-		}
+	}else{
+		err = fmt.Errorf("Failed to add, no Out available ! ")
 	}
-
 	return
 }
 

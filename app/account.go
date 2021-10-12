@@ -62,6 +62,18 @@ func makeAccountManager() (*accounts.Manager, error) {
 	return accounts.NewManager(backends...), nil
 }
 
+func (self *Account) IsMyPk(pk c_type.Uint512) bool {
+	pkr := superzk.Pk2PKr(&pk, nil)
+	return self.IsMyPkr(pkr)
+
+}
+
+func (self *Account) IsMyPkr(pkr c_type.PKr) bool {
+	tk := c_type.Tk{}
+	copy(tk[:], self.tk[:])
+	return superzk.IsMyPKr(&tk, &pkr)
+}
+
 func (account *Account) Create(passphrase string, at uint64) error {
 
 	var privateKey *ecdsa.PrivateKey
