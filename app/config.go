@@ -7,7 +7,7 @@ import (
 
 //config
 var (
-	version   = "v0.2.1"
+	version   = "v0.2.2"
 	cleanData = false
 
 	maxUint64  = ^uint64(0)

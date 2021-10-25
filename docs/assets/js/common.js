@@ -45,60 +45,30 @@ var Common = {
             async: false,
             success: function (serverVersion) {
                 $('.version').text(serverVersion)
-                if("EOF"===serverVersion || forceUpdateVersions.indexOf(serverVersion)>-1){
-                    var localUtc = new Date().getTimezoneOffset() / 60;
-                    if (localUtc === -8){
-                        $('.update-body').empty().append(`
-                            <ul class="list-group text-left">
-                                <li class="list-group-item">SERO Pullup钱包已升级至${latestVersion}版本，之前的版本将停止使用。请下载最新的钱包：</li>
-                                <li class="list-group-item">
-                                    MacOS x64: <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/${latestVersion}/pullup-mac-${latestVersion}.tar.gz" target="_blank">pullup-mac-${latestVersion}.tar.gz</a>
-                                </li>
-                                <li class="list-group-item">
-                                    Windows(PC): <a href="https://sero-media-1256272584.cos.ap-shanghai.myqcloud.com/pullup/app/${latestVersion}/pullup-windows-${latestVersion}.zip" target="_blank">pullup-windows-${latestVersion}.zip</a>
-                                </li>
-                            </ul>
-                            `);
-                    }else{
-                        $('.update-body').empty().append(`
-                            <ul class="list-group text-left">
-                                <li class="list-group-item">The SERO Pullup wallet has been upgraded to version ${latestVersion} and the previous version will be discontinued. Please download the latest wallet:</li>
-                                <li class="list-group-item">
-                                    MacOS x64: <a href="https://github.com/sero-cash/pullup/releases/download/${latestVersion}/pullup-mac-${latestVersion}.tar.gz">pullup-mac-${latestVersion}.tar.gz</a></li>
-                                <li class="list-group-item">
-                                    Windows(PC): <a href="https://github.com/sero-cash/pullup/releases/download/${latestVersion}/pullup-windows-${latestVersion}.zip" target="_blank">pullup-windows-${latestVersion}.tar.gz</a>
-                                </li>
-                            </ul>
-                        `);
-                    }
-                    $('#updateModal').modal({backdrop: 'static', keyboard: false});
-                }else{
-                    //check remote version.json
-                    if (serverVersion!="v0.1.14"){
-                        $.ajax({
-                            url: that.host + '/remoteVersion',
-                            type: 'get',
-                            dataType: 'json',
-                            async: false,
-                            success: function (remoteVersion) {
-                                if(serverVersion !== remoteVersion.version.app){
-                                    var localUtc = new Date().getTimezoneOffset() / 60;
-                                    var title = '';
-                                    var desc = [];
-                                    if (localUtc === -8){
-                                        title = `版本${remoteVersion.version.app}更新内容：`;
-                                        desc = remoteVersion.description.zh;
+                $.ajax({
+                    url: that.host + '/remoteVersion',
+                    type: 'get',
+                    dataType: 'json',
+                    async: false,
+                    success: function (remoteVersion) {
+                        if(serverVersion !== remoteVersion.version.app){
+                            var localUtc = new Date().getTimezoneOffset() / 60;
+                            var title = '';
+                            var desc = [];
+                            if (localUtc === -8){
+                                title = `版本${remoteVersion.version.app}更新内容：`;
+                                desc = remoteVersion.description.zh;
 
-                                    }else{
-                                        title = `${remoteVersion.version.app} updated features：`;
-                                        desc = `${remoteVersion.description.en}`
-                                    }
-                                    var content = '';
-                                    for(var i=0;i<desc.length;i++){
-                                        content += `<p class="text-info">${desc[i]}</p>`
-                                    }
+                            }else{
+                                title = `${remoteVersion.version.app} updated features：`;
+                                desc = `${remoteVersion.description.en}`
+                            }
+                            var content = '';
+                            for(var i=0;i<desc.length;i++){
+                                content += `<p class="text-info">${desc[i]}</p>`
+                            }
 
-                                    $('.update-body').empty().append(`
+                            $('.update-body').empty().append(`
                                             <ul class="list-group text-left">
                                                 <li class="list-group-item">${title}</li>
                                                 <li class="list-group-item">
@@ -112,12 +82,10 @@ var Common = {
                                                 </li>
                                             </ul>
                                         `);
-                                    $('#updateModal').modal({backdrop: 'static', keyboard: false});
-                                }
-                            }
-                        })
+                            $('#updateModal').modal({backdrop: 'static', keyboard: false});
+                        }
                     }
-                }
+                })
             }
         })
     },
