@@ -571,7 +571,7 @@ func (self *ServiceApi) setDapps(dapp Dapp) (interface{}, error) {
 }
 
 func (self *ServiceApi) InitHost(rpcHostCustomer string) {
-	defaultRpcHost := "http://140.143.83.98:8545"
+	defaultRpcHost := "https://light-node.sero.cash"
 	if rpcHostCustomer != "" {
 		setRpcHost(rpcHostCustomer)
 		self.SL.dbConfig.Put(hostKey, []byte(rpcHostCustomer))

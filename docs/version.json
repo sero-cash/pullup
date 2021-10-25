@@ -1,28 +1,24 @@
 {
   "version": {
-    "docs": "v0.1.26",
+    "docs": "v0.2.1",
     "docsUrl": {
-      "zh": "https://sero-1259797294.cos.ap-guangzhou.myqcloud.com/pullup/docs/v0.1.26/docs.zip",
-      "en": "https://github.com/sero-cash/pullup-docs/releases/download/v0.1.26/docs.zip"
+      "zh": "https://files.sero.cash/pullup/docs/v0.2.1/docs.zip",
+      "en": "https://files.sero.cash/pullup/docs/v0.2.1/docs.zip"
     },
-    "app": "v0.1.16",
+    "app": "v0.2.1",
     "appUrl": {
-      "mac":"https://sero-media-1256272584.file.myqcloud.com/pullup/app/v0.1.16/pullup-mac-v0.1.16.tar.gz",
-      "win":"https://sero-media-1256272584.file.myqcloud.com/pullup/app/v0.1.16/pullup-windows-v0.1.16.zip"
+      "mac":"https://files.sero.cash/pullup/app/v0.2.1/pullup-mac-v0.2.1.tar.gz",
+      "win":"https://files.sero.cash/pullup/app/v0.2.1/pullup-windows-v0.2.1.zip"
     }
   },
   "description": {
     "zh": [
-      "1. 新增功能：支持Ticket资产",
-      "2. 优化：节点使用HTTPS",
-      "3. 修复了发送交易重复发送的问题",
-      "4. 增加了第三方DApp使用协议"
+      "1. 升级节点配置",
+      "2. 优化线路"
     ],
     "en": [
-      "1. Added: Support Ticket assets",
-      "2. Optimized: The Nodes use HTTPS",
-      "3. Fixed the issue of sending transactions repeatedly",
-      "4. Added third-party DApp usage agreement"
+      "1. Upgrade node configuration",
+      "2. Optimize the route"
     ]
   }
 }

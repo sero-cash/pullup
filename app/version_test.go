@@ -6,7 +6,7 @@ import (
 
 func TestDeCompress(t *testing.T) {
 
-	err :=DeCompressByPath("/Users/huangw/Downloads/docs.zip","/Users/huangw/Downloads/docs/")
+	err :=DeCompressByPath("/Users/tom/Downloads/docs.zip","/Users/tom/Downloads/docs/")
 	if err != nil {
 		t.Error(err.Error())
 	}

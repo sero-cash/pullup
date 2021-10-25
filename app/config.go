@@ -7,7 +7,7 @@ import (
 
 //config
 var (
-	version   = "v0.1.17"
+	version   = "v0.2.1"
 	cleanData = false
 
 	maxUint64  = ^uint64(0)
@@ -16,10 +16,6 @@ var (
 	remoteConfig = ""
 
 	versionUrl = ""
-
-	//remoteRpcHost  = "https://sero-media.s3-ap-southeast-1.amazonaws.com/clients/node-global.json"
-	//defaultRpcHost = "http://52.199.145.159:8545"
-	//defaultWebHost = "http://pullup.sero.cash/v0_1_6/"
 
 	osType  = ""
 	rpcHost = ""

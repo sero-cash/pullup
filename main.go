@@ -163,10 +163,10 @@ func setCmdPath() {
 func registerHttpHandler() {
 	if app.IsZH() {
 		app.SetRemoteConfig("http://127.0.0.1:3646/docs/node-asia.json")
-		app.SetVersionUrl("http://sero-cash.gitee.io/pullup/version.json")
+		app.SetVersionUrl("https://pullup.sero.cash/version.json")
 	} else {
 		app.SetRemoteConfig("http://127.0.0.1:3646/docs/node-global.json")
-		app.SetVersionUrl("http://pullup-github.sero.cash/version.json")
+		app.SetVersionUrl("https://pullup.sero.cash/version.json")
 	}
 
 	//banding http handle
